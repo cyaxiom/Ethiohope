@@ -19,58 +19,26 @@ This project follows a modular folder structure for scalability and maintainabil
 │   │
 │   ├── /academy
 │   │   ├── /KidsProgramming
-│   │   │   ├── KidsProgramming.jsx
-│   │   │   ├── PricingSection.jsx
-│   │   │   ├── CourseCatalog.jsx
-│   │   │   ├── OverviewTab.jsx
-│   │   │   ├── CurriculumTab.jsx
-│   │   │   └── ResourcesTab.jsx
+│   │   │   └── KidsProgramming.jsx
 │   │   │
 │   │   ├── /Web3Development
-│   │   │   ├── Web3Development.jsx
-│   │   │   ├── PricingSection.jsx
-│   │   │   ├── CourseCatalog.jsx
-│   │   │   ├── OverviewTab.jsx
-│   │   │   ├── CurriculumTab.jsx
-│   │   │   └── ResourcesTab.jsx
+│   │   │   └── Web3Development.jsx
 │   │   │
 │   │   ├── /FullStackDev
-│   │   │   ├── FullStackDev.jsx
-│   │   │   ├── PricingSection.jsx
-│   │   │   ├── CourseCatalog.jsx
-│   │   │   ├── OverviewTab.jsx
-│   │   │   ├── CurriculumTab.jsx
-│   │   │   └── ResourcesTab.jsx
+│   │   │   └── FullStackDev.jsx
 │   │   │
 │   │   └── /KidsTutorial
-│   │       ├── KidsTutorial.jsx
-│   │       ├── PricingSection.jsx
-│   │       ├── CourseCatalog.jsx
-│   │       ├── OverviewTab.jsx
-│   │       ├── CurriculumTab.jsx
-│   │       └── ResourcesTab.jsx
+│   │       └── KidsTutorial.jsx
 │   │
 │   ├── /services
-│   │   ├── /KidsCityTour
-│   │   │   ├── KidsCityTour.jsx
-│   │   │   ├── ServiceDetails.jsx
-│   │   │   ├── ServiceCards.jsx
-│   │   │   ├── ServiceComparison.jsx
-│   │   │   └── Testimonials.jsx
+│   │   ├── /KidsTutor
+│   │   │   └── KidsTutor.jsx
 │   │   │
 │   │   ├── /ProgrammingService
-│   │   │   ├── ProgrammingService.jsx
-│   │   │   ├── ServiceDetails.jsx
-│   │   │   ├── ServiceCards.jsx
-│   │   │   ├── ServiceComparison.jsx
-│   │   │   └── Testimonials.jsx
+│   │   │   └── ProgrammingService.jsx
 │   │   │
 │   │   └── /EthiohopeService
-│   │       ├── EthiohopeService.jsx
-│   │       ├── ServiceDetails.jsx
-│   │       ├── ServiceCards.jsx
-│   │       ├── ServiceComparison.jsx
-│   │       └── Testimonials.jsx
+│   │       └── EthiohopeService.jsx
 │   │
 │   ├── /auth
 │   │   ├── Login.jsx
@@ -82,16 +50,12 @@ This project follows a modular folder structure for scalability and maintainabil
 │       ├── ProfilePage.jsx
 │       ├── CertificatesPage.jsx
 │       ├── AchievementsPage.jsx
-│       ├── SettingsPage.jsx
+│       ├── /settings
+│       │   ├── SettingsPage.jsx
 │       │   ├── AccountSettings.jsx
 │       │   ├── ThemeToggle.jsx
 │       │   └── NotificationPrefs.jsx
 │       └── ChatsPage.jsx
-│
-├── /components
-│   ├── /layout
-│   ├── /ui
-│   └── /shared
-│
-└── /hooks
+
+
 ```
