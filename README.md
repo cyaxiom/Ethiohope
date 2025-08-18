@@ -51,8 +51,8 @@ This project follows a modular folder structure for scalability and maintainabil
 │   │       └── ResourcesTab.jsx
 │   │
 │   ├── /services
-│   │   ├── /KidsCityTour
-│   │   │   ├── KidsCityTour.jsx
+│   │   ├── /KidsTutor
+│   │   │   ├── KidsTutor.jsx
 │   │   │   ├── ServiceDetails.jsx
 │   │   │   ├── ServiceCards.jsx
 │   │   │   ├── ServiceComparison.jsx
