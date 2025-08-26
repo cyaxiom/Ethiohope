@@ -163,7 +163,48 @@ function Settings() {
 }
 
 export default Settings;
+
+---
+
 ```
+
+## 🎨 Theming (Light & Dark Mode)
+
+This project includes a **custom light/dark theme system** using Tailwind CSS variables defined in `index.css`. Developers can easily switch between themes using the `ThemeProvider` hook.
+
+### ✅ Example Usage
+
+```jsx
+import React from 'react';
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
+
+function ThemeExample() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-6 transition-colors duration-300">
+      <h1 className="text-3xl font-bold">Theme Example</h1>
+      <p className="text-muted-foreground">Current theme: {theme} mode</p>
+      <button
+        onClick={toggleTheme}
+        className="bg-primary text-primary-foreground px-6 py-3 rounded-lg shadow hover:opacity-90 transition"
+      >
+        Toggle Theme
+      </button>
+    </div>
+  );
+}
+
+export default ThemeExample;
+```
+
+### 🔑 Key Points
+
+- Theme colors are defined in `index.css` under `:root` for **light mode** and `.dark` for **dark mode**.
+- Utility classes like `bg-background`, `text-foreground`, `bg-primary`, etc., are automatically applied.
+- Use `useTheme()` hook to:
+  - `theme` → get current theme (light/dark).
+  - `toggleTheme()` → switch themes dynamically.
 
 ---
 

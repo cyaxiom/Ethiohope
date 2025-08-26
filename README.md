@@ -104,7 +104,7 @@ Click any page name to jump to its design reference:
 ### 👥 Community
 
 - **[ForumPage](#-community)**
-  [🔗 View Design](#) _\[[https://verselion.netlify.app/en/#community](https://verselion.netlify.app/en/#community)]_
+  [🔗 View Design](#) _\[[https://www.figma.com/design/ju44h7jjprVwVo3aSf8rfP/Forum-Concept-for-Alem.school--Community-?node-id=0-1&p=f&t=Wr92c4lGUqYHOHUR-0](https://www.figma.com/design/ju44h7jjprVwVo3aSf8rfP/Forum-Concept-for-Alem.school--Community-?node-id=0-1&p=f&t=Wr92c4lGUqYHOHUR-0)]_
 - **[MentorPage](#-community)**
   [🔗 View Design](#) _\[insert link]_
 - **[EventPage](#-community)**
