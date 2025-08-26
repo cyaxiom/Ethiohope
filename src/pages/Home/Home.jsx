@@ -1,7 +1,12 @@
 import React from 'react';
+import Banner from '@components/Home/Banner';
 
 function Home() {
-  return <div className="bg-red-500">HomePage</div>;
+  return (
+    <div>
+      <Banner />
+    </div>
+  );
 }
 
 export default Home;

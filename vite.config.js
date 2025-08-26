@@ -16,6 +16,7 @@ export default defineConfig({
       '@constants': path.resolve(__dirname, './src/constants'),
       '@icons': path.resolve(__dirname, './src/assets/icons'),
       '@images': path.resolve(__dirname, './src/assets/images'),
+      '@provider': path.resolve(__dirname, './src/provider'),
       '@ui': path.resolve(__dirname, './src/ui'),
       '@redux': path.resolve(__dirname, './src/store'),
       '@helper': path.resolve(__dirname, './src/helper'),

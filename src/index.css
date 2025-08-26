@@ -1,1 +1,153 @@
 @import 'tailwindcss';
+
+@layer base {
+  :root {
+    /* Light theme colors */
+    --background: #ffffff;
+    --foreground: #0f0f13;
+    --card: #ffffff;
+    --card-foreground: #0f0f13;
+    --popover: #ffffff;
+    --popover-foreground: #0f0f13;
+
+    /* Primary colors - Ethiohope brand colors */
+    --primary: #15803d; /* Green - Ethiohope primary */
+    --primary-foreground: #fffbeb;
+
+    /* Secondary colors */
+    --secondary: #f5f5f4;
+    --secondary-foreground: #1a1a1a;
+
+    /* Accent colors */
+    --accent: #16a34a; /* Lighter green */
+    --accent-foreground: #fffbeb;
+
+    /* Additional custom colors */
+    --success: #15803d; /* Green */
+    --warning: #f59e0b; /* Amber */
+    --error: #dc2626; /* Red */
+    --info: #2563eb; /* Blue */
+
+    /* UI colors */
+    --muted: #f5f5f4;
+    --muted-foreground: #71717a;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #15803d;
+
+    /* Radius */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --background: #0f0f13;
+    --foreground: #fafafa;
+    --card: #0f0f13;
+    --card-foreground: #fafafa;
+    --popover: #0f0f13;
+    --popover-foreground: #fafafa;
+
+    /* Primary colors - Adjusted for dark mode */
+    --primary: #16a34a;
+    --primary-foreground: #fffbeb;
+
+    /* Secondary colors */
+    --secondary: #262626;
+    --secondary-foreground: #fafafa;
+
+    /* Accent colors */
+    --accent: #15803d;
+    --accent-foreground: #fffbeb;
+
+    /* Additional custom colors */
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --error: #dc2626;
+    --info: #3b82f6;
+
+    /* UI colors */
+    --muted: #262626;
+    --muted-foreground: #a1a1aa;
+    --border: #262626;
+    --input: #262626;
+    --ring: #16a34a;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+/* Custom utility classes for your brand colors */
+@layer utilities {
+  .bg-background {
+    background-color: var(--background);
+  }
+  .text-foreground {
+    color: var(--foreground);
+  }
+  .bg-card {
+    background-color: var(--card);
+  }
+  .text-card-foreground {
+    color: var(--card-foreground);
+  }
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  .text-primary-foreground {
+    color: var(--primary-foreground);
+  }
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  .text-secondary-foreground {
+    color: var(--secondary-foreground);
+  }
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  .text-accent-foreground {
+    color: var(--accent-foreground);
+  }
+  .bg-success {
+    background-color: var(--success);
+  }
+  .text-success {
+    color: var(--success);
+  }
+  .bg-warning {
+    background-color: var(--warning);
+  }
+  .text-warning {
+    color: var(--warning);
+  }
+  .bg-error {
+    background-color: var(--error);
+  }
+  .text-error {
+    color: var(--error);
+  }
+  .bg-info {
+    background-color: var(--info);
+  }
+  .text-info {
+    color: var(--info);
+  }
+  .bg-muted {
+    background-color: var(--muted);
+  }
+  .text-muted-foreground {
+    color: var(--muted-foreground);
+  }
+  .border-border {
+    border-color: var(--border);
+  }
+}

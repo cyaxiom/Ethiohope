@@ -1,28 +1,42 @@
 import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { routes } from '@routes/routes';
-// import { routes } from './routes/routes.jsx';
 import Loading from '@ui/Loading';
+import { ThemeProvider } from '@provider/ThemeProvider/ThemeProvider';
 import './App.css';
+import Navbar from '@components/Navbar/Navbar';
+import Footer from '@components/Footer/Footer';
 
 function App() {
+  const location = useLocation();
+
+  // Define routes where you want to hide navbar and footer
+  const hideLayoutRoutes = ['/login', '/register', '/auth'];
+  const shouldHideLayout = hideLayoutRoutes.some((route) =>
+    location.pathname.startsWith(route)
+  );
+
   return (
-    <>
+    <ThemeProvider>
       <div className="App">
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            {routes.map((route, index) => (
-              <Route
-                key={index}
-                path={route.path}
-                element={route.element}
-                exact={route.exact}
-              />
-            ))}
-          </Routes>
-        </Suspense>
+        {!shouldHideLayout && <Navbar />}
+        <main className={shouldHideLayout ? '' : 'min-h-screen'}>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              {routes.map((route, index) => (
+                <Route
+                  key={index}
+                  path={route.path}
+                  element={route.element}
+                  exact={route.exact}
+                />
+              ))}
+            </Routes>
+          </Suspense>
+        </main>
+        {!shouldHideLayout && <Footer />}
       </div>
-    </>
+    </ThemeProvider>
   );
 }
 
