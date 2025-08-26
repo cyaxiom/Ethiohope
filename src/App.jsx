@@ -1,12 +1,27 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { routes } from '@routes/routes';
+// import { routes } from './routes/routes.jsx';
+import Loading from '@ui/Loading';
 import './App.css';
-
-import HomePage from './pages/HomePage.jsx';
 
 function App() {
   return (
     <>
-      <HomePage />
+      <div className="App">
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {routes.map((route, index) => (
+              <Route
+                key={index}
+                path={route.path}
+                element={route.element}
+                exact={route.exact}
+              />
+            ))}
+          </Routes>
+        </Suspense>
+      </div>
     </>
   );
 }
