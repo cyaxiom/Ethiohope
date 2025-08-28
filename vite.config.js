@@ -14,6 +14,7 @@ export default defineConfig({
       '@lib': path.resolve(__dirname, './src/lib'),
       '@settings': path.resolve(__dirname, './src/settings'),
       '@constants': path.resolve(__dirname, './src/constants'),
+      '@common': path.resolve(__dirname, './src/common'),
       '@icons': path.resolve(__dirname, './src/assets/icons'),
       '@images': path.resolve(__dirname, './src/assets/images'),
       '@provider': path.resolve(__dirname, './src/provider'),
