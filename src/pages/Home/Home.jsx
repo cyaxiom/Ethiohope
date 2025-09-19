@@ -6,12 +6,6 @@ function Home() {
     <div>
       <Banner />
       <Banner />
-      <Banner />
-      <Banner />
-      <Banner />
-      <Banner />
-      <Banner />
-      <Banner />
     </div>
   );
 }

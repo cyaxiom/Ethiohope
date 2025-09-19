@@ -9,68 +9,6 @@ export const navLinks = [
     badge: 'NEW',
   },
   {
-    name: 'Company',
-    description: 'Discover our mission, vision, and amazing team',
-    dropdown: [
-      {
-        name: 'About Us',
-        path: '/about',
-        description:
-          'Our inspiring story and core values that drive us forward',
-        icon: '🏢',
-        stats: '10+ Years Experience',
-      },
-      {
-        name: 'Team',
-        path: '/about/team',
-        description: 'Meet our talented professionals and experts',
-        icon: '👥',
-        image: '/images/nav/team-preview.jpg',
-        stats: '50+ Members',
-      },
-      {
-        name: 'Contact',
-        path: '/about/contact',
-        description: 'Get in touch with us for collaborations and inquiries',
-        icon: '📞',
-        featured: true,
-        stats: '24/7 Support',
-      },
-    ],
-    image: '/images/nav/about-preview.jpg',
-    featured: true,
-  },
-  {
-    name: 'Community',
-    description: 'Join our vibrant and growing community network',
-    dropdown: [
-      {
-        name: 'Forum',
-        path: '/community/forum',
-        description: 'Engage in discussions and share innovative ideas',
-        icon: '💬',
-        stats: '10K+ Discussions',
-      },
-      {
-        name: 'Mentors',
-        path: '/community/mentor',
-        description: 'Connect with experienced mentors and industry experts',
-        icon: '🎓',
-        image: '/images/nav/mentors-preview.jpg',
-        stats: '100+ Mentors',
-      },
-      {
-        name: 'Events',
-        path: '/community/event',
-        description: 'Participate in exciting upcoming community events',
-        icon: '📅',
-        featured: true,
-        stats: 'Monthly Events',
-      },
-    ],
-    image: '/images/nav/community-preview.jpg',
-  },
-  {
     name: 'Academy',
     description: 'Premium educational programs and cutting-edge courses',
     dropdown: [
@@ -152,6 +90,68 @@ export const navLinks = [
       },
     ],
     image: '/images/nav/services-preview.jpg',
+  },
+  {
+    name: 'Community',
+    description: 'Join our vibrant and growing community network',
+    dropdown: [
+      {
+        name: 'Forum',
+        path: '/community/forum',
+        description: 'Engage in discussions and share innovative ideas',
+        icon: '💬',
+        stats: '10K+ Discussions',
+      },
+      {
+        name: 'Mentors',
+        path: '/community/mentor',
+        description: 'Connect with experienced mentors and industry experts',
+        icon: '🎓',
+        image: '/images/nav/mentors-preview.jpg',
+        stats: '100+ Mentors',
+      },
+      {
+        name: 'Events',
+        path: '/community/event',
+        description: 'Participate in exciting upcoming community events',
+        icon: '📅',
+        featured: true,
+        stats: 'Monthly Events',
+      },
+    ],
+    image: '/images/nav/community-preview.jpg',
+  },
+  {
+    name: 'Company',
+    description: 'Discover our mission, vision, and amazing team',
+    dropdown: [
+      {
+        name: 'About Us',
+        path: '/about',
+        description:
+          'Our inspiring story and core values that drive us forward',
+        icon: '🏢',
+        stats: '10+ Years Experience',
+      },
+      {
+        name: 'Team',
+        path: '/about/team',
+        description: 'Meet our talented professionals and experts',
+        icon: '👥',
+        image: '/images/nav/team-preview.jpg',
+        stats: '50+ Members',
+      },
+      {
+        name: 'Contact',
+        path: '/about/contact',
+        description: 'Get in touch with us for collaborations and inquiries',
+        icon: '📞',
+        featured: true,
+        stats: '24/7 Support',
+      },
+    ],
+    image: '/images/nav/about-preview.jpg',
+    featured: true,
   },
 ];
 
