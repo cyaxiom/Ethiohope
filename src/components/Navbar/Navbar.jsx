@@ -1,15 +1,16 @@
 // Navbar.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import { User, ChevronDown } from 'lucide-react';
+import { dashboardLinks, navLinks } from '@common/navLinks';
+import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
+import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
+import { ChevronDown, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   auth_btn_border,
   auth_btn_border_2,
   profile_bg,
 } from '../../assets/images/z-index.img';
-import { navLinks, dashboardLinks } from '@common/navLinks';
-import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
-import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
 
 export default function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -167,12 +168,12 @@ export default function Navbar() {
                 onMouseLeave={handleDropdownLeave}
               >
                 {link.path ? (
-                  <a
-                    href={link.path}
+                  <Link
+                    to={link.path}
                     className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 ) : (
                   <div className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2">
                     {link.name}
@@ -217,10 +218,10 @@ export default function Navbar() {
                     alt=""
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
-                  <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
+                  <Link to="/login" className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
                     <User className="w-4 h-4 mr-2 text-cyan-400" />
                     LOGIN
-                  </button>
+                  </Link>
                 </div>
                 <div className="relative w-24 h-10 flex items-center justify-center group">
                   <img
@@ -228,9 +229,9 @@ export default function Navbar() {
                     alt=""
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
-                  <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
+                  <Link to="/register" className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
                     SIGN UP
-                  </button>
+                  </Link>
                 </div>
               </>
             )}

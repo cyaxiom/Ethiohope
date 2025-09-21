@@ -1,6 +1,5 @@
 // @components/Navbar/MegaNavbar/AcademyMegaMenu.jsx
-import React from 'react';
-import { Star, Clock, Users, Award } from 'lucide-react';
+import { Clock, Star } from 'lucide-react';
 
 const AcademyMegaMenu = ({ data, onClose }) => {
   return (

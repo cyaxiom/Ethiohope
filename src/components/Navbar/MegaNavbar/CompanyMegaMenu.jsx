@@ -1,6 +1,6 @@
 // @components/Navbar/MegaNavbar/CompanyMegaMenu.jsx
-import React from 'react';
-import { Users, Phone, Building, Award } from 'lucide-react';
+import { Award, Building, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const CompanyMegaMenu = ({ data, onClose }) => {
   return (
@@ -9,6 +9,7 @@ const CompanyMegaMenu = ({ data, onClose }) => {
         {/* Header */}
         <div className="col-span-1">
           <h2 className="text-2xl font-bold text-foreground mb-4">Company</h2>
+          
           <p className="text-muted-foreground mb-6">{data.description}</p>
           <div className="bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-4 rounded-xl">
             <h4 className="font-semibold text-foreground mb-2">
@@ -31,31 +32,37 @@ const CompanyMegaMenu = ({ data, onClose }) => {
                   : 'bg-background border-border/20'
               }`}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-2xl">{item.icon}</div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {item.name}
-                </h3>
-              </div>
-
-              <p className="text-muted-foreground mb-4 text-sm">
-                {item.description}
-              </p>
-
-              {item.stats && (
-                <div className="flex items-center gap-2 text-sm text-cyan-600">
-                  <Award className="w-4 h-4" />
-                  <span>{item.stats}</span>
+              <Link 
+                to={item.path} 
+                onClick={onClose}
+                className="hover:text-cyan-500"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-2xl">{item.icon}</div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {item.name}
+                  </h3>
                 </div>
-              )}
 
-              {item.image && (
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-32 object-cover rounded-lg mt-4"
-                />
-              )}
+                <p className="text-muted-foreground mb-4 text-sm">
+                  {item.description}
+                </p>
+
+                {item.stats && (
+                  <div className="flex items-center gap-2 text-sm text-cyan-600">
+                    <Award className="w-4 h-4" />
+                    <span>{item.stats}</span>
+                  </div>
+                )}
+
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-32 object-cover rounded-lg mt-4"
+                  />
+                )}
+              </Link>
             </div>
           ))}
         </div>
@@ -73,9 +80,13 @@ const CompanyMegaMenu = ({ data, onClose }) => {
             <span>Global Presence</span>
           </div>
         </div>
-        <button className="text-cyan-500 hover:text-cyan-600 transition-colors">
+        <Link 
+          to="/about" 
+          onClick={onClose}
+          className="text-cyan-500 hover:text-cyan-600 transition-colors"
+        >
           View Company Overview →
-        </button>
+        </Link>
       </div>
     </div>
   );
