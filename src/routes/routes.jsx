@@ -18,6 +18,11 @@ const Events = React.lazy(() => import('@pages/Community/Events'));
 const Forum = React.lazy(() => import('@pages/Community/Forum'));
 const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
 
+// Academy routes
+const KidsProgramming = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/KidsProgramming')
+);
+
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
@@ -42,6 +47,12 @@ export const routes = [
   { path: '/community/events', name: 'Events', element: <Events /> },
   { path: '/community/forum', name: 'Forum', element: <Forum /> },
   { path: '/community/mentors', name: 'Mentors', element: <Mentors /> },
+  // Academy routes
+  {
+    path: '/academy/kids-programming',
+    name: 'KidsProgramming',
+    element: <KidsProgramming />,
+  },
   // Services routes
   {
     path: '/services',

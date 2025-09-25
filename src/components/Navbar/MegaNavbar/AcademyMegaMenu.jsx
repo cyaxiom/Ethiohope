@@ -1,6 +1,6 @@
 // @components/Navbar/MegaNavbar/AcademyMegaMenu.jsx
-import React from 'react';
-import { Star, Clock, Users, Award } from 'lucide-react';
+import { Clock, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AcademyMegaMenu = ({ data, onClose }) => {
   return (
@@ -20,9 +20,11 @@ const AcademyMegaMenu = ({ data, onClose }) => {
         {/* Main Content */}
         <div className="col-span-3 grid grid-cols-2 gap-6">
           {data.dropdown.map((item, index) => (
-            <div
+            <Link
               key={index}
-              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${
+              to={item.path}
+              onClick={onClose}
+              className={`block p-6 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${
                 item.featured
                   ? 'bg-gradient-to-br from-purple-500/10 to-pink-600/10 border-purple-500/20'
                   : 'bg-background border-border/20'
@@ -61,7 +63,7 @@ const AcademyMegaMenu = ({ data, onClose }) => {
                   {item.price}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
