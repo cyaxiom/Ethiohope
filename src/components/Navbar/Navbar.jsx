@@ -1,15 +1,19 @@
+
 // Navbar.jsx
-import React, { useState, useEffect, useRef } from 'react';
-import { User, ChevronDown } from 'lucide-react';
+import { dashboardLinks, navLinks } from '@common/navLinks';
+import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
+import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
+import { ChevronDown, User } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+
+React
+
 import {
   auth_btn_border,
   auth_btn_border_2,
   profile_bg,
 } from '../../assets/images/z-index.img';
-import { navLinks, dashboardLinks } from '@common/navLinks';
-import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
-import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
 
 export default function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -134,6 +138,8 @@ export default function Navbar() {
     setIsProfileDropdownOpen(false);
   };
 
+
+
   return (
     <>
       <nav
@@ -237,6 +243,8 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+
 
       {/* Mega Navigation */}
       {activeMegaNav && (
