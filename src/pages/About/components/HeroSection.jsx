@@ -1,8 +1,10 @@
+import React from 'react';
 import image3 from '../assets/image copy 2.png';
 import image4 from '../assets/image copy 3.png';
 import image5 from '../assets/image copy 4.png';
 import image2 from '../assets/image copy.png';
 import image1 from '../assets/image.png';
+React;
 function HeroSection({ darkMode }) {
 	return (
 		<div className={`relative min-h-screen flex items-center justify-between overflow-hidden py-16 ${darkMode ? 'bg-[#000000]' : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'}` } style={{zIndex:10}}>
