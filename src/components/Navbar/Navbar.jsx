@@ -1,11 +1,14 @@
+
 // Navbar.jsx
 import { dashboardLinks, navLinks } from '@common/navLinks';
 import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
 import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
 import { ChevronDown, User } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+
+React
+
 import {
   auth_btn_border,
   auth_btn_border_2,
@@ -135,6 +138,8 @@ export default function Navbar() {
     setIsProfileDropdownOpen(false);
   };
 
+
+
   return (
     <>
       <nav
@@ -168,12 +173,12 @@ export default function Navbar() {
                 onMouseLeave={handleDropdownLeave}
               >
                 {link.path ? (
-                  <Link
-                    to={link.path}
+                  <a
+                    href={link.path}
                     className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2"
                   >
                     {link.name}
-                  </Link>
+                  </a>
                 ) : (
                   <div className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2">
                     {link.name}
@@ -218,10 +223,10 @@ export default function Navbar() {
                     alt=""
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
-                  <Link to="/login" className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
+                  <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
                     <User className="w-4 h-4 mr-2 text-cyan-400" />
                     LOGIN
-                  </Link>
+                  </button>
                 </div>
                 <div className="relative w-24 h-10 flex items-center justify-center group">
                   <img
@@ -229,15 +234,17 @@ export default function Navbar() {
                     alt=""
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
-                  <Link to="/register" className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
+                  <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
                     SIGN UP
-                  </Link>
+                  </button>
                 </div>
               </>
             )}
           </div>
         </div>
       </nav>
+
+
 
       {/* Mega Navigation */}
       {activeMegaNav && (

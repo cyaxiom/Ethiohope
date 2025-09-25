@@ -1,6 +1,8 @@
 // @components/Navbar/MegaNavbar/CompanyMegaMenu.jsx
 import { Award, Building, Users } from 'lucide-react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+ React.Component;
 
 const CompanyMegaMenu = ({ data, onClose }) => {
   return (

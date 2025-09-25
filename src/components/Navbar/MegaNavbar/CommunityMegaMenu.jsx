@@ -1,5 +1,7 @@
 // @components/Navbar/MegaNavbar/CommunityMegaMenu.jsx
 import { Calendar, Star } from 'lucide-react';
+import React from 'react';
+React;
 
 const CommunityMegaMenu = ({ data, onClose }) => {
   return (
