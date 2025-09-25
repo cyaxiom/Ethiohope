@@ -1,19 +1,19 @@
 import React from 'react';
 React;
-function ValuesSection() {
+function ValuesSection({ darkMode = false }) {
 	return (
-		<div className="relative py-20 p-24 overflow-hidden">
-			<h2 className="text-5xl md:text-6xl font-bold text-foreground mb-6">Our Values</h2>
-			<div className="flex items-center mb-6">
-				<div className="h-2 w-2 rounded-full bg-cyan-400 mr-2"></div>
-				<div className="h-1 w-32 bg-gradient-to-r from-cyan-400 to-purple-400"></div>
+		<div className={`theme-bg-wrapper ${darkMode ? 'bg-[#000000]' : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'} relative py-20 p-24 overflow-hidden`}>
+			<h2 className={`text-5xl md:text-6xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>Our Values</h2>
+					<div className="flex items-center mb-6">
+						<div className="h-2 w-2 rounded-full bg-cyan-400 mr-2"></div>
+						<div className="h-1 w-32 bg-gradient-to-r from-cyan-400 to-purple-400"></div>
 			</div>
 			<div className="flex flex-col md:flex-row gap-12">
 				<div className="md:w-1/3">
-					<h3 className="text-2xl font-bold text-foreground mb-6">
+					<h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
 						Propel your business forward
 					</h3>
-					<p className="text-lg text-foreground/80 mb-8">
+					<p className={`text-lg mb-8 ${darkMode ? 'text-white' : 'text-black'}`}>
 						We thrive on exploring the uncharted territories of creativity and technology,
 						delivering solutions that break new ground. Our collective brilliance is the
 						result of seamless teamwork, where every voice is valued, and every perspective matters.

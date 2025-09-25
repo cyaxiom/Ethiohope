@@ -1,9 +1,9 @@
 import React from 'react';
 React;
-function PartnersSection() {
+function PartnersSection({ darkMode }) {
   return (
-    <div className="py-20 flex justify-center items-center bg-[#000000]">
-      <div className="relative w-full max-w-4xl mx-auto rounded-3xl bg-gradient-to-br from-blue-900 via-green-900 to-black shadow-2xl px-6 pt-16 pb-10" style={{overflow: 'hidden'}}>
+    <div className={`theme-bg-wrapper ${darkMode ? 'bg-[#000000]' : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'} py-20 flex justify-center items-center` }>
+      <div className={`relative w-full max-w-4xl mx-auto rounded-3xl shadow-2xl px-6 pt-16 pb-10 ${darkMode ? 'bg-gradient-to-br from-blue-900 via-green-900 to-black' : 'bg-white/80'}`} style={{overflow: 'hidden'}}>
         {/* Background shape */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
           <svg width="700" height="350" viewBox="0 0 700 350" fill="none" className="mx-auto" style={{opacity:0.18}}>
@@ -12,8 +12,8 @@ function PartnersSection() {
           </svg>
         </div>
         {/* Title & Subtitle */}
-  <h2 className="text-4xl md:text-5xl font-extrabold text-white text-center mb-4 z-10 relative bg-gradient-to-r from-blue-500 to-green-400 bg-clip-text text-transparent">Our Partners and Investors</h2>
-  <p className="text-lg text-white/90 text-center mb-10 max-w-2xl mx-auto z-10 relative">
+  <h2 className={`text-4xl md:text-5xl font-extrabold text-center mb-4 z-10 relative bg-gradient-to-r from-blue-500 to-green-400 bg-clip-text text-transparent ${darkMode ? 'text-white' : 'text-black'}`}>Our Partners and Investors</h2>
+  <p className={`text-lg text-center mb-10 max-w-2xl mx-auto z-10 relative ${darkMode ? 'text-white/90' : 'text-black'}` }>
           Trust is the foundation of our relationships – we're transparent, honest, and<br />
           dedicated to upholding the highest ethical standards.
         </p>
@@ -133,17 +133,17 @@ function PartnersSection() {
           <div className="flex-1 text-center">
             <span className="text-5xl md:text-6xl font-extrabold text-green-400">+123M</span>
             <div className="w-24 h-2 bg-gradient-to-r from-blue-500 to-green-400 mx-auto my-2 rounded-full"></div>
-            <span className="block text-2xl font-bold text-white">Clients</span>
+            <span className={`block text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Clients</span>
           </div>
           <div className="flex-1 text-center">
             <span className="text-5xl md:text-6xl font-extrabold text-blue-400">+456K</span>
             <div className="w-24 h-2 bg-gradient-to-r from-green-400 to-blue-500 mx-auto my-2 rounded-full"></div>
-            <span className="block text-2xl font-bold text-white">Partners</span>
+            <span className={`block text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Partners</span>
           </div>
           <div className="flex-1 text-center">
             <span className="text-5xl md:text-6xl font-extrabold text-green-400">+789</span>
             <div className="w-24 h-2 bg-gradient-to-r from-blue-500 to-green-400 mx-auto my-2 rounded-full"></div>
-            <span className="block text-2xl font-bold text-white">Customers</span>
+            <span className={`block text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Customers</span>
           </div>
         </div>
         {/* Animation keyframes for floating logos */}

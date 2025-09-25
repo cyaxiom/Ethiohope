@@ -1,21 +1,21 @@
 import React from 'react';
 React;
-function HeroSection() {
+function HeroSection({ darkMode }) {
 	return (
-		<div className="relative min-h-screen flex items-center justify-between overflow-hidden py-16 bg-[#000000]">
+		<div className={`relative min-h-screen flex items-center justify-between overflow-hidden py-16 ${darkMode ? 'bg-[#000000]' : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'}` }>
 			{/* Background elements */}
 			<div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-blue-500/30 blur-3xl"></div>
 			<div className="absolute bottom-10 right-10 w-40 h-40 rounded-full bg-green-500/30 blur-3xl"></div>
 			{/* Left side content */}
 			<div className="container mx-auto px-6 flex flex-col md:flex-row items-center">
 				<div className="w-full md:w-1/2 relative z-20 text-left pr-0 md:pr-8 mb-10 md:mb-0">
-					<h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-						With A Passion For <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-400">Commitment</span> To Success
-					</h1>
+					<h1 className={`text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight ${darkMode ? 'text-white' : 'text-black'}`}>
+									With A Passion For <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-400">Commitment</span> To Success
+								</h1>
 					{/* Indicator dot and line */}
-					<div className="flex items-center mb-10">
-						<div className="h-2 w-2 rounded-full bg-[#7601d3] mr-2"></div>
-						<div className="h-1 w-32 bg-gradient-to-r from-blue-500 to-green-400"></div>
+								<div className="flex items-center mb-10">
+									<div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-[#7601d3]' : 'bg-blue-400'} mr-2`}></div>
+									<div className={`h-1 w-32 ${darkMode ? 'bg-gradient-to-r from-blue-500 to-green-400' : 'bg-gradient-to-r from-blue-300 to-green-200'}`}></div>
 					</div>
 				</div>
 				{/* Right side image */}
