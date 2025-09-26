@@ -4,9 +4,11 @@ import CoursesSection from './components/CoursesSection';
 import CTASection from './components/CTASection';
 import FeaturesSection from './components/FeaturesSection';
 import HeroSection from './components/HeroSection';
-import ToolsSection from './components/ToolsSection';
+import SpecialitiesSection from './components/SpecialitiesSection';
+// import ToolsSection from './components/ToolsSection';
 import VideoSection from './components/VideoSection';
 import WhyCodeSection from './components/WhyCoding';
+import ProjectsShowcaseSection from './components/ProjectsShowcaseSection';
 React;
 
 function KidsProgramming() {
@@ -16,8 +18,10 @@ function KidsProgramming() {
       <VideoSection />
       <CoursesSection />
       <WhyCodeSection />
+      <SpecialitiesSection />
+  <ProjectsShowcaseSection />
       <FeaturesSection />
-      <ToolsSection />
+      {/* <ToolsSection /> */}
       <CoursePathsSection />
       <CTASection />
     </div>
