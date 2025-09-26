@@ -6,7 +6,7 @@ import FeaturesSection from './components/FeaturesSection';
 import HeroSection from './components/HeroSection';
 import ToolsSection from './components/ToolsSection';
 import VideoSection from './components/VideoSection';
-
+import WhyCodeSection from './components/WhyCoding';
 React;
 
 function KidsProgramming() {
@@ -15,6 +15,7 @@ function KidsProgramming() {
       <HeroSection />
       <VideoSection />
       <CoursesSection />
+      <WhyCodeSection />
       <FeaturesSection />
       <ToolsSection />
       <CoursePathsSection />
