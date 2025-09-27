@@ -1,5 +1,5 @@
 import React from 'react';
-import CoursePathsSection from './components/CoursePathsSection';
+// import CoursePathsSection from './components/CoursePathsSection';
 import CoursesSection from './components/CoursesSection';
 import CTASection from './components/CTASection';
 import FeaturesSection from './components/FeaturesSection';
@@ -9,6 +9,7 @@ import SpecialitiesSection from './components/SpecialitiesSection';
 import VideoSection from './components/VideoSection';
 import WhyCodeSection from './components/WhyCoding';
 import ProjectsShowcaseSection from './components/ProjectsShowcaseSection';
+import  FromTheCrowd from  './components/Article';
 React;
 
 function KidsProgramming() {
@@ -21,9 +22,10 @@ function KidsProgramming() {
       <SpecialitiesSection />
   <ProjectsShowcaseSection />
       <FeaturesSection />
-      {/* <ToolsSection /> */}
-      <CoursePathsSection />
+      
+      {/* <CoursePathsSection /> */}
       <CTASection />
+      <FromTheCrowd />
     </div>
   );
 }
