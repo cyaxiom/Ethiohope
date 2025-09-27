@@ -1,29 +1,23 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
-import { kidsCoursesData } from '../../../../data/kidsCoursesData';
-React;
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { kidsCoursesData } from "../../../../data/kidsCoursesData";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
 const CoursesSection = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const coursesPerPage = 4;
   const totalPages = Math.ceil(kidsCoursesData.length / coursesPerPage);
+  const navigate = useNavigate();
 
   const getCurrentPageCourses = () => {
     const startIndex = currentPage * coursesPerPage;
     return kidsCoursesData.slice(startIndex, startIndex + coursesPerPage);
   };
 
-  const nextPage = () => {
-    setCurrentPage((prev) => (prev + 1) % totalPages);
-  };
-
-  const prevPage = () => {
+  const nextPage = () => setCurrentPage((prev) => (prev + 1) % totalPages);
+  const prevPage = () =>
     setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
-  };
-
-  const handleEnrollNow = (courseId) => {
-    // Navigate to course detail page (you can implement this later)
-    console.log(`Enrolling in course ${courseId}`);
-  };
 
   return (
     <section className="py-16 px-4 bg-background">
@@ -38,7 +32,7 @@ const CoursesSection = () => {
           </p>
         </div>
 
-        {/* Navigation and Cards Container */}
+        {/* Navigation and Cards */}
         <div className="relative">
           {/* Left Arrow */}
           <button
@@ -60,60 +54,52 @@ const CoursesSection = () => {
 
           {/* Courses Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-8">
-            {getCurrentPageCourses().map((course) => (
-              <div
-                key={course.id}
-                className="bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105"
-              >
-                {/* Course Image */}
-                <div className="relative h-48 bg-muted/20 overflow-hidden">
-                  <img
-                    src={course.image}
-                    alt={course.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to gradient background if image fails
-                      e.target.style.display = 'none';
-                      e.target.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                      e.target.parentElement.innerHTML += `<div class="flex items-center justify-center h-full text-6xl text-white">${course.icon}</div>`;
-                    }}
-                  />
-                </div>
+            {getCurrentPageCourses().map((course) => {
+              const moduleData = course.modules[0] || {};
+              const { description, ageGroup, image } = moduleData;
 
-                {/* Card Content */}
-                <div className="p-6">
-                  {/* Course Name */}
-                  <h3 className="text-xl font-bold text-card-foreground mb-2 line-clamp-2">
-                    {course.name}
-                  </h3>
-
-                  {/* Age Group */}
-                  <div className="mb-3">
-                    <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                      {course.ageGroup}
-                    </span>
+              return (
+                <div
+                  key={course.id}
+                  onClick={() =>
+                    navigate(`/academy/kids-programming/course/${course.id}`)
+                  }
+                  className="bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer"
+                >
+                  {/* Course Image */}
+                  <div className="relative h-48 bg-muted/20 overflow-hidden">
+                    <img
+                      src={image}
+                      alt={course.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.parentElement.style.background =
+                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+                        e.target.parentElement.innerHTML += `<div class="flex items-center justify-center h-full text-6xl text-white">${course.icon}</div>`;
+                      }}
+                    />
                   </div>
 
-                  {/* Description with line clamp */}
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                    {course.description}
-                  </p>
+                  {/* Card Content */}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-card-foreground mb-2 line-clamp-2">
+                      {course.name}
+                    </h3>
 
-                  {/* Course Details */}
-                  <div className="space-y-2 mb-4 text-sm text-muted-foreground">
-                   
+                    <div className="mb-3">
+                      <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                        {ageGroup}
+                      </span>
+                    </div>
+
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                      {description}
+                    </p>
                   </div>
-
-                  {/* Enroll Button */}
-                  <button
-                    onClick={() => handleEnrollNow(course.id)}
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 px-4 rounded-lg font-semibold transition-colors duration-200 shadow-md hover:shadow-lg"
-                  >
-                    Enroll Now
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -125,8 +111,8 @@ const CoursesSection = () => {
               onClick={() => setCurrentPage(index)}
               className={`w-3 h-3 rounded-full transition-all duration-200 ${
                 currentPage === index
-                  ? 'bg-primary scale-125'
-                  : 'bg-muted hover:bg-muted-foreground/50'
+                  ? "bg-primary scale-125"
+                  : "bg-muted hover:bg-muted-foreground/50"
               }`}
               aria-label={`Go to page ${index + 1}`}
             />
@@ -138,6 +124,23 @@ const CoursesSection = () => {
           <span className="text-sm text-muted-foreground">
             Page {currentPage + 1} of {totalPages}
           </span>
+        </div>
+
+        {/* Animated View All Courses Button */}
+        <div className="text-center mt-8">
+          <motion.button
+            onClick={() =>
+              navigate("/academy/kids-programming/all_kids_course")
+            }
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            className="px-10 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 shadow-lg transition-all duration-300"
+          >
+            View All Courses
+          </motion.button>
         </div>
       </div>
     </section>

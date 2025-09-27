@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-
+React;
 const FeaturesSection = () => {
   const paragraph =
     "Unlock your child's coding potential! Our small, instructor-led classes ensure fast progress and personalized attention in a fun, project-based curriculum. Book your complimentary class today.";

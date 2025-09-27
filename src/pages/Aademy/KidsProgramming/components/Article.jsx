@@ -8,7 +8,7 @@ const articles = [
     content:
       "I find EthioHope one of the best online schooling platforms for code because of their reasonable timings (1 hour per lesson) and caring teachers. They teach kids all kinds of things in code from simple beginner to advanced professional. The classes run smoothly with very few technical problems, and many kids find it engaging.",
     writer: "Maya T.",
-    image: "/images/articles/ethiohope1.png",
+    image: "/heroimgKids.png",
   },
   {
     id: "article-002",
@@ -22,14 +22,14 @@ const articles = [
     content:
       "What I appreciate most about EthioHope is how well the teachers communicate with children. They explain complex coding concepts in a simple way that keeps kids motivated and interested in building projects.",
     writer: "Sophia L.",
-    image: "/images/articles/ethiohope3.png",
+    image: "/heroimgKids.png",
   },
   {
     id: "article-004",
     content:
       "The platform has very good quality meeting connections, so classes run without interruptions. The supportive teachers and project-based approach make it easy for children to grow from basic coding to advanced topics.",
     writer: "Ethan M.",
-    image: "/images/articles/ethiohope4.png",
+    image: "/heroimgKids.png",
   },
   {
     id: "article-005",

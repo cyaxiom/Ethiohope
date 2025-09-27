@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 React;
+
 const Counter = ({ target, duration = 2, suffix = "" }) => {
   const [count, setCount] = useState(0);
 
@@ -29,16 +30,24 @@ const Counter = ({ target, duration = 2, suffix = "" }) => {
 
 const CTASection = () => {
   return (
-    <section className="py-20 px-4 bg-muted/30">
+    <section className="py-20 px-4 relative overflow-hidden bg-gradient-to-br from-blue-50 via-green-50 to-white">
+      {/* Floating shapes in the background */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <svg width="800" height="400" viewBox="0 0 800 400" fill="none" className="mx-auto opacity-20">
+          <ellipse cx="400" cy="200" rx="390" ry="180" fill="#e2e2e2" />
+          <path d="M400 20a180 180 0 1 1 0 360a180 180 0 1 1 0-360z" fill="#d1cfcf" opacity="0.2" />
+        </svg>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 80, damping: 15 }}
         viewport={{ once: true }}
-        className="max-w-4xl mx-auto text-center"
+        className="max-w-4xl mx-auto text-center relative z-10"
       >
         {/* Heading */}
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-green-500 to-green-700">
           Ready to Start Your Child's Coding Journey?
         </h2>
         <p className="text-lg mb-8 text-muted-foreground">
@@ -50,7 +59,7 @@ const CTASection = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
+            className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
           >
             Start Free Trial
           </motion.button>
