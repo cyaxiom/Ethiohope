@@ -1,6 +1,7 @@
 // @components/Navbar/MegaNavbar/SolutionsMegaMenu.jsx
+import { CheckCircle, Star, Zap } from 'lucide-react';
 import React from 'react';
-import { Star, Clock, CheckCircle, Zap } from 'lucide-react';
+React;
 
 const SolutionsMegaMenu = ({ data, onClose }) => {
   return (
