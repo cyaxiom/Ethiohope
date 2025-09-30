@@ -1,91 +1,46 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import image1 from '../assets/image.png';
-import image2 from '../assets/image copy.png';
-import image5 from '../assets/image copy 4.png';
-React;
+import React from "react";
+import { motion } from "framer-motion";
 
 const HeroSection = () => {
-  const heroimg = "/heroimgKids.png";
-
+  // Standard background for the section - using the EXACT same class as SpecialitiesSection
+  const sectionBgClass = 'bg-muted/30 dark:bg-muted/60';
+  
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden py-32 bg-gradient-to-br from-blue-50 via-green-50 to-white">
-      {/* Floating Images (Left + Center only) */}
-      <img
-        src={image1}
-        alt="Floating 1"
-        className="absolute top-8 left-8 w-24 h-24 z-30"
-        style={{ filter: 'drop-shadow(0 0 24px #60a5fa)' }}
-      />
-      <img
-        src={image2}
-        alt="Floating 2"
-        className="absolute bottom-8 left-8 w-20 h-20 z-30"
-        style={{ filter: 'drop-shadow(0 0 24px #34d399)' }}
-      />
-      <img
-        src={image5}
-        alt="Floating Center"
-        className="absolute top-1/2 left-1/2 w-20 h-20 z-30"
-        style={{
-          transform: 'translate(-50%,-50%)',
-          filter: 'drop-shadow(0 0 24px #fbbf24)'
-        }}
-      />
-
-      {/* Color Overlays */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-br from-blue-400/20 via-green-300/10 to-transparent mix-blend-multiply"></div>
-        <div className="absolute top-1/3 left-1/3 w-32 h-32 rounded-full bg-yellow-300/20 blur-2xl"></div>
+    <section className={`relative pt-20 pb-20 px-4 md:px-12 overflow-hidden ${sectionBgClass}`}>
+      {/* Decorative gradients - similar to SpecialitiesSection */}
+      <div className="absolute top-0 left-0 w-1/2 h-1/2 pointer-events-none z-0">
+        <div className="w-72 h-72 rounded-full blur-3xl opacity-30 bg-blue-300 dark:bg-blue-700"></div>
       </div>
-
-      {/* Main Content */}
-      <div className="relative z-40 container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+      <div className="absolute bottom-0 right-0 w-1/2 h-1/2 pointer-events-none z-0">
+        <div className="w-72 h-72 rounded-full blur-3xl opacity-30 bg-purple-300 dark:bg-purple-700"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">
         {/* Left Text */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1 }}
-          className="w-full md:w-1/2 text-left"
-        >
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-green-500 to-green-700">
-            Coding Courses
-            <br />
-            <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">For Kids</span>
+        <div className="flex-1 text-center md:text-left">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+            Coding Courses <span className="text-green-600 dark:text-green-400">For Kids</span>
           </h1>
-
-          <p className="text-lg md:text-xl mb-6 text-muted-foreground leading-relaxed">
-            Ethiohope is an online coding platform that helps your kids learn coding in the most engaging way and improve their creativity.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0 mb-6">
+            Ethiohope is an online coding platform that helps your kids learn
+            coding in the most engaging way and improves their creativity.
+            Explore courses based on age, skill level, and interest.
           </p>
-
-          <p className="text-base md:text-lg mb-8 text-muted-foreground font-medium">
-            Get instructor-led online coding classes for kids now.
-          </p>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-lg transition-all duration-300"
-          >
+          <button className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition-all duration-300">
             Book Your Free Trial
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
 
-        {/* Right Hero Image */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: [0, -20, 0] }}
-          transition={{ duration: 4, repeat: Infinity, repeatType: "loop" }}
-          className="w-full md:w-1/2 flex justify-center md:justify-end"
-        >
-          <div className="relative w-full max-w-md md:max-w-lg rounded-xl overflow-hidden shadow-2xl">
-            <img
-              src={heroimg}
-              alt="Kid learning coding"
-              className="w-full h-auto object-contain"
-            />
-          </div>
-        </motion.div>
+        {/* Right Image */}
+        <div>
+          <motion.img
+            src="/heroimgKids.png"
+            alt="Kids Coding Hero"
+            className="w-full max-w-md"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 4 }}
+          />
+        </div>
       </div>
     </section>
   );

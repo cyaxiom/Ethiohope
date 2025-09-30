@@ -6,13 +6,13 @@ React;
 function renderBenefit({ icon, title, description, color }, animationProps) {
   return (
     <motion.div
-      className={`rounded-full p-4 md:p-6 flex items-center justify-center shadow-lg border border-border ${color}`}
+      className={`rounded-full p-4 md:p-6 flex items-center justify-center shadow-lg border border-border ${color} dark:bg-card/70`}
       {...animationProps}
     >
       <div className="text-center">
         <div className="text-3xl md:text-4xl lg:text-5xl mb-2">{icon}</div>
-        <h3 className="text-lg md:text-xl font-bold text-black mb-1">{title}</h3>
-        <p className="text-sm md:text-base max-w-[160px] mx-auto">{description}</p>
+        <h3 className="text-lg md:text-xl font-bold text-black dark:text-black mb-1">{title}</h3>
+        <p className="text-sm md:text-base max-w-[160px] mx-auto text-muted-foreground dark:text-gray-700">{description}</p>
       </div>
     </motion.div>
   );
@@ -30,20 +30,20 @@ const WhyCodeSection = () => {
   ];
 
   const codingBenefits = [
-    { icon: '🧠', title: 'Critical Thinking', description: 'Kids improve critical thinking and reasoning through coding.', color: 'bg-green-100' },
-    { icon: '🎨', title: 'Creativity', description: 'Learning to code enhances imagination.', color: 'bg-purple-100' },
-    { icon: '⚙️', title: 'Logical Reasoning', description: 'Strengthen logical reasoning skills.', color: 'bg-blue-100' },
-    { icon: '🤝', title: 'Collaboration', description: 'Coding often involves teamwork.', color: 'bg-pink-100' }
+    { icon: '🧠', title: 'Critical Thinking', description: 'Kids improve critical thinking and reasoning through coding.', color: 'bg-green-100 dark:bg-green-900/40' },
+    { icon: '🎨', title: 'Creativity', description: 'Learning to code enhances imagination.', color: 'bg-purple-100 dark:bg-purple-900/40' },
+    { icon: '⚙️', title: 'Logical Reasoning', description: 'Strengthen logical reasoning skills.', color: 'bg-blue-100 dark:bg-blue-900/40' },
+    { icon: '🤝', title: 'Collaboration', description: 'Coding often involves teamwork.', color: 'bg-pink-100 dark:bg-pink-900/40' }
   ];
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-blue-50 via-green-50 to-white">
+    <section className="py-16 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
         {/* Two-Column Section */}
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-black">Why Coding for Kids?</h2>
-            <p className="text-lg text-gray-700 leading-relaxed">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">Why Coding for Kids?</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
               Give your future champions exactly what they need to succeed. Personalized learning pathways recommend coding courses depending on their abilities. Game-based programming techniques make learning smooth for anyone.
             </p>
           </div>
@@ -59,12 +59,12 @@ const WhyCodeSection = () => {
               {programmingIcons.concat(programmingIcons).map((item, index) => (
                 <motion.div
                   key={`top-${index}`}
-                  className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md border border-gray-200 min-w-[100px]"
+                  className="flex flex-col items-center p-4 bg-card rounded-lg shadow-md border border-border min-w-[100px]"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
                   <div className={`text-4xl mb-2 ${item.color}`}>{item.icon}</div>
-                  <span className="text-sm font-medium text-black">{item.name}</span>
+                  <span className="text-sm font-medium text-foreground">{item.name}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -78,12 +78,12 @@ const WhyCodeSection = () => {
               {programmingIcons.concat(programmingIcons).map((item, index) => (
                 <motion.div
                   key={`bottom-${index}`}
-                  className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md border border-gray-200 min-w-[100px]"
+                  className="flex flex-col items-center p-4 bg-card rounded-lg shadow-md border border-border min-w-[100px]"
                   whileHover={{ scale: 1.1, rotate: -5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
                   <div className={`text-4xl mb-2 ${item.color}`}>{item.icon}</div>
-                  <span className="text-sm font-medium text-black">{item.name}</span>
+                  <span className="text-sm font-medium text-foreground">{item.name}</span>
                 </motion.div>
               ))}
             </motion.div>
@@ -95,7 +95,7 @@ const WhyCodeSection = () => {
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div className="relative">
               <div className="w-[220px] md:w-[300px] lg:w-[350px] h-[220px] md:h-[300px] lg:h-[350px] rounded-full bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 p-[3px] flex items-center justify-center">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 text-transparent bg-clip-text">4 Key</div>
                     <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 text-transparent bg-clip-text">Benefits</div>

@@ -25,17 +25,17 @@ function ProjectsShowcaseSection() {
   const currentProjects = projects.slice(startIdx, startIdx + projectsPerPage);
 
   return (
-    <section className="w-full py-16 relative bg-gradient-to-br from-blue-50 via-green-50 to-white overflow-hidden">
+    <section className="w-full py-16 relative bg-background overflow-hidden">
       {/* Background decorative floating shapes */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <svg width="800" height="400" viewBox="0 0 800 400" fill="none" className="mx-auto opacity-20">
-          <ellipse cx="400" cy="200" rx="390" ry="180" fill="#e2e2e2" />
-          <path d="M400 20a180 180 0 1 1 0 360a180 180 0 1 1 0-360z" fill="#d1cfcf" opacity="0.2" />
+        <svg width="800" height="400" viewBox="0 0 800 400" fill="none" className="mx-auto opacity-20 dark:opacity-10">
+          <ellipse cx="400" cy="200" rx="390" ry="180" className="fill-gray-200 dark:fill-gray-700" />
+          <path d="M400 20a180 180 0 1 1 0 360a180 180 0 1 1 0-360z" className="fill-gray-300 dark:fill-gray-600" opacity="0.2" />
         </svg>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 relative z-10">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-green-500 to-green-700">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-green-500 to-green-700 dark:from-green-300 dark:via-green-400 dark:to-green-600">
           Projects By EthioHope Super Stars
         </h2>
         <p className="text-center text-lg mb-8 text-muted-foreground">
@@ -46,7 +46,7 @@ function ProjectsShowcaseSection() {
           {/* Left Arrow */}
           <button
             onClick={handlePrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
             aria-label="Previous projects"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -55,7 +55,7 @@ function ProjectsShowcaseSection() {
           {/* Right Arrow */}
           <button
             onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
             aria-label="Next projects"
           >
             <ChevronRight className="w-6 h-6" />
@@ -67,20 +67,20 @@ function ProjectsShowcaseSection() {
               <motion.div
                 key={project.name}
                 whileHover={{ scale: 1.05 }}
-                className="rounded-lg shadow-lg p-4 flex flex-col items-center border border-gray-200 bg-gradient-to-tr from-white/80 to-green-50 backdrop-blur-md"
+                className="rounded-lg shadow-lg p-4 flex flex-col items-center border border-border bg-card dark:bg-card/90 backdrop-blur-md"
               >
-                <div className="w-full h-40 bg-green-100/40 rounded mb-3 flex items-center justify-center overflow-hidden">
+                <div className="w-full h-40 bg-muted/50 dark:bg-muted/30 rounded mb-3 flex items-center justify-center overflow-hidden">
                   <img
                     src="/str_vid.png"
                     alt="Project video placeholder"
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <h3 className="text-xl font-semibold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-green-500 via-green-600 to-green-700">
+                <h3 className="text-xl font-semibold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-green-500 via-green-600 to-green-700 dark:from-green-400 dark:via-green-500 dark:to-green-600">
                   {project.name}
                 </h3>
-                <p className="text-sm text-green-700 mb-1">Age: {project.age} | {project.standard}</p>
-                <p className="text-center text-green-800">{project.description}</p>
+                <p className="text-sm text-primary mb-1">Age: {project.age} | {project.standard}</p>
+                <p className="text-center text-muted-foreground">{project.description}</p>
               </motion.div>
             ))}
           </div>
@@ -92,7 +92,7 @@ function ProjectsShowcaseSection() {
             <button
               key={idx}
               onClick={() => setPage(idx)}
-              className={`w-3 h-3 rounded-full transition ${idx === page ? 'bg-green-600' : 'bg-green-200'}`}
+              className={`w-3 h-3 rounded-full transition ${idx === page ? 'bg-primary' : 'bg-muted'}`}
               aria-label={`Go to page ${idx + 1}`}
             />
           ))}

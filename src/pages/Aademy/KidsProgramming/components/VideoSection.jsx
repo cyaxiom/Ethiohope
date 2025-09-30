@@ -3,15 +3,17 @@ React;
 
 const VideoSection = () => {
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-blue-50 via-green-50 to-white">
-      <div className="max-w-6xl mx-auto">
+    <section className="relative pt-0 pb-16 px-4 overflow-hidden bg-background -mt-1">
+      {/* No decorative gradients - matching CoursesSection style */}
+      
+      <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Content */}
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-black">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
               Online Coding Courses for Kids
             </h2>
-            <p className="text-lg text-gray-700 leading-relaxed">
+            <p className="text-lg text-muted-foreground leading-relaxed">
               This innovative coding platform teaches kids the basics of coding and enables them to develop creative skills, problem-solving abilities, and enhance their confidence.
             </p>
           </div>
