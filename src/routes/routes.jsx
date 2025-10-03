@@ -18,6 +18,11 @@ const Events = React.lazy(() => import('@pages/Community/Events'));
 const Forum = React.lazy(() => import('@pages/Community/Forum'));
 const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
 
+// Academy routes
+const Web3Development = React.lazy(() =>
+  import('@pages/Aademy/Web3Development/Web3Development')
+);
+
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
@@ -38,6 +43,8 @@ export const routes = [
   // Auth routes
   { path: '/login', name: 'Login', element: <Login /> },
   { path: '/register', name: 'Register', element: <Register /> },
+  // Academy routes
+  { path: '/academy/web3-development', name: 'Web3Development', element: <Web3Development /> },
   // Community routes
   { path: '/community/events', name: 'Events', element: <Events /> },
   { path: '/community/forum', name: 'Forum', element: <Forum /> },
