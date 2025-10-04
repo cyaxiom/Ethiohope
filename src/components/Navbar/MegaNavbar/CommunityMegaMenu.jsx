@@ -1,8 +1,10 @@
 // @components/Navbar/MegaNavbar/CommunityMegaMenu.jsx
 import React from 'react';
 import { MessageCircle, Users, Calendar, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CommunityMegaMenu = ({ data, onClose }) => {
+  const navigate = useNavigate();
   return (
     <div className="p-8">
       <div className="grid grid-cols-4 gap-8">
@@ -22,6 +24,10 @@ const CommunityMegaMenu = ({ data, onClose }) => {
         <div className="col-span-3 grid grid-cols-3 gap-6">
           {data.dropdown.map((item, index) => (
             <div
+              onClick={() => {
+                navigate(item.path);
+                onClose();
+              }}
               key={index}
               className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${
                 item.featured
