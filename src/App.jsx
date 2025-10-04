@@ -11,7 +11,7 @@ function App() {
   const location = useLocation();
 
   // Define routes where you want to hide navbar and footer
-  const hideLayoutRoutes = ['/login', '/register', '/auth'];
+  const hideLayoutRoutes = ['/login', '/register', '/auth', '/community'];
   const shouldHideLayout = hideLayoutRoutes.some((route) =>
     location.pathname.startsWith(route)
   );
@@ -23,14 +23,35 @@ function App() {
         <main className={shouldHideLayout ? '' : 'min-h-screen'}>
           <Suspense fallback={<Loading />}>
             <Routes>
-              {routes.map((route, index) => (
-                <Route
-                  key={index}
-                  path={route.path}
-                  element={route.element}
-                  exact={route.exact}
-                />
-              ))}
+              {routes.map((route, index) => {
+                if (route.routes) {
+                  return (
+                    <Route
+                      element={<route.element />}
+                      key={index}
+                      path={route.path}
+                    >
+                      {route.routes.map((subRoute, subIndex) => (
+                        <Route
+                          key={subIndex}
+                          path={subRoute.path}
+                          element={subRoute.element}
+                          exact={subRoute.exact}
+                        />
+                      ))}
+                    </Route>
+                  );
+                } else {
+                  return (
+                    <Route
+                      key={index}
+                      path={route.path}
+                      element={route.element}
+                      exact={route.exact}
+                    />
+                  );
+                }
+              })}
             </Routes>
           </Suspense>
         </main>
