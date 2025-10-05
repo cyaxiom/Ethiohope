@@ -1,9 +1,4 @@
 /* src/components/About/Contact/GetInTouch.module.css */
-
-.floatIcon {
-  animation: float 6s ease-in-out infinite;
-}
-
 @keyframes float {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
@@ -18,4 +13,11 @@
   .floatIcon {
     display: none;
   }
+}
+
+.floatIcon {
+  will-change: transform;
+  transform-origin: center;
+  backface-visibility: hidden; /* Prevent flicker */
+  perspective: 1000; /* Ensure GPU acceleration */
 }
