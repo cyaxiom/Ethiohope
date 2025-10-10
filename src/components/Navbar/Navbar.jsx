@@ -1,5 +1,6 @@
-
-// Navbar.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import {Link} from 'react-router-dom';
+import { User, ChevronDown } from 'lucide-react';
 import { dashboardLinks, navLinks } from '@common/navLinks';
 import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
 import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
@@ -14,6 +15,9 @@ import {
   auth_btn_border_2,
   profile_bg,
 } from '../../assets/images/z-index.img';
+import { navLinks, dashboardLinks } from '@common/navLinks';
+import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
+import UserProfileDropdown from '@components/Navbar/UserProfileDropdown'; 
 
 export default function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -173,12 +177,12 @@ export default function Navbar() {
                 onMouseLeave={handleDropdownLeave}
               >
                 {link.path ? (
-                  <a
-                    href={link.path}
+                  <Link
+                    to={link.path}
                     className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 ) : (
                   <div className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2">
                     {link.name}

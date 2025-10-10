@@ -1,8 +1,9 @@
 // @components/Navbar/MegaNavbar/CompanyMegaMenu.jsx
 import { Award, Building, Users } from 'lucide-react';
 import React from 'react';
+import { Link } from 'react-router-dom'; // Add this import
+import { Users, Phone, Building, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
- React.Component;
 
 const CompanyMegaMenu = ({ data, onClose }) => {
   return (
@@ -26,13 +27,14 @@ const CompanyMegaMenu = ({ data, onClose }) => {
         {/* Main Content */}
         <div className="col-span-3 grid grid-cols-3 gap-6">
           {data.dropdown.map((item, index) => (
-            <div
+            <Link // Wrap the card in Link
+              to={item.path}
               key={index}
-              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${
-                item.featured
+              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg block ${item.featured
                   ? 'bg-gradient-to-br from-cyan-500/10 to-blue-600/10 border-cyan-500/20'
                   : 'bg-background border-border/20'
-              }`}
+                }`}
+              onClick={onClose} // Optionally close the menu on click
             >
               <Link 
                 to={item.path} 
@@ -57,15 +59,14 @@ const CompanyMegaMenu = ({ data, onClose }) => {
                   </div>
                 )}
 
-                {item.image && (
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-32 object-cover rounded-lg mt-4"
-                  />
-                )}
-              </Link>
-            </div>
+              {item.image && (
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-32 object-cover rounded-lg mt-4"
+                />
+              )}
+            </Link>
           ))}
         </div>
       </div>
