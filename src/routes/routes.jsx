@@ -61,7 +61,7 @@ export const routes = [
   },
   // Services routes
   {
-    path: '/services',
+    path: '/services/ethiohope-service',
     name: 'EthiohopeServices',
     element: <EthiohopeServices />,
   },
