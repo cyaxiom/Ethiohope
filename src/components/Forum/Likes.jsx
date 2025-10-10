@@ -10,6 +10,7 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { likedPosts, votedPosts } from '../../api/forum/mock.data';
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 
 /* ---------------- Small UI Components ---------------- */
 
@@ -24,16 +25,26 @@ function Badge({ children, className = '' }) {
 }
 
 function Card({ children, className = '' }) {
+  const { isDark } = useTheme();
   return (
-    <div className={`rounded-lg border border-gray-200 shadow-sm ${className}`}>
+    <div
+      className={`rounded-lg border ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } shadow-sm ${className}`}
+    >
       {children}
     </div>
   );
 }
 
 function CardHeader({ children, className = '' }) {
+  const { isDark } = useTheme();
   return (
-    <div className={`p-4 border-b border-gray-200 ${className}`}>
+    <div
+      className={`p-4 border-b ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } ${className}`}
+    >
       {children}
     </div>
   );
@@ -44,8 +55,13 @@ function CardContent({ children, className = '' }) {
 }
 
 function Avatar({ name }) {
+  const { isDark } = useTheme();
   return (
-    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs font-bold">
+    <div
+      className={`flex h-6 w-6 items-center justify-center rounded-full ${
+        isDark ? 'bg-gray-700 text-gray-100' : 'bg-gray-300'
+      }  text-xs font-bold`}
+    >
       {name[0]}
     </div>
   );
@@ -89,13 +105,18 @@ function TabsList({ children, active, setActive }) {
 
 function TabsTrigger({ value, children, active, setActive }) {
   const isActive = active === value;
+  const { isDark } = useTheme();
   return (
     <button
       onClick={() => setActive(value)}
       className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium ${
         isActive
-          ? 'bg-blue-600 text-white'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          ? `${isDark ? 'bg-gray-800 text-white' : 'bg-blue-600 text-white'}`
+          : `${
+              isDark
+                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`
       }`}
     >
       {children}
@@ -111,6 +132,7 @@ function TabsContent({ value, children, active }) {
 //post card
 function PostCard({ post, actionType, actionTime }) {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-4">
@@ -134,7 +156,11 @@ function PostCard({ post, actionType, actionTime }) {
             >
               {post.title}
             </h3>
-            <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+            <div
+              className={`flex items-center gap-2 mt-2 text-sm ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`}
+            >
               <span>by</span>
               <Avatar name={post.author} />
               <span className="font-medium">{post.author}</span>
@@ -156,7 +182,6 @@ function PostCard({ post, actionType, actionTime }) {
           </div>
         </div>
       </CardHeader>
-
       <CardContent className="pt-0">
         <div className="mb-4">
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -189,13 +214,13 @@ function PostCard({ post, actionType, actionTime }) {
 export default function Likes() {
   return (
     <div className="min-h-screen ">
-      {/* <ForumHeader /> */}
       <div className="flex">
-        {/* <ForumSidebar /> */}
         <main className="flex-1 p-8">
           <div className="">
             <div className="mb-8">
-              {/* <h1 className="text-3xl font-bold mb-2">Your Likes & Votes</h1> */}
+              <h1 className="text-3xl font-bold mb-2 md:hidden">
+                Your Likes & Votes
+              </h1>
               <p className="text-gray-500 dark:text-gray-400">
                 Keep track of the content you’ve appreciated. Your likes and
                 votes help surface the best content in the community.

@@ -15,19 +15,19 @@ function Forum() {
     notifications: 3,
   };
   return (
-    <div className="min-h-screen  bg-card-foreground text-foreground transition-colors duration-300">
+    <div className="min-h-screen transition-colors duration-300">
       <NavBar user={user} />
       <div className="flex">
         {/* sidebar*/}
-        <aside className="w-[310px] border-r border-border fixed h-full">
+        <aside className="hidden md:flex fixed md:w-[310px] border-r border-border h-full">
           <Sidebar isLoggedIn={isLoggedIn} />
         </aside>
         {/* Main content area */}
-        <main className="flex-1 p-6 overflow-y-auth ml-[310px]">
+        <main className="flex-1 p-6 overflow-y-auto ml-1 md:ml-[310px]">
           <Outlet />
         </main>
         {/* Right panel */}
-        <aside className="hidden lg:block w-80 border-l border-border p-4">
+        <aside className="hidden lg:block w-60 border-l border-border p-4">
           <RightPanel />
         </aside>
       </div>

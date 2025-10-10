@@ -4,8 +4,10 @@ import { Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import community from '@images/community2.jpg';
 import { CircleX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 
 const Login = () => {
+  const { isDark } = useTheme();
   // login form state
   const [logInData, setLogInData] = React.useState({
     username: '',
@@ -55,18 +57,26 @@ const Login = () => {
     <div className="min-h-screen flex flex-col">
       <NavBar />
       <>
-        <div className="flex flex-1  gap-10 pl-20 ">
-          <div className="w-full max-w-md p-8  rounded-lg  flex flex-col justify-center">
+        <div className="flex flex-1  gap-10 p-4 md:pl-20">
+          <div className="w-full lg:max-w-md p-8  rounded-lg  flex flex-col justify-center">
             <h2 className="text-2xl font-bold mb-4 text-center">
               {' '}
               Welcome back
             </h2>
-            <p className="text-center mb-6 text-gray-600">
+            <p
+              className={`text-center mb-6 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}
+            >
               Login to your account
             </p>
             <form className="space-y-4" onSubmit={handleLogin}>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  className={`block text-sm font-medium ${
+                    isDark ? 'text-gray-400' : 'text-gray-700'
+                  }`}
+                >
                   Username
                 </label>
                 <div className="flex items-center mt-1 relative border rounded-md">
@@ -97,7 +107,11 @@ const Login = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  className={`block text-sm font-medium ${
+                    isDark ? 'text-gray-400' : 'text-gray-700'
+                  }`}
+                >
                   Password
                 </label>
                 <div className="flex items-center mt-1 relative border rounded-md">
@@ -142,7 +156,7 @@ const Login = () => {
               </button>
             </form>
           </div>
-          <div className="hidden md:block min-h-full flex-1 ml-10 overflow-hidden shadow-lg">
+          <div className="hidden lg:block min-h-full flex-1 ml-10 overflow-hidden shadow-lg">
             <img
               src={community}
               alt="Community"

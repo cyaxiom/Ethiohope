@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import React from 'react';
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
+
 const sampleUsers = [
   {
     name: 'Alice Johnson',
@@ -33,7 +35,7 @@ const sampleUsers = [
 
 export default function Ranking() {
   const [sort, setSort] = useState('reputation');
-
+  const { isDark } = useTheme();
   const sortedUsers = [...sampleUsers].sort((a, b) => {
     if (sort === 'reputation') return b.reputation - a.reputation;
     if (sort === 'answers') return b.answers - a.answers;
@@ -44,7 +46,13 @@ export default function Ranking() {
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Top Users</h1>
+        <h1
+          className={`text-2xl font-semibold ${
+            isDark ? 'text-gray-100' : 'text-gray-800'
+          }`}
+        >
+          Top Users
+        </h1>
 
         {/* Sort options */}
         <select

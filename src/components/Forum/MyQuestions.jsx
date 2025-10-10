@@ -102,6 +102,7 @@ const MyQuestions = () => {
   console.log('selectedCategory', selectedCategory);
   return type !== 'edit' && type !== 'create' ? (
     <div>
+      <h1 className="text-2xl font-bold mb-2 md:hidden">My Questions</h1>
       <p className="text-muted-foreground">
         Here are the questions you have asked. You can view, edit, or delete
         them.
@@ -195,18 +196,14 @@ const MyQuestions = () => {
           <div className="flex gap-2 items-center">
             <label
               htmlFor="fileInput"
-              className="cursor-pointer bg-primary text-primary-foreground px-4 py-2 rounded flex items-center gap-2 hover:bg-primary/80"
+              className="cursor-pointer bg-primary text-primary-foreground px-2 md:px-4 py-1 md:py-2 rounded flex items-center gap-2 hover:bg-primary/80"
             >
               <div className="flex items-center gap-2 ">
                 <Image size={18} />
                 <span>Add Image</span>
               </div>
             </label>
-            {imageName && (
-              <span className="text-sm text-muted-foreground ml-1">
-                {imageName}
-              </span>
-            )}
+
             {errors.image && <Error message={errors.image} />}
           </div>
           {/* <div>
@@ -215,19 +212,22 @@ const MyQuestions = () => {
           <div className="flex gap-2">
             <button
               type="button"
-              className="bg-muted text-muted-foreground px-4 py-2 rounded cursor-not-allowed"
+              className="bg-muted text-muted-foreground px-1  md:px-4 py-1 md:py-2 rounded cursor-not-allowed"
               disabled
             >
               Save as draft
             </button>
             <button
               type="submit"
-              className="bg-warning text-white px-4 py-2 rounded hover:bg-error flex items-center gap-2"
+              className="bg-warning text-white px-1 md:px-4 py-1 md:py-2 rounded hover:bg-error flex items-center gap-2"
             >
               <Send size={18} />
               <span>Publish</span>
             </button>
           </div>
+        </div>
+        <div>
+          {image && <img src={image} alt="Selected" className="mt-4" />}
         </div>
       </form>
     </div>

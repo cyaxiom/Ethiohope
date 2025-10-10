@@ -3,8 +3,10 @@ import NavBar from '@components/Forum/NavBar';
 import { Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import community from '@images/community.jpg';
 import { CircleX } from 'lucide-react';
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 
 const Register = () => {
+  const { isDark } = useTheme();
   // register form state
   const [registerData, setRegisterData] = React.useState({
     username: '',
@@ -71,18 +73,26 @@ const Register = () => {
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
       <NavBar />
       <>
-        <div className="flex flex-1  gap-10 pl-20 ">
-          <div className="w-full max-w-md p-8  rounded-lg  flex flex-col justify-center">
+        <div className="flex flex-1  gap-10 p-4 md:pl-20">
+          <div className="w-full lg:max-w-md p-8  rounded-lg  flex flex-col justify-center">
             <h2 className="text-2xl font-bold mb-4 text-center">
               Join EthioHope Community
             </h2>
-            <p className="text-center mb-6 text-gray-600">
+            <p
+              className={`text-center mb-6 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}
+            >
               Get more features and privileges by joining to the most helpful
               community
             </p>
             <form className="space-y-4" onSubmit={handleRegister}>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  className={`block text-sm font-medium ${
+                    isDark ? 'text-gray-400' : 'text-gray-700'
+                  }`}
+                >
                   Username
                 </label>
                 <div className="flex items-center mt-1 relative border rounded-md">
@@ -112,7 +122,11 @@ const Register = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  className={`block text-sm font-medium ${
+                    isDark ? 'text-gray-400' : 'text-gray-700'
+                  }`}
+                >
                   Email
                 </label>
                 <div className="flex items-center mt-1 relative border rounded-md">
@@ -156,7 +170,11 @@ const Register = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  className={`block text-sm font-medium ${
+                    isDark ? 'text-gray-400' : 'text-gray-700'
+                  }`}
+                >
                   Password
                 </label>
                 <div className="flex items-center mt-1 relative border rounded-md">
@@ -178,12 +196,16 @@ const Register = () => {
                     {passwordVisible ? (
                       <Eye
                         size={18}
-                        className="text-gray-800 hover:text-gray-600 active:text-gray-500 transition-all"
+                        className={`${
+                          isDark ? 'text-gray-400' : 'text-gray-800'
+                        } hover:text-gray-600 active:text-gray-500 transition-all`}
                       />
                     ) : (
                       <EyeOff
                         size={18}
-                        className="text-gray-800 hover:text-gray-600 active:text-gray-500"
+                        className={`${
+                          isDark ? 'text-gray-400' : 'text-gray-800'
+                        } hover:text-gray-600 active:text-gray-500`}
                       />
                     )}
                   </span>
@@ -193,7 +215,11 @@ const Register = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  className={`block text-sm font-medium ${
+                    isDark ? 'text-gray-400' : 'text-gray-700'
+                  }`}
+                >
                   Repeat Password
                 </label>
                 <div className="flex items-center mt-1 relative border rounded-md">
@@ -215,12 +241,16 @@ const Register = () => {
                     {passwordVisible ? (
                       <Eye
                         size={18}
-                        className="text-gray-800 hover:text-gray-600 active:text-gray-500 transition-all"
+                        className={`${
+                          isDark ? 'text-gray-400' : 'text-gray-800'
+                        } hover:text-gray-600 active:text-gray-500 transition-all`}
                       />
                     ) : (
                       <EyeOff
                         size={18}
-                        className="text-gray-800 hover:text-gray-600 active:text-gray-500"
+                        className={`${
+                          isDark ? 'text-gray-400' : 'text-gray-800'
+                        } hover:text-gray-600 active:text-gray-500`}
                       />
                     )}
                   </span>

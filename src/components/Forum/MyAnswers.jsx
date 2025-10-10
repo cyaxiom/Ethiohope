@@ -2,8 +2,7 @@ import { Eye, MessageSquare, ThumbsUp, Clock } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { answers } from '../../api/forum/mock.data';
-
-/* ---------- Small Reusable Components ---------- */
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 
 function Badge({ children, className = '' }) {
   return (
@@ -16,9 +15,12 @@ function Badge({ children, className = '' }) {
 }
 
 function Card({ children, className = '' }) {
+  const { isDark } = useTheme();
   return (
     <div
-      className={`rounded-lg border border-gray-200 shadow-sm  ${className}`}
+      className={`rounded-lg border ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } shadow-sm  ${className}`}
     >
       {children}
     </div>
@@ -26,8 +28,13 @@ function Card({ children, className = '' }) {
 }
 
 function CardHeader({ children, className = '' }) {
+  const { isDark } = useTheme();
   return (
-    <div className={`p-4 border-b border-gray-200 ${className}`}>
+    <div
+      className={`p-4 border-b ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } ${className}`}
+    >
       {children}
     </div>
   );
@@ -38,27 +45,37 @@ function CardContent({ children, className = '' }) {
 }
 
 function Avatar({ name }) {
+  const { isDark } = useTheme();
   return (
-    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs font-bold">
+    <div
+      className={`flex h-6 w-6 items-center justify-center rounded-full ${
+        isDark ? 'bg-gray-700' : 'bg-gray-300'
+      }  text-xs font-bold`}
+    >
       {name[0]}
     </div>
   );
 }
 
-/* ---------- Main Page ---------- */
-
 export default function MyAnswers() {
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-0 ">
+      {/* Header */}
+      <h1 className="text-2xl font-bold mb-4 md:hidden">My Answers</h1>
       <div className="flex">
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-0 md:p-8">
           <div className="">
             {/* Header */}
             <div className="mb-8">
-              <p className="">
+              <p
+                className={`${
+                  isDark ? 'text-gray-300' : 'text-gray-800'
+                }  mb-2 `}
+              >
                 Track your contributions to the community. Here are all the
                 answers you’ve provided to help community members.
               </p>
@@ -90,7 +107,7 @@ export default function MyAnswers() {
                               `/community/forum/questions/${answer.questionId}`
                             )
                           }
-                          className="text-lg font-semibold hover:text-blue-600 cursor-pointer"
+                          className="text-lg font-semibold line-clamp-2 hover:text-blue-600 cursor-pointer"
                         >
                           {answer.question}
                         </h3>

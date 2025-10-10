@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { use } from 'react';
 import {
   ArrowBigRight,
   CircleCheckBig,
@@ -10,6 +10,7 @@ import {
   LucideMoreVertical,
   MoveUpRight,
 } from 'lucide-react';
+import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fetchQuestions, upvoteQuestion } from '../../api/forum';
@@ -17,7 +18,8 @@ import { fetchQuestions, upvoteQuestion } from '../../api/forum';
 const Questions = () => {
   const [activeTag, setActiveTag] = React.useState('New');
   const [questions, setQuestions] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { isDark } = useTheme();
 
   React.useEffect(() => {
     // Simulate fetching data
@@ -51,7 +53,15 @@ const Questions = () => {
 
   return (
     <div>
-      <div className="flex items-center gap-4 my-6">
+      <h1 className="text-2xl  md:hidden font-bold mb-4">Questions</h1>
+      <div
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: isDark ? '#4B5563 #1F2937' : '#9CA3AF #F3F4F6',
+          overflowY: 'auto',
+        }}
+        className="flex items-center gap-4 my-6 overflow-x-auto "
+      >
         {tags.map((tag, idx) => (
           <motion.button
             initial={{ scale: 1 }}
@@ -60,8 +70,12 @@ const Questions = () => {
             key={idx}
             className={`px-4 py-2 rounded-4xl flex items-center gap-2 ${
               activeTag === tag.title
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-[#808080]'
+                ? `${isDark ? 'bg-gray-600' : 'bg-blue-500'} text-white`
+                : `${
+                    isDark
+                      ? 'bg-gray-700 text-white'
+                      : 'bg-gray-200 text-[#808080]'
+                  } `
             }`}
             onClick={() => setActiveTag(tag.title)}
           >
@@ -81,7 +95,9 @@ const Questions = () => {
             <p className="text-sm">Be the first to ask a question!</p>
             <Link
               to="/community/forum/my-questions"
-              className="text-blue-500 mt-10 inline-block"
+              className={`${
+                isDark ? 'bg-gray-600 text-white' : 'bg-blue-500 text-white'
+              } mt-10 inline-block py-3 px-6 rounded-md hover:opacity-90 transition-opacity`}
             >
               Ask a Question
             </Link>
@@ -104,6 +120,7 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
   const [isAnswerVisible, setIsAnswerVisible] = React.useState(false);
   // const [showViewsTooltip, setShowViewsTooltip] = React.useState(false);
   const [voteCount, setVoteCount] = React.useState(question.votes || 0);
+  const { isDark } = useTheme();
 
   function formatTimeAgo(dateString) {
     const date = new Date(dateString);
@@ -142,8 +159,6 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
     }
   };
 
-
-
   const handleManage = (e) => {
     e.stopPropagation();
     navigate(`/community/forum/questions/manage/${question.id}`);
@@ -156,7 +171,11 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
       icon: LucideArrowUp,
       count: voteCount,
       name: 'votes',
-      className: 'bg-blue-500 text-white px-2 py-1 rounded-full',
+      className: `${
+        isDark
+          ? 'bg-gray-600 hover:bg-gray-700'
+          : 'bg-blue-500 hover:bg-blue-600'
+      } text-white px-2 py-1 rounded-full`,
     },
   ];
 
@@ -220,7 +239,11 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
             <div className="flex space-x-2">
               <button
                 onClick={handleEdit}
-                className="px-3 py-1 text-sm rounded bg-blue-500 text-white hover:bg-blue-600"
+                className={`px-3 py-1 text-sm rounded ${
+                  isDark
+                    ? 'bg-gray-600 text-white hover:bg-gray-700'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
               >
                 Edit
               </button>
@@ -268,7 +291,11 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
               onClick={() =>
                 navigate(`/community/forum/questions/${question.id}`)
               }
-              className="flex items-center text-sm text-blue-500 hover:underline"
+              className={`flex items-center text-sm ${
+                isDark
+                  ? 'text-blue-300 hover:underline'
+                  : 'text-blue-500 hover:underline'
+              }`}
             >
               <span>See Details</span>
             </button>
