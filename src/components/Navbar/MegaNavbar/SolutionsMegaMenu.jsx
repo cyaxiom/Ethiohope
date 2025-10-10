@@ -1,9 +1,11 @@
 // @components/Navbar/MegaNavbar/SolutionsMegaMenu.jsx
-import { CheckCircle, Star, Zap } from 'lucide-react';
+import { CheckCircle, Star, Zap, Clock } from 'lucide-react';
 import React from 'react';
-React;
+import {useNavigate} from 'react-router-dom';
 
 const SolutionsMegaMenu = ({ data, onClose }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="p-8">
       <div className="grid grid-cols-4 gap-8">
@@ -60,7 +62,10 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
                 <span className="text-lg font-bold text-cyan-600">
                   {item.price}
                 </span>
-                <button className="text-sm text-cyan-500 hover:text-cyan-600 transition-colors">
+                <button onClick={()=>{
+                  navigate(item.path);
+                  onClose();
+                }} className="text-sm text-cyan-500 hover:text-cyan-600 transition-colors">
                   Get Started →
                 </button>
               </div>
