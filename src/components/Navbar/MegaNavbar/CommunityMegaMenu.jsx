@@ -1,4 +1,5 @@
 // @components/Navbar/MegaNavbar/CommunityMegaMenu.jsx
+import { Calendar, Star } from 'lucide-react';
 import React from 'react';
 import { MessageCircle, Users, Calendar, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

@@ -31,6 +31,13 @@ const MyAnswers = React.lazy(() => import('@components/Forum/MyAnswers'));
 const Likes = React.lazy(() => import('@components/Forum/Likes'));
 const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 
+// Academy routes
+const KidsProgramming = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/KidsProgramming')
+);
+ const AllKidsCourses = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/components/AllCourses')
+);
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
@@ -40,6 +47,10 @@ const KidsTutoring = React.lazy(() =>
 );
 const ProjectServices = React.lazy(() =>
   import('@pages/Services/ProjectServices/ProjectServices')
+);
+
+const CourseDetail = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/components/CourseDetail')
 );
 
 export const routes = [
@@ -125,6 +136,16 @@ export const routes = [
     path: '/services/kids-tutoring',
     name: 'KidsTutoring',
     element: <KidsTutoring />,
+  },
+  {
+    path: '/academy/kids-programming/all_kids_course',
+    name: 'AllKidsCourses',
+    element: <AllKidsCourses />,
+  },
+  {
+    path: '/academy/kids-programming/course/:id',
+    name: 'CourseDetail',
+    element: <CourseDetail />,
   },
   {
     path: '/services/project-services',
