@@ -80,7 +80,7 @@ const Newsletter = () => {
                className="w-20 h-20 transition-transform duration-75 ease-linear" 
             />
          </div>
-         <div className="w-full  px-6 items-start lg:justify-between lg:flex-row flex flex-col gap-4">
+         <div className="w-full  px-6 items-start lg:justify-between lg:flex-row max-[1200px]:pt-10 flex flex-col gap-4">
             {/* Newsletter Section */}
             <div className="text-white w-80 ">
                <h3 className="text-2xl font-bold mb-15 text-white">Subscribe newsletter</h3>
