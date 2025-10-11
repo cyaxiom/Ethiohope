@@ -8,10 +8,9 @@ import { GrFacebookOption } from "react-icons/gr";
 import { IoLogoTwitter } from "react-icons/io5";
 import { FaInstagram } from "react-icons/fa";
 import { FaLinkedinIn } from "react-icons/fa";
-import {Link} from 'react-router-dom'; 
+import { Link } from 'react-router-dom';
 
-
-const Newsletter = () => {
+const Newsletter = ({ darkMode }) => {
    const iconRef = useRef(null);
    const lastScrollY = useRef(0);
    const animationFrameId = useRef(null);
@@ -26,20 +25,20 @@ const Newsletter = () => {
             const currentScrollY = window.scrollY;
             const scrollDelta = currentScrollY - lastScrollY.current;
             const scrollSpeed = Math.min(Math.abs(scrollDelta) * 0.5, 100); // Limit max speed
-            
+
             if (iconRef.current) {
                const currentTransform = window.getComputedStyle(iconRef.current).transform;
                let currentTranslateX = 0;
-               
+
                // Parse current translateX value from transform matrix
                if (currentTransform && currentTransform !== 'none') {
                   const matrix = new DOMMatrixReadOnly(currentTransform);
                   currentTranslateX = matrix.m41;
                }
-               
+
                // Calculate new position based on scroll direction and speed
                let newTranslateX = currentTranslateX;
-               
+
                if (scrollDelta > 0) {
                   // Scrolling down - move to right
                   newTranslateX += scrollSpeed;
@@ -47,21 +46,21 @@ const Newsletter = () => {
                   // Scrolling up - move to left
                   newTranslateX -= scrollSpeed;
                }
-               
+
                // Apply boundaries to prevent icon from moving too far
                const maxMovement = 20; // Maximum movement in pixels
                newTranslateX = Math.max(-maxMovement, Math.min(maxMovement, newTranslateX));
-               
+
                iconRef.current.style.transform = `translateX(${newTranslateX}px)`;
             }
-            
+
             lastScrollY.current = currentScrollY;
          });
       };
 
       // Throttled scroll event listener
       window.addEventListener('scroll', handleScroll, { passive: true });
-      
+
       return () => {
          if (animationFrameId.current) {
             cancelAnimationFrame(animationFrameId.current);
@@ -71,95 +70,164 @@ const Newsletter = () => {
    }, []);
 
    return (
-      <section className="w-full bg-[#0B0B29] bg-gradient-to-br from-[#0D0C2E] from-0% via-[#0D0C2E] via-5% to-[#0B0B29] to-5%  max-[1024px]:px-20 max-[600px]:px-0">
+      <section className={`w-full max-[1024px]:px-20 max-[600px]:px-0 ${darkMode
+         ? 'bg-[#0B0B29] bg-gradient-to-br from-[#0D0C2E] from-0% via-[#0D0C2E] via-5% to-[#0B0B29] to-5%'
+         : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'
+         }`}>
          <div className="flex justify-end max-[1200px]:hidden overflow-hidden pr-4">
-            <img 
+            <img
                ref={iconRef}
-               src={getintouchicon5} 
-               alt="Get in Touch Icon" 
-               className="w-20 h-20 transition-transform duration-75 ease-linear" 
+               src={getintouchicon5}
+               alt="Get in Touch Icon"
+               className="w-20 h-20 transition-transform duration-75 ease-linear"
             />
          </div>
-         <div className="w-full  px-6 items-start lg:justify-between lg:flex-row max-[1200px]:pt-10 flex flex-col gap-4">
+         <div className="w-full px-6 items-start lg:justify-between lg:flex-row max-[1200px]:pt-10 flex flex-col gap-4">
             {/* Newsletter Section */}
-            <div className="text-white w-80 ">
-               <h3 className="text-2xl font-bold mb-15 text-white">Subscribe newsletter</h3>
-               <p className="text-gray-400 mb-6 leading-relaxed">
+            <div className={`w-80 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+               <h3 className={`text-2xl font-bold mb-15 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  Subscribe newsletter
+               </h3>
+               <p className={`mb-6 leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                   Pre-ICOs typically offer early access to the project's tokens before the main ICO.
                </p>
-               <div className="flex max-w-full rounded-xl bg-[#1D1D3E]">
+               <div className={`flex max-w-full rounded-xl ${darkMode ? 'bg-[#1D1D3E]' : 'bg-white border border-gray-300'
+                  }`}>
                   <input
                      type="email"
                      placeholder="coindox@gmail.com"
-                     className="flex-1 p-4 text-white border-none outline-none bg-transparent"
+                     className={`flex-1 p-4 border-none outline-none bg-transparent ${darkMode ? 'text-white placeholder-gray-400' : 'text-gray-800 placeholder-gray-500'
+                        }`}
                   />
-                  <button className="p-4 bg-[#3C12D4] rounded-xl cursor-pointer">
-                     <FaTelegramPlane className='h-8 w-8' />
+                  <button className={`p-4 rounded-xl cursor-pointer ${darkMode
+                     ? 'bg-[#3C12D4] hover:bg-[#2a0d9c]'
+                     : 'bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600'
+                     }`}>
+                     <FaTelegramPlane className='h-8 w-8 text-white' />
                   </button>
                </div>
             </div>
 
             {/* Documents Section */}
-            <div className="text-[#8E8E9F] ">
-               <h3 className="text-2xl w-full flex lg:justify-end font-bold mb-15 text-[#FFFFFF]">Download Documents</h3>
+            <div className={darkMode ? 'text-[#8E8E9F]' : 'text-gray-600'}>
+               <h3 className={`text-2xl w-full flex lg:justify-end font-bold mb-15 ${darkMode ? 'text-white' : 'text-gray-800'
+                  }`}>
+                  Download Documents
+               </h3>
                <div className="flex gap-1.5 flex-wrap lg:justify-end">
-                  <button className="block bg-[#1D1D3E] p-8 lg:p-6 xl:p-8 rounded-xl  hover:text-white   text-center ">
-                     <img src={pdf} alt="PDF Icon" className="inline-block w-7 mr-2" />
+                  <button className={`block p-8 lg:p-6 xl:p-8 rounded-xl text-center transition-colors ${darkMode
+                     ? 'bg-[#1D1D3E] hover:bg-[#2a2a4a] hover:text-white'
+                     : 'bg-white border border-gray-200 shadow-md hover:bg-gray-300 hover:text-gray-800'
+                     }`}>
+                     <img src={pdf} alt="PDF Icon" className={`inline-block w-7 mr-2 ${darkMode ? '' : 'filter brightness-0'
+                        }`} />
                      <div className="flex items-center justify-center gap-1">
-                        <HiOutlineCloudArrowDown className='w-5 h-5 mt-4' />
-                        <span className="block text-sm font-semibold pt-4 uppercase">White Paper</span>
+                        <HiOutlineCloudArrowDown className={`w-5 h-5 mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                           }`} />
+                        <span className={`block text-sm font-semibold pt-4 uppercase ${darkMode ? 'text-gray-400' : 'text-gray-700'
+                           }`}>
+                           White Paper
+                        </span>
                      </div>
                   </button>
-                  <button className="bg-[#1D1D3E] p-8 lg:p-6 xl:p-8 rounded-xl hover:text-white   text-center">
-                     <img src={pdf} alt="PDF Icon" className="inline-block w-7 mr-2" />
+                  <button className={`p-8 lg:p-6 xl:p-8 rounded-xl text-center transition-colors ${darkMode
+                     ? 'bg-[#1D1D3E] hover:bg-[#2a2a4a] hover:text-white'
+                     : 'bg-white border border-gray-200 shadow-md hover:bg-gray-300 hover:text-gray-800'
+                     }`}>
+                     <img src={pdf} alt="PDF Icon" className={`inline-block w-7 mr-2 ${darkMode ? '' : 'filter brightness-0'
+                        }`} />
                      <div className="flex items-center justify-center gap-1">
-                        <HiOutlineCloudArrowDown className='w-5 h-5 mt-4' />
-                        <span className="block text-sm font-semibold pt-4 uppercase">One Paper</span>
+                        <HiOutlineCloudArrowDown className={`w-5 h-5 mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                           }`} />
+                        <span className={`block text-sm font-semibold pt-4 uppercase ${darkMode ? 'text-gray-400' : 'text-gray-700'
+                           }`}>
+                           One Paper
+                        </span>
                      </div>
                   </button>
-                  <button className="bg-[#1D1D3E] p-8 lg:p-6 xl:p-8 rounded-xl hover:text-white   text-center">
-                     <img src={pdf} alt="PDF Icon" className="inline-block w-7 mr-2" />
+                  <button className={`p-8 lg:p-6 xl:p-8 rounded-xl text-center transition-colors ${darkMode
+                     ? 'bg-[#1D1D3E] hover:bg-[#2a2a4a] hover:text-white'
+                     : 'bg-white border border-gray-200 shadow-md hover:bg-gray-300 hover:text-gray-800'
+                     }`}>
+                     <img src={pdf} alt="PDF Icon" className={`inline-block w-7 mr-2 ${darkMode ? '' : 'filter brightness-0'
+                        }`} />
                      <div className="flex items-center justify-center gap-1">
-                        <HiOutlineCloudArrowDown className='w-5 h-5 mt-4' />
-                        <span className="block text-sm font-semibold pt-4 uppercase">Privacy Policy</span>
+                        <HiOutlineCloudArrowDown className={`w-5 h-5 mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                           }`} />
+                        <span className={`block text-sm font-semibold pt-4 uppercase ${darkMode ? 'text-gray-400' : 'text-gray-700'
+                           }`}>
+                           Privacy Policy
+                        </span>
                      </div>
                   </button>
-                  <button className="bg-[#1D1D3E] p-8 lg:p-6 xl:p-8 rounded-xl hover:text-white   text-center">
-                     <img src={pdf} alt="PDF Icon" className="inline-block w-7 mr-2" />
+                  <button className={`p-8 lg:p-6 xl:p-8 rounded-xl text-center transition-colors ${darkMode
+                     ? 'bg-[#1D1D3E] hover:bg-[#2a2a4a] hover:text-white'
+                     : 'bg-white border border-gray-200 shadow-md hover:bg-gray-300 hover:text-gray-800'
+                     }`}>
+                     <img src={pdf} alt="PDF Icon" className={`inline-block w-7 mr-2 ${darkMode ? '' : 'filter brightness-0'
+                        }`} />
                      <div className="flex items-center justify-center gap-1">
-                        <HiOutlineCloudArrowDown className='w-5 h-5 mt-4' />
-                        <span className="block text-sm font-semibold pt-4 uppercase">Terms of Sale</span>
+                        <HiOutlineCloudArrowDown className={`w-5 h-5 mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                           }`} />
+                        <span className={`block text-sm font-semibold pt-4 uppercase ${darkMode ? 'text-gray-400' : 'text-gray-700'
+                           }`}>
+                           Terms of Sale
+                        </span>
                      </div>
                   </button>
                </div>
             </div>
          </div>
-         <div className="w-full  px-6 py-8 flex max-[468px]:flex-col   max-[468px]:items-start ">
+         <div className="w-full px-6 py-8 flex max-[468px]:flex-col max-[468px]:items-start">
             <Link to='/' className="flex items-center space-x-3 cursor-pointer">
-               <div className="w-7 h-7 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
+               <div className={`w-7 h-7 rounded-full flex items-center justify-center ${darkMode
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-600'
+                  : 'bg-gradient-to-r from-blue-600 to-green-500'
+                  }`}>
                   <span className="text-white font-bold text-sm">C</span>
                </div>
-               <span className="text-foreground font-bold text-xl tracking-tight">
+               <span className={`font-bold text-xl tracking-tight ${darkMode ? 'text-white' : 'text-gray-800'
+                  }`}>
                   Ethiohope
                </span>
             </Link>
             <div className="flex space-x-2 mt-4 text-white text-xl w-full justify-end max-[468px]:justify-start">
-               <span className="p-3 bg-[#1D1D3E] rounded-lg cursor-pointer hover:bg-[#3C12D4] inline-flex items-center justify-center">
-                  <GrFacebookOption className="w-4 h-4" />
+               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                  }`}>
+                  <GrFacebookOption className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+                     }`} />
                </span>
-               <span className="p-3 bg-[#1D1D3E] rounded-lg cursor-pointer hover:bg-[#3C12D4] inline-flex items-center justify-center">
-                  <IoLogoTwitter className="w-4 h-4" />
+               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                  }`}>
+                  <IoLogoTwitter className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+                     }`} />
                </span>
-               <span className="p-3 bg-[#1D1D3E] rounded-lg cursor-pointer hover:bg-[#3C12D4] inline-flex items-center justify-center">
-                  <FaInstagram className="w-4 h-4" />
+               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                  }`}>
+                  <FaInstagram className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+                     }`} />
                </span>
-               <span className="p-3 bg-[#1D1D3E] rounded-lg cursor-pointer hover:bg-[#3C12D4] inline-flex items-center justify-center">
-                  <FaLinkedinIn className="w-4 h-4" />
+               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                  }`}>
+                  <FaLinkedinIn className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+                     }`} />
                </span>
-               <span className="p-3 bg-[#1D1D3E] rounded-lg cursor-pointer hover:bg-[#3C12D4] inline-flex items-center justify-center">
-                  <FaTelegramPlane className="w-4 h-4" />
+               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                  }`}>
+                  <FaTelegramPlane className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+                     }`} />
                </span>
-
             </div>
          </div>
       </section>
