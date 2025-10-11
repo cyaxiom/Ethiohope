@@ -7,7 +7,7 @@ import getIntouchicon3 from "../../../assets/images/contact/getIntouchicon3.png"
 import getIntouchicon4 from "../../../assets/images/contact/getIntouchicon4.png";
 import getintouchBg from "../../../assets/images/contact/getintouchBg.png"
 
-const GetInTouch = () => {
+const GetInTouch = ({ darkMode }) => {
    const sectionRef = useRef(null);
    const icon1Ref = useRef(null);
    const icon2Ref = useRef(null);
@@ -86,15 +86,18 @@ const GetInTouch = () => {
    return (
       <section
          ref={sectionRef}
-         className="relative h-[100vh] w-full bg-[#0B0B29] !pt-40 flex flex-col items-center justify-center text-white overflow-hidden"
-         style={{
+         className={`relative w-full !pt-40 flex flex-col items-center justify-center overflow-hidden ${darkMode
+            ? 'bg-[#0B0B29]'
+            : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'
+            } min-h-[60vh] md:min-h-[70vh] lg:min-h-[100vh] lg:h-[100vh]`}
+         style={darkMode ? {
             backgroundImage: `url(${getintouchBg})`,
             backgroundColor: '#0B0B29',
             backgroundPosition: 'left',
             backgroundRepeat: 'no-repeat',
-         }}
+         } : {}}
       >
-         <div className="h-[50vh]  border-b w-full">
+         <div className="h-[50%] w-full border-b flex items-center justify-center">
             {/* Animated Icons */}
             <img
                ref={icon1Ref}
@@ -123,9 +126,18 @@ const GetInTouch = () => {
 
             {/* Title */}
             <div className="text-center mb-16 relative z-10">
-               <h2 className="text-6xl font-bold mb-4">Get in touch</h2>
-               <p className="text-gray-300 text-lg">
-                  <a href="/">Home</a> - Contact Us
+               <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'
+                  }`}>
+                  Get in touch
+               </h2>
+               <p className={`text-base md:text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                  <a
+                     href="/"
+                     className={darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'}
+                  >
+                     Home
+                  </a> - Contact Us
                </p>
             </div>
          </div>
