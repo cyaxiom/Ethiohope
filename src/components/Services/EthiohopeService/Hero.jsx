@@ -3,10 +3,10 @@ import Hero1 from '../../../assets/images/services/EthiohopeService/hero1.png';
 import TopImage from '../../../assets/images/services/EthiohopeService/heroTop.png';
 import LeftImage from '../../../assets/images/services/EthiohopeService/heroLeft.png';
 import RightImage from '../../../assets/images/services/EthiohopeService/heroRight.png';
-import { FaArrowRight } from 'react-icons/fa';
 import styles from './styles/Hero.module.css';
 import hero2 from '../../../assets/images/services/EthiohopeService/hero2.png';
 import hero3 from '../../../assets/images/services/EthiohopeService/hero3.png';
+import { GoChevronRight } from "react-icons/go";
 
 const Hero = () => {
    const canvasRef = useRef(null);
@@ -106,7 +106,6 @@ const Hero = () => {
                ctx.fillStyle = gradient;
                ctx.fill();
             }
-
             ctx.restore();
          }
       }
@@ -125,10 +124,8 @@ const Hero = () => {
             star.update();
             star.draw(ctx);
          });
-
          animationFrameId = requestAnimationFrame(animate);
       };
-
       animate();
 
       // Clean up
@@ -137,7 +134,6 @@ const Hero = () => {
          window.removeEventListener('resize', resizeCanvas);
       };
    }, []);
-
 
    useEffect(() => {
       let currentIndex = 0;
@@ -152,8 +148,6 @@ const Hero = () => {
 
       return () => clearInterval(typingInterval);
    }, []);
-
-
    const scrollToServices = () => {
       const servicesSection = document.getElementById('services-section');
       if (servicesSection) {
@@ -162,25 +156,21 @@ const Hero = () => {
    };
 
    return (
-
       <>
          <div
-            className="relative min-h-screen  overflow-hidden"
+            className="relative min-h-screen justify-center  overflow-hidden"
             style={{
                backgroundImage: `url(${Hero1})`,
                backgroundSize: 'cover',
                backgroundPosition: 'center',
                backgroundRepeat: 'no-repeat',
             }}
-
          >
             {/* Animated stars background */}
             <canvas
                ref={canvasRef}
                className="absolute inset-0 w-full h-full"
             />
-
-
             {/* Top  Image */}
             <div className="absolute top-0 left-0 right-0 z-10 ">
                <img
@@ -189,7 +179,6 @@ const Hero = () => {
                   className=""
                />
             </div>
-
             {/*  left  Image */}
             <div className="absolute  !left-0 z-10  ">
                <img
@@ -198,7 +187,6 @@ const Hero = () => {
                   className=" "
                />
             </div>
-
             {/*  Right  Image */}
             <div className="absolute right-0 z-10  ">
                <img
@@ -208,52 +196,44 @@ const Hero = () => {
                />
             </div>
 
-
-
-
-
             {/* Hero Content */}
-            <div className="relative mx-auto md:max-w-4xl xl:max-w-6xl !pt-[180px] px-6 min-h-[calc(100vh-80px)]">
-               <div className="flex flex-col  justify-start">
-                  <div className='flex justify-start'>
-                     <h1 className="text-[80px] md:text-[120px] lg:text-[140px] xl:text-[180px] mb-6 leading-tight uppercase font-medium tracking-[0.2em] inline-block bg-gradient-to-b from-white to-[#292152] bg-clip-text text-transparent font-stretch-ultra-condensed"
-
+            <div className="relative mx-auto md:max-w-4xl xl:max-w-6xl !pt-[180px] px-6 min-h-[calc(100vh-60px)]">
+               <div className="flex flex-col pb-8 max-md:pb-0 max-md:text-center max-md:items-center justify-start">
+                  <div className='flex max-md:justify-center justify-start'>
+                     <h1 className="text-[60px] md:text-[120px] lg:text-[140px] xl:text-[180px] mb-4 leading-tight uppercase font-medium tracking-[0.2em] inline-block bg-gradient-to-b from-white to-[#292152] bg-clip-text text-transparent font-stretch-ultra-condensed"
                      >
                         {displayText}
-
                      </h1>
                   </div>
-                  <div className='lg:flex lg:justify-between  lg:items-center '>
-                     <p className="lg:text-3xl md:text-2xl xl:text-4xl text-gray-300 mb-8 max-w-2xl capitalize font-medium ">
+                  <div className="lg:flex lg:justify-between lg:items-center max-md:text-center max-md:flex-col max-md:items-center">
+                     <p className="text-4xl text-gray-300 max-w-2xl capitalize font-medium max-md:text-center">
                         Your Organization's Digital Landscape From Cyber Risks
                      </p>
                      <button
                         onClick={scrollToServices}
-                        className={`text-white relative cursor-pointer flex justify-around items-center  font-semibold py-3 px-8   transition-all duration-300 transform hover:scale-105 z-50   ${styles.ctaButton}`}
+                        className={`text-white ... max-md:mx-auto ${styles.ctaButton}`}
                      >
-                        <span> Explore Solutions</span> <FaArrowRight className="inline-block ml-2" />
+                        <span>Explore Solutions</span> <GoChevronRight className="inline-block ml-2" />
                      </button>
                   </div>
                </div>
             </div>
-            <div className="relative bg-transparent py-8">
-               <div className="mx-auto  px-6 flex flex-col  justify-between items-center -">
+            <div className="relative bg-transparent p-10">
+               <div className="mx-auto px-6 flex flex-col justify-between items-center">
+                  {/* Animated hero3 image with smooth up and down motion */}
                   <img
                      src={hero3}
                      alt="Bottom image 1"
-                     className="max-w-4xl"
+                     className="max-w-4xl animate-float  md:-mb-16"
                   />
                   <img
                      src={hero2}
                      alt="Bottom image 2"
-                     className="w-full  "
+                     className="w-full"
                   />
                </div>
             </div>
          </div>
-
-
-
       </>
    );
 };
