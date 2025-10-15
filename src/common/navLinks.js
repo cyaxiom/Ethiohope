@@ -135,7 +135,7 @@ export const navLinks = [
       },
       {
         name: 'Team',
-        path: '/about/team',
+        path: '/about/teams',
         description: 'Meet our talented professionals and experts',
         icon: '👥',
         image: '/images/nav/team-preview.jpg',
