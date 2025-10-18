@@ -7,6 +7,10 @@ import rightLogo from "@images/right-logo.png";
 // import spiral from "@images/spiral.png";
 import { ArrowRight } from "lucide-react";
 import learningMaterial from "@images/learning-material.png";
+import missionOne from "@images/mission-one.png";
+import missionTwo from "@images/mission-two.png";
+import missionThree from "@images/mission-three.png";
+import missionFour from "@images/mission-four.png";
 
 
 export default function KidsTutorial() {
@@ -15,6 +19,7 @@ export default function KidsTutorial() {
       <HeroSection />
       <FeaturesSection />
       <LearningMaterials/>
+      <MissionSection/>
     </div>
   );
 }
@@ -187,7 +192,7 @@ const FeaturesSection = () => {
 
 // ************Learning materials section **********//
 
-/* ---------- image imports ---------- */
+
 
 
 
@@ -243,6 +248,54 @@ export  function LearningMaterials() {
             alt="Children enjoying learning materials"
             className="w-full max-w-lg md:max-w-xl object-contain"
           />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ******mission section *****//
+
+
+
+export  function MissionSection() {
+  const missions = [
+    { name: "Kristin Watson", title: "Science Teacher", image: missionOne },
+    { name: "Jenny Wilson", title: "Drawing Teacher", image: missionTwo },
+    { name: "Jacob Jones", title: "Math Teacher", image: missionThree },
+    { name: "Savannah Nguyen", title: "Reading Teacher", image: missionFour },
+  ];
+
+  return (
+    <section className="relative py-24 bg-[#7b5cff]/5 text-gray-900 text-center overflow-hidden">
+      <div className="max-w-5xl mx-auto px-6 md:px-12">
+        <h2 className="text-3xl md:text-5xl font-bold leading-snug text-gray-900">
+          We aim to help children <br />
+          <span className="text-[#ffb22c] italic font-semibold">
+            discover the joy of creative
+          </span>{" "}
+          <br />
+          learning and grow into well-rounded individuals.
+        </h2>
+
+        {/* Teacher cards */}
+        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
+          {missions.map((person, idx) => (
+            <div
+              key={idx}
+              className="flex flex-col items-center bg-white rounded-3xl shadow-md p-6 hover:shadow-lg transition"
+            >
+              <img
+                src={person.image}
+                alt={person.name}
+                className="w-28 h-28 object-contain mb-4"
+              />
+              <h3 className="text-lg font-semibold text-gray-800">
+                {person.name}
+              </h3>
+              <p className="text-sm text-gray-500">{person.title}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
