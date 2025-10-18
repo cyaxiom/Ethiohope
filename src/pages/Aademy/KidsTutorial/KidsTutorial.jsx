@@ -11,6 +11,10 @@ import missionOne from "@images/mission-one.png";
 import missionTwo from "@images/mission-two.png";
 import missionThree from "@images/mission-three.png";
 import missionFour from "@images/mission-four.png";
+import blogOne from "@images/blog-one.png";
+import blogTwo from "@images/blog-two.png";
+import blogThree from "@images/blog-three.png";
+
 
 
 export default function KidsTutorial() {
@@ -20,6 +24,7 @@ export default function KidsTutorial() {
       <FeaturesSection />
       <LearningMaterials/>
       <MissionSection/>
+      <BlogSection/>
     </div>
   );
 }
@@ -294,6 +299,92 @@ export  function MissionSection() {
                 {person.name}
               </h3>
               <p className="text-sm text-gray-500">{person.title}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// ***********Blog section **********//
+
+
+
+export  function BlogSection() {
+  const blogs = [
+    {
+      title: "Learning with Games? Why not!",
+      description: "Embrace the joy of games to enhance your learning experience!",
+      image: blogOne,
+    },
+    {
+      title: "10 Learning Game Ideas",
+      description: "10 ideas for learning with for your kids to have fun.",
+      image: blogTwo,
+    },
+    {
+      title: "Fun Activities for Kids",
+      description: "Want to do something outside from your laptop? Here are our recommendations.",
+      image: blogThree,
+    },
+  ];
+
+  return (
+    <section className="py-24 bg-white text-gray-900">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
+        {/* Heading */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Read our <span className="text-[#7b5cff] italic font-semibold">blog</span>
+          </h2>
+          <a
+            href="#"
+            className="flex items-center gap-2 text-[#7b5cff] hover:underline font-medium mt-4 md:mt-0"
+          >
+            See all 
+            {/* Arrow with circular background */}
+            <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-[#7b5cff]">
+              <ArrowRight
+                className="w-4 h-4 text-white transform rotate-[330deg]"
+                strokeWidth={2.5}
+              />
+            </span>
+          </a>
+        </div>
+
+        {/* Blog Cards */}
+        <div className="grid md:grid-cols-3 gap-8">
+          {blogs.map((blog, idx) => (
+            <div
+              key={idx}
+              className="bg-[#faf7ff] rounded-3xl shadow-sm hover:shadow-md transition overflow-hidden"
+            >
+              <img
+                src={blog.image}
+                alt={blog.title}
+                className="w-full h-56 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {blog.title}
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">{blog.description}</p>
+                <a
+                  href="#"
+                  className="flex items-center gap-2 text-[#7b5cff] font-medium hover:underline"
+                >
+                  Learn more 
+                  {/* Arrow with circular background */}
+            <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-[#7b5cff]">
+              <ArrowRight
+                className="w-4 h-4 text-white transform rotate-[330deg]"
+                strokeWidth={2.5}
+              />
+            </span>
+                </a>
+              </div>
             </div>
           ))}
         </div>
