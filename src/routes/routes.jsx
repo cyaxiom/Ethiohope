@@ -18,6 +18,20 @@ const Events = React.lazy(() => import('@pages/Community/Events'));
 const Forum = React.lazy(() => import('@pages/Community/Forum'));
 const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
 
+// Academy routes (directory name is 'Aademy')
+const KidsProgramming = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/KidsProgramming')
+);
+const KidsTutorial = React.lazy(() =>
+  import('@pages/Aademy/KidsTutorial/KidsTutorial')
+);
+const Web3Development = React.lazy(() =>
+  import('@pages/Aademy/Web3Development/Web3Development')
+);
+const FullStackDev = React.lazy(() =>
+  import('@pages/Aademy/FullStackDev/FullStackDev')
+);
+
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
@@ -35,6 +49,27 @@ export const routes = [
   { path: '/about', name: 'About', element: <About /> },
   { path: '/about/contact', name: 'Contact', element: <Contact /> },
   { path: '/about/teams', name: 'Teams', element: <Teams /> },
+  // Academy routes
+  {
+    path: '/academy/kids-programming',
+    name: 'KidsProgramming',
+    element: <KidsProgramming />,
+  },
+  {
+    path: '/academy/kids-tutorial',
+    name: 'KidsTutorial',
+    element: <KidsTutorial />,
+  },
+  {
+    path: '/academy/web3-development',
+    name: 'Web3Development',
+    element: <Web3Development />,
+  },
+  {
+    path: '/academy/full-stack-dev',
+    name: 'FullStackDev',
+    element: <FullStackDev />,
+  },
   // Auth routes
   { path: '/login', name: 'Login', element: <Login /> },
   { path: '/register', name: 'Register', element: <Register /> },
