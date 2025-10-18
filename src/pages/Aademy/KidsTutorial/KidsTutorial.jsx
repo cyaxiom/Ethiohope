@@ -14,6 +14,7 @@ import missionFour from "@images/mission-four.png";
 import blogOne from "@images/blog-one.png";
 import blogTwo from "@images/blog-two.png";
 import blogThree from "@images/blog-three.png";
+import { Plus } from "lucide-react";
 
 
 
@@ -25,6 +26,7 @@ export default function KidsTutorial() {
       <LearningMaterials/>
       <MissionSection/>
       <BlogSection/>
+      <FAQSection/>
     </div>
   );
 }
@@ -385,6 +387,46 @@ export  function BlogSection() {
             </span>
                 </a>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+// ***********FAQs section ************************//
+
+
+export  function FAQSection() {
+  const faqs = [
+    {
+      q: "What makes WonderKids different from other education platforms?",
+    },
+    {
+      q: "How can I access WonderKids?",
+    },
+    {
+      q: "What about the security of children’s data using this platform?",
+    },
+  ];
+
+  return (
+    <section className="relative py-24 bg-white text-gray-900">
+      <div className="max-w-4xl mx-auto px-6 md:px-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-12">
+          Frequently <span className="text-[#7b5cff] italic font-semibold">asked</span> questions
+        </h2>
+
+        <div className="space-y-4">
+          {faqs.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex justify-between items-center bg-[#faf7ff] hover:bg-[#f3edff] transition rounded-full px-6 py-4 cursor-pointer shadow-sm"
+            >
+              <span className="text-gray-700 font-medium">{item.q}</span>
+              <Plus className="w-5 h-5 text-[#7b5cff]" />
             </div>
           ))}
         </div>
