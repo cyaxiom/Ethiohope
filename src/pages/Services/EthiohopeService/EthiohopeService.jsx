@@ -2,6 +2,7 @@ import React from 'react'
 import Hero from "../../../components/Services/EthiohopeService/Hero"
 import ClientLogos from '../../../components/Services/EthiohopeService/ClientLogos'
 import RecentSEOWork from '../../../components/Services/EthiohopeService/RecentSEOWork'
+import AboutUs from '../../../components/Services/EthiohopeService/Aboutus'
 
 
 function EthiohopeService() {
@@ -10,6 +11,7 @@ function EthiohopeService() {
       <Hero />
       <ClientLogos />
       <RecentSEOWork />
+      <AboutUs />
     </div>
   )
 }

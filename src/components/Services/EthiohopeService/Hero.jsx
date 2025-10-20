@@ -7,6 +7,7 @@ import styles from './styles/Hero.module.css';
 import hero2 from '../../../assets/images/services/EthiohopeService/hero2.png';
 import hero3 from '../../../assets/images/services/EthiohopeService/hero3.png';
 import { GoChevronRight } from "react-icons/go";
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
    const canvasRef = useRef(null);
@@ -211,9 +212,9 @@ const Hero = () => {
                      </p>
                      <button
                         onClick={scrollToServices}
-                        className={`text-white ... max-md:mx-auto ${styles.ctaButton}`}
-                     >
-                        <span>Explore Solutions</span> <GoChevronRight className="inline-block ml-2" />
+                        className={`text-white ... max-md:mx-auto cursor-pointer ${styles.ctaButton}`}
+                     >  
+                        <Link to="/#/">Explore Solutions</Link> <GoChevronRight className="inline-block ml-2" />
                      </button>
                   </div>
                </div>

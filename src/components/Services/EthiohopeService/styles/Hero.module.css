@@ -7,11 +7,10 @@
   width: 280px;
   height: 160px;
 }
-
 .ctaButton:hover {
   background-image: url("../../../../assets/images/services/EthiohopeService/ctaImg1.svg");
+  transition: background-image 300ms ease;
 }
-/* Add this to your CSS file */
 @keyframes float {
   0%,
   100% {
@@ -21,7 +20,6 @@
     transform: translateY(-6px);
   }
 }
-
 .animate-float {
   animation: float 10s ease-in-out infinite;
 }
