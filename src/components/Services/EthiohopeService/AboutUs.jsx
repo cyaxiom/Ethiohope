@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import about from "../../../assets/images/services/EthiohopeService/about.svg";
 
 // Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -33,6 +34,7 @@ export default function AboutUs() {
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse",
+            once: true,
           },
         }
       );
@@ -48,6 +50,7 @@ export default function AboutUs() {
           trigger: h1Ref.current,
           start: "top 80%",
           toggleActions: "play pause resume reset",
+          once: true,
         },
       });
 
@@ -85,7 +88,7 @@ export default function AboutUs() {
   return (
     <div className="min-h-screen overflow-hidden flex items-center justify-center bg-[#010315] p-8">
       <div
-        className="flex flex-col lg:flex-row gap-8 justify-between w-full items-center"
+        className="flex flex-col lg:flex-row gap-8 justify-between w-full w-[992px]:justify-start items-center w-[992px]:max-w-full relative"
         style={{
           backgroundImage: `url(${aboutBg})`,
           backgroundPosition: "right",
@@ -95,9 +98,10 @@ export default function AboutUs() {
         }}
       >
         {/* Left column: text */}
-        <div ref={containerRef} className="lg:w-1/2 text-white">
-          <div className="inline-block mb-6">
-            <span className="px-3 py-1 rounded-full bg-[#0f1220]/60 border border-[#2b2340] text-sm">
+        <div ref={containerRef} className="lg:w-1/2  text-[#c9c3d6]">
+          <div className="inline-block mb-6 ">
+            <span className="px-3 py-1 bg-[#151727] rounded-full flex justify-between gap-2 border border-[#6e6c75] text-sm">
+              <img src={about} alt="" />
               About us
             </span>
           </div>
@@ -117,7 +121,7 @@ export default function AboutUs() {
             sensitive data. Our commitment to innovation and customer
             satisfaction makes us a reliable in safeguarding your digital
             assets.
-          </p> 
+          </p>
 
           <Link to="/#/">
             <div
@@ -153,17 +157,16 @@ export default function AboutUs() {
         {/* Right column */}
         <div className="w-1/2 justify-end z-10 relative">
           {" "}
-          {/* Added relative here */}
           <div className="relative">
             {" "}
-            {/* Added relative container */}
-            {/* Small About Background - Made larger and absolute */}
             <div
               className="absolute pt-6 pl-6 flex items-center md:right-78 top-5 bg-cover bg-center w-[200px] h-[200px] transform scale-150"
               // Increased size with w/h and scale, you can adjust these values
               style={{
                 backgroundImage: `url(${smallAboutBg})`,
                 backgroundPosition: "right",
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
                 zIndex: 20,
               }}
             >
