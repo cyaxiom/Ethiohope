@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
-import img1 from "../../../assets/images/Services/EthiohopeService/img1.png";
-import img2 from "../../../assets/images/Services/EthiohopeService/img2.png";
-import img3 from "../../../assets/images/Services/EthiohopeService/img3.png";
-import img4 from "../../../assets/images/Services/EthiohopeService/img4.png";
-import img5 from "../../../assets/images/Services/EthiohopeService/img5.png";
-import img6 from "../../../assets/images/Services/EthiohopeService/img6.png";
-import img7 from "../../../assets/images/Services/EthiohopeService/img7.svg";
+import img1 from '../../../assets/images/services/EthiohopeService/img1.png';
+import img2 from "../../../assets/images/services/EthiohopeService/img2.png";
+import img3 from "../../../assets/images/services/EthiohopeService/img3.png";
+import img4 from "../../../assets/images/services/EthiohopeService/img4.png";
+import img5 from "../../../assets/images/services/EthiohopeService/img5.png";
+import img6 from "../../../assets/images/services/EthiohopeService/img6.png";
+import img7 from "../../../assets/images/services/EthiohopeService/img7.svg";
 import bgservicework from "../../../assets/images/services/EthiohopeService/bgservicework.png";
 
 const SecurityWorkflow = () => {
@@ -102,7 +102,7 @@ const SecurityWorkflow = () => {
 
             {/* Arrow (between items except last) */}
             {index < steps.length - 1 && (
-              <div className="absolute text-blue-400 mt-[130px] ml-[390px]">
+              <div className="absolute hidden md:block text-blue-400 mt-[130px] ml-[390px]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="80"

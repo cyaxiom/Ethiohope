@@ -5,6 +5,8 @@ import RecentSEOWork from "../../../components/Services/EthiohopeService/RecentS
 import AboutUs from "../../../components/Services/EthiohopeService/AboutUs";
 import SecurityFeatures from "../../../components/Services/EthiohopeService/SecurityFeatures";
 import SecurityWorkflow from "../../../components/Services/EthiohopeService/SecurityWorkflow";
+import IndustriesSection from "../../../components/Services/EthiohopeService/IndustriesSection";
+import CustomerStories from "../../../components/Services/EthiohopeService/CustomerStories";
 
 function EthiohopeService() {
   return (
@@ -15,6 +17,8 @@ function EthiohopeService() {
       <AboutUs />
       <SecurityFeatures />
       <SecurityWorkflow />
+      <IndustriesSection />
+      <CustomerStories />
     </div>
   );
 }
