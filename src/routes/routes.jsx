@@ -22,9 +22,19 @@ const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
 const KidsProgramming = React.lazy(() =>
   import('@pages/Aademy/KidsProgramming/KidsProgramming')
 );
+
+const KidsTutorial =React.lazy(() =>
+import('@pages/Aademy/KidsTutorial/KidsTutorial')
+)
  const AllKidsCourses = React.lazy(() =>
   import('@pages/Aademy/KidsProgramming/components/AllCourses')
 );
+const Web3Development = React.lazy(() =>
+import('@pages/Aademy/Web3Development/Web3Development')
+)
+const FullStackDev = React.lazy(() =>
+import('@pages/Aademy/FullStackDev/FullStackDev')
+)
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
