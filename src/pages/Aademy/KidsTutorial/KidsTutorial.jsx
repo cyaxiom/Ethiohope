@@ -14,10 +14,10 @@ import missionFour from "@images/mission-four.png";
 import blogOne from "@images/blog-one.png";
 import blogTwo from "@images/blog-two.png";
 import blogThree from "@images/blog-three.png";
-import { Plus } from "lucide-react";
+import { Plus,Minus } from "lucide-react";
 import joinCommunity from "@images/join-community.png";
 
-
+import { useState } from "react";
 
 export default function KidsTutorial() {
   return (
@@ -401,18 +401,29 @@ export  function BlogSection() {
 // ***********FAQs section ************************//
 
 
-export  function FAQSection() {
+
+
+export function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(null);
+
   const faqs = [
     {
       q: "What makes WonderKids different from other education platforms?",
+      a: "WonderKids provides interactive learning with gamification and personalized content designed for children."
     },
     {
       q: "How can I access WonderKids?",
+      a: "You can access it from any device with internet — mobile, tablet, or desktop through our website or app."
     },
     {
       q: "What about the security of children’s data using this platform?",
+      a: "We strictly follow child privacy and safety policies. Data is encrypted and never shared with third parties."
     },
   ];
+
+  const handleToggle = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
   return (
     <section className="relative py-24 bg-white text-gray-900">
@@ -423,12 +434,24 @@ export  function FAQSection() {
 
         <div className="space-y-4">
           {faqs.map((item, idx) => (
-            <div
-              key={idx}
-              className="flex justify-between items-center bg-[#faf7ff] hover:bg-[#f3edff] transition rounded-full px-6 py-4 cursor-pointer shadow-sm"
-            >
-              <span className="text-gray-700 font-medium">{item.q}</span>
-              <Plus className="w-5 h-5 text-[#7b5cff]" />
+            <div key={idx} className="bg-[#faf7ff] rounded-2xl shadow-sm">
+              <div
+                onClick={() => handleToggle(idx)}
+                className="flex justify-between items-center hover:bg-[#f3edff] transition rounded-full px-6 py-4 cursor-pointer"
+              >
+                <span className="text-gray-700 font-medium">{item.q}</span>
+                {openIndex === idx ? (
+                  <Minus className="w-5 h-5 text-[#7b5cff]" />
+                ) : (
+                  <Plus className="w-5 h-5 text-[#7b5cff]" />
+                )}
+              </div>
+
+              {openIndex === idx && (
+                <div className="px-6 pb-4 text-gray-600 text-sm">
+                  {item.a}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -438,7 +461,7 @@ export  function FAQSection() {
 }
 
 // ******************Join Community Section **********//
-/* ---------- image imports ---------- */
+
 
 
 export  function JoinCommunitySection() {
