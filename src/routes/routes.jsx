@@ -18,20 +18,13 @@ const Events = React.lazy(() => import('@pages/Community/Events'));
 const Forum = React.lazy(() => import('@pages/Community/Forum'));
 const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
 
-// Academy routes (directory name is 'Aademy')
+// Academy routes
 const KidsProgramming = React.lazy(() =>
   import('@pages/Aademy/KidsProgramming/KidsProgramming')
 );
-const KidsTutorial = React.lazy(() =>
-  import('@pages/Aademy/KidsTutorial/KidsTutorial')
+ const AllKidsCourses = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/components/AllCourses')
 );
-const Web3Development = React.lazy(() =>
-  import('@pages/Aademy/Web3Development/Web3Development')
-);
-const FullStackDev = React.lazy(() =>
-  import('@pages/Aademy/FullStackDev/FullStackDev')
-);
-
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
@@ -41,6 +34,10 @@ const KidsTutoring = React.lazy(() =>
 );
 const ProjectServices = React.lazy(() =>
   import('@pages/Services/ProjectServices/ProjectServices')
+);
+
+const CourseDetail = React.lazy(() =>
+  import('@pages/Aademy/KidsProgramming/components/CourseDetail')
 );
 
 export const routes = [
@@ -77,9 +74,15 @@ export const routes = [
   { path: '/community/events', name: 'Events', element: <Events /> },
   { path: '/community/forum', name: 'Forum', element: <Forum /> },
   { path: '/community/mentors', name: 'Mentors', element: <Mentors /> },
+  // Academy routes
+  {
+    path: '/academy/kids-programming',
+    name: 'KidsProgramming',
+    element: <KidsProgramming />,
+  },
   // Services routes
   {
-    path: '/services',
+    path: '/services/ethiohope-service',
     name: 'EthiohopeServices',
     element: <EthiohopeServices />,
   },
@@ -87,6 +90,16 @@ export const routes = [
     path: '/services/kids-tutoring',
     name: 'KidsTutoring',
     element: <KidsTutoring />,
+  },
+  {
+    path: '/academy/kids-programming/all_kids_course',
+    name: 'AllKidsCourses',
+    element: <AllKidsCourses />,
+  },
+  {
+    path: '/academy/kids-programming/course/:id',
+    name: 'CourseDetail',
+    element: <CourseDetail />,
   },
   {
     path: '/services/project-services',

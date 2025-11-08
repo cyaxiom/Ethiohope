@@ -1,7 +1,14 @@
-import React from 'react';
+import React from 'react'
+import Hero from "../../../components/Services/EthiohopeService/Hero"
+
 
 function EthiohopeService() {
-  return <div>EthiohopeService</div>;
+  return (
+    <>
+      <Hero />
+
+    </>
+  )
 }
 
-export default EthiohopeService;
+export default EthiohopeService

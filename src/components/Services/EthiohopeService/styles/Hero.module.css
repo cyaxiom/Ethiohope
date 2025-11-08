@@ -1,0 +1,15 @@
+
+
+.ctaButton {
+  background-image: url('../../../../assets/images/services/EthiohopeService/ctaImg2.svg');
+  background-position: center;
+   background-size: contain;
+  background-repeat: no-repeat;
+
+  width: 360px;
+  height: 160px; 
+}
+
+.ctaButton:hover {
+  background-image: url('../../../../assets/images/services/EthiohopeService/ctaImg1.svg');
+}
