@@ -1,10 +1,13 @@
 import React from "react";
+import { useTheme } from "@provider/ThemeProvider/ThemeProvider";
 import { ArrowRight } from "lucide-react";
 import blogOne from "../assets/images/blog-one.png";
 import blogTwo from "../assets/images/blog-two.png";
 import blogThree from "../assets/images/blog-three.png";
 
 export default function BlogSection() {
+  const { isDark } = useTheme();
+
   const blogs = [
     {
       title: "Learning with Games? Why not!",
@@ -24,10 +27,18 @@ export default function BlogSection() {
   ];
 
   return (
-    <section className="py-24 bg-white text-gray-900">
+    <section
+      className={`py-24 bg-background ${
+        isDark ? "text-foreground" : "text-gray-900"
+      }`}
+    >
       <div className="max-w-6xl mx-auto px-6 md:px-12">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h2
+            className={`text-3xl md:text-4xl font-bold ${
+              isDark ? "text-foreground" : "text-gray-900"
+            }`}
+          >
             Read our <span className="text-[#7b5cff] italic font-semibold">blog</span>
           </h2>
           <a
@@ -36,7 +47,10 @@ export default function BlogSection() {
           >
             See all
             <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-[#7b5cff]">
-              <ArrowRight className="w-4 h-4 text-white transform rotate-[330deg]" strokeWidth={2.5} />
+              <ArrowRight
+                className="w-4 h-4 text-white transform rotate-[330deg]"
+                strokeWidth={2.5}
+              />
             </span>
           </a>
         </div>
@@ -45,7 +59,9 @@ export default function BlogSection() {
           {blogs.map((blog, idx) => (
             <div
               key={idx}
-              className="bg-[#faf7ff] rounded-3xl shadow-sm hover:shadow-md transition overflow-hidden"
+              className={`rounded-3xl shadow-sm hover:shadow-xl transition overflow-hidden transform transition-all duration-300 hover:-translate-y-3 hover:scale-[1.02] ${
+                isDark ? "bg-card border border-border" : "bg-[#faf7ff]"
+              }`}
             >
               <img
                 src={blog.image}
@@ -53,17 +69,30 @@ export default function BlogSection() {
                 className="w-full h-56 object-cover"
               />
               <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3
+                  className={`text-lg font-semibold mb-2 ${
+                    isDark ? "text-foreground" : "text-gray-800"
+                  }`}
+                >
                   {blog.title}
                 </h3>
-                <p className="text-gray-600 text-sm mb-4">{blog.description}</p>
+                <p
+                  className={`text-sm mb-4 ${
+                    isDark ? "text-muted-foreground" : "text-gray-600"
+                  }`}
+                >
+                  {blog.description}
+                </p>
                 <a
                   href="#"
                   className="flex items-center gap-2 text-[#7b5cff] font-medium hover:underline"
                 >
                   Learn more
                   <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-[#7b5cff]">
-                    <ArrowRight className="w-4 h-4 text-white transform rotate-[330deg]" strokeWidth={2.5} />
+                    <ArrowRight
+                      className="w-4 h-4 text-white transform rotate-[330deg]"
+                      strokeWidth={2.5}
+                    />
                   </span>
                 </a>
               </div>

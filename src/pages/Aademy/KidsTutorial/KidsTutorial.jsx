@@ -520,7 +520,7 @@ import JoinCommunitySection from "./components/JoinCommunitySection";
 
 export default function KidsTutorial() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans overflow-visible">
+    <div className="min-h-screen bg-background text-foreground font-sans overflow-visible">
       <HeroSection />
       <FeaturesSection />
       <LearningMaterials />
