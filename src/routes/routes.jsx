@@ -17,6 +17,19 @@ const Register = React.lazy(() => import('@pages/Auth/Register'));
 const Events = React.lazy(() => import('@pages/Community/Events'));
 const Forum = React.lazy(() => import('@pages/Community/Forum'));
 const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
+//Forum routes
+const ForumRegister = React.lazy(() => import('@components/Forum/Register'));
+const ForumLogin = React.lazy(() => import('@components/Forum/Login'));
+const Tags = React.lazy(() => import('@components/Forum/Tags'));
+const Ranking = React.lazy(() => import('@components/Forum/Ranking'));
+const Questions = React.lazy(() => import('@components/Forum/Questions'));
+const QuestionDetails = React.lazy(() =>
+  import('@components/Forum/QuestionDetails')
+);
+const MyQuestions = React.lazy(() => import('@components/Forum/MyQuestions'));
+const MyAnswers = React.lazy(() => import('@components/Forum/MyAnswers'));
+const Likes = React.lazy(() => import('@components/Forum/Likes'));
+const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 
 // Academy routes
 const KidsProgramming = React.lazy(() =>
@@ -53,11 +66,65 @@ export const routes = [
   { path: '/community/events', name: 'Events', element: <Events /> },
   { path: '/community/forum', name: 'Forum', element: <Forum /> },
   { path: '/community/mentors', name: 'Mentors', element: <Mentors /> },
-  // Academy routes
+  // Forum sub-routes
   {
-    path: '/academy/kids-programming',
-    name: 'KidsProgramming',
-    element: <KidsProgramming />,
+    path: '/community/forum/register',
+    name: 'ForumRegister',
+    element: <ForumRegister />,
+  },
+  {
+    path: '/community/forum/login',
+    name: 'ForumLogin',
+    element: <ForumLogin />,
+  },
+  // Forum nested routes
+  {
+    path: '/community/forum',
+    name: 'ForumMain',
+    element: Forum,
+    routes: [
+      {
+        path: '/community/forum/tags',
+        name: 'ForumTags',
+        element: <Tags />,
+      },
+      {
+        path: '/community/forum/ranking',
+        name: 'ForumRanking',
+        element: <Ranking />,
+      },
+      {
+        path: '/community/forum',
+        name: 'ForumQuestions',
+        element: <Questions />,
+      },
+      //question details route with id param
+      {
+        path: '/community/forum/questions/:id',
+        name: 'ForumQuestionDetails',
+        element: <QuestionDetails />,
+      },
+      {
+        path: '/community/forum/my-questions',
+        name: 'ForumMyQuestions',
+        element: <MyQuestions />,
+      },
+      {
+        path: '/community/forum/my-answers',
+        name: 'ForumMyAnswers',
+        element: <MyAnswers />,
+      },
+      {
+        path: '/community/forum/likes',
+        name: 'ForumLikes',
+        element: <Likes />,
+      },
+      {
+        path: '/community/forum/profile',
+        name: 'ForumProfile',
+        element: <ForumProfile />,
+      },
+    ],
   },
   // Services routes
   {
