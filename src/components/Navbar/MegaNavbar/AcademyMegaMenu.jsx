@@ -1,7 +1,7 @@
-
-import { Clock, Star } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Star, Clock, Users, Award } from 'lucide-react';
+
 React;
 const AcademyMegaMenu = ({ data, onClose }) => {
   return (
@@ -25,11 +25,10 @@ const AcademyMegaMenu = ({ data, onClose }) => {
               key={index}
               to={item.path}
               onClick={onClose}
-              className={`block p-6 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${
-                item.featured
-                  ? 'bg-gradient-to-br from-purple-500/10 to-pink-600/10 border-purple-500/20'
-                  : 'bg-background border-border/20'
-              }`}
+              className={`block p-6 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${item.featured
+                ? 'bg-gradient-to-br from-purple-500/10 to-pink-600/10 border-purple-500/20'
+                : 'bg-background border-border/20'
+                }`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">

@@ -1,5 +1,3 @@
-// @components/Navbar/MegaNavbar/CommunityMegaMenu.jsx
-import { Calendar, Star } from 'lucide-react';
 import React from 'react';
 import { MessageCircle, Users, Calendar, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -30,11 +28,10 @@ const CommunityMegaMenu = ({ data, onClose }) => {
                 onClose();
               }}
               key={index}
-              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${
-                item.featured
-                  ? 'bg-gradient-to-br from-green-500/10 to-emerald-600/10 border-green-500/20'
-                  : 'bg-background border-border/20'
-              }`}
+              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${item.featured
+                ? 'bg-gradient-to-br from-green-500/10 to-emerald-600/10 border-green-500/20'
+                : 'bg-background border-border/20'
+                }`}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-2xl">{item.icon}</div>

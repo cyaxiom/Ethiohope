@@ -35,9 +35,13 @@ const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 const KidsProgramming = React.lazy(() =>
   import('@pages/Aademy/KidsProgramming/KidsProgramming')
 );
- const AllKidsCourses = React.lazy(() =>
+const AllKidsCourses = React.lazy(() =>
   import('@pages/Aademy/KidsProgramming/components/AllCourses')
 );
+const Web3Development = React.lazy(() =>
+  import('@pages/Aademy/Web3Development/Web3Development')
+);
+
 // Services routes
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
@@ -62,6 +66,8 @@ export const routes = [
   // Auth routes
   { path: '/login', name: 'Login', element: <Login /> },
   { path: '/register', name: 'Register', element: <Register /> },
+  // Academy routes
+  { path: '/academy/web3-development', name: 'Web3Development', element: <Web3Development /> },
   // Community routes
   { path: '/community/events', name: 'Events', element: <Events /> },
   { path: '/community/forum', name: 'Forum', element: <Forum /> },
