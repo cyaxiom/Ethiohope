@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import styles from "./GetInTouch.module.css";
-import getIntouchicon from "../../../assets/images/contact/getIntouchicons.png";
-import getIntouchicon2 from "../../../assets/images/contact/getIntouchicon2.png";
+import getIntouchicon from "../../../assets/images/contact/getIntouchIcons.png";
+import getIntouchicon2 from "../../../assets/images/contact/getInTouchicon2.png";
 import getIntouchicon3 from "../../../assets/images/contact/getIntouchicon3.png";
 import getIntouchicon4 from "../../../assets/images/contact/getIntouchicon4.png";
-import getintouchBg from "../../../assets/images/contact/getintouchBg.png"
+import getintouchBg from "../../../assets/images/contact/getintouchBg.png";
 
 const GetInTouch = ({ darkMode }) => {
    const sectionRef = useRef(null);

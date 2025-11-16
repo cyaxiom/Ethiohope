@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
-import contactleftside from "../../../assets/images/contact/contactleftside.png";
-import contactrightside from "../../../assets/images/contact/contactrightside.png";
+import contactleftside from "../../../assets/images/contact/contactLeftSide.png";
+import contactrightside from "../../../assets/images/contact/contactRightSide.png";
 
 const ContactForm = ({ darkMode }) => {
    const sectionRef = useRef(null);
