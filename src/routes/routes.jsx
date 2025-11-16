@@ -52,12 +52,16 @@ const FullStackDev = React.lazy(() =>
 const EthiohopeServices = React.lazy(() =>
   import('@pages/Services/EthiohopeService/EthiohopeService')
 );
+const ProgrammingService = React.lazy(() =>
+  import('@pages/Services/ProgrammingService/ProgrammingService')
+);
+
 const KidsTutoring = React.lazy(() =>
   import('@pages/Services/KidsTutoring/KidsTutoring')
 );
-const ProjectServices = React.lazy(() =>
-  import('@pages/Services/ProjectServices/ProjectServices')
-);
+// const ProjectServices = React.lazy(() =>
+//   import('@pages/Services/ProjectServices/ProjectServices')
+// );
 
 const CourseDetail = React.lazy(() =>
   import('@pages/Aademy/KidsProgramming/components/CourseDetail')
@@ -181,10 +185,12 @@ export const routes = [
     element: <CourseDetail />,
   },
   {
-    path: '/services/project-services',
-    name: 'ProjectServices',
-    element: <ProjectServices />,
+    path: '/services/programming-service',
+    name: 'ProgrammingService',
+    element: <ProgrammingService />,
   },
+
+
   // 404 route - must be last
   { path: '*', name: 'NotFound', element: <NotFound /> },
 ];
