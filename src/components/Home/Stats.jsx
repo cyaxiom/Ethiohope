@@ -1,4 +1,7 @@
 import React from 'react';
+import { DS } from '@/constants/designSystem';
+import { SectionContainer } from '@/components/ui/Container';
+import { Heading, Text } from '@/components/ui/Typography';
 
 export default function Stats() {
   const stats = [
@@ -18,43 +21,44 @@ export default function Stats() {
       gradient: "from-teal-400 to-fuchsia-400" 
     },
   ];
+  
   return (
-    <section className="relative py-24 px-6 sm:px-12 text-foreground overflow-hidden">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-16 bg-background">
-        
-        {/* Left Side: Heading */}
-        <div className="flex-1 text-center lg:text-left">
-          <h2 className="text-4xl sm:text-5xl font-semibold leading-tight">
-            Join a <span className="text-primary">community</span>
-          </h2>
-          <h3 className="text-4xl sm:text-5xl font-semibold mt-2">
-            of millions.
-          </h3>
-          <p className="mt-4 text-muted-foreground max-w-md mx-auto lg:mx-0">
-            Powering the next generation of digital experiences with low costs and high scalability.
-          </p>
-        </div>
-        {/* Right Side: Stats */}
-        <div className="flex-1 flex flex-col gap-12">
-          {stats.map((s, i) => (
-            <div
-              key={i} 
-              className="group text-center lg:text-left transition-transform duration-300 hover:-translate-y-1"
-            >
-              {/* Gradient Value */}
-              <p 
-                className={`text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent transition-transform duration-300 group-hover:scale-105`}
+    <section className="relative text-foreground overflow-hidden bg-background">
+      <SectionContainer sectionSpacing="xl" containerSize="xl">
+        <div className={`${DS.grids.twoColumn} ${DS.spacing.gap.xl} items-center`}>
+          {/* Left Side: Heading */}
+          <div className="text-center lg:text-left">
+            <Heading variant="h1" className="leading-tight">
+              Join a <span className="text-primary">community</span>
+            </Heading>
+            <Heading variant="h1" className="mt-2">
+              of millions.
+            </Heading>
+            <Text size="lg" className="mt-4 max-w-md mx-auto lg:mx-0 line-clamp-3">
+              Powering the next generation of digital experiences with low costs and high scalability.
+            </Text>
+          </div>
+          
+          {/* Right Side: Stats */}
+          <div className="flex flex-col gap-12">
+            {stats.map((s, i) => (
+              <div
+                key={i} 
+                className="group text-center lg:text-left transition-transform duration-300 hover:-translate-y-1"
               >
-                {s.value}
-              </p>
-              {/* Label */}
-              <p className="mt-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                {s.label}
-              </p>
-            </div>
-          ))}
+                <p 
+                  className={`text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent transition-transform duration-300 group-hover:scale-105`}
+                >
+                  {s.value}
+                </p>
+                <Text size="sm" className="mt-2 uppercase tracking-widest font-medium line-clamp-1">
+                  {s.label}
+                </Text>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

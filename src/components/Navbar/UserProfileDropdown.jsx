@@ -72,7 +72,7 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
         {hasDropdown ? (
           <button
             onClick={() => toggleExpand(item.name)}
-            className="flex items-center justify-between w-full px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-cyan-500 transition-all duration-200 rounded-md"
+            className="flex items-center justify-between w-full px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-primary transition-all duration-200 rounded-md"
           >
             <div className="flex items-center">
               <IconComponent className="w-4 h-4 mr-3 transition-colors duration-200" />
@@ -91,7 +91,7 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
         ) : (
           <a
             href={item.path}
-            className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-cyan-500 transition-all duration-200 rounded-md"
+            className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-primary transition-all duration-200 rounded-md"
           >
             <IconComponent className="w-4 h-4 mr-3 transition-colors duration-200" />
             <span className="transition-colors duration-200">{item.name}</span>
@@ -100,7 +100,7 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
 
         {hasDropdown && (
           <CollapsibleSection isExpanded={isExpanded}>
-            <div className="ml-6 pl-1 border-l-2 border-cyan-500/30 mt-1">
+            <div className="ml-6 pl-1 border-l-2 border-primary/30 mt-1">
               {item.dropdown.map((subItem) =>
                 renderDropdownItem(subItem, level + 1)
               )}

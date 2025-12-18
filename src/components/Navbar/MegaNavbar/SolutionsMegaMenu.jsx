@@ -1,9 +1,11 @@
 // @components/Navbar/MegaNavbar/SolutionsMegaMenu.jsx
-import { CheckCircle, Star, Zap } from 'lucide-react';
+import { CheckCircle, Star, Zap, Clock } from 'lucide-react';
 import React from 'react';
-React;
+import {useNavigate} from 'react-router-dom';
 
 const SolutionsMegaMenu = ({ data, onClose }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="p-8">
       <div className="grid grid-cols-4 gap-8">
@@ -11,7 +13,7 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
         <div className="col-span-1">
           <h2 className="text-2xl font-bold text-foreground mb-4">Solutions</h2>
           <p className="text-muted-foreground mb-6">{data.description}</p>
-          <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 p-4 rounded-xl">
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-xl">
             <h4 className="font-semibold text-foreground mb-2">
               Custom Solutions
             </h4>
@@ -28,7 +30,7 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
               key={index}
               className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${
                 item.featured
-                  ? 'bg-gradient-to-br from-orange-500/10 to-red-600/10 border-orange-500/20'
+                  ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
                   : 'bg-background border-border/20'
               }`}
             >
@@ -49,7 +51,7 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
                   {item.delivery}
                 </span>
                 {item.rating && (
-                  <div className="flex items-center gap-1 text-amber-500">
+                  <div className="flex items-center gap-1 text-warning">
                     <Star className="w-4 h-4 fill-current" />
                     <span className="text-sm font-medium">{item.rating}</span>
                   </div>
@@ -57,10 +59,13 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-cyan-600">
+                <span className="text-lg font-bold text-primary">
                   {item.price}
                 </span>
-                <button className="text-sm text-cyan-500 hover:text-cyan-600 transition-colors">
+                <button onClick={()=>{
+                  navigate(item.path);
+                  onClose();
+                }} className="text-sm text-primary hover:text-accent transition-colors">
                   Get Started →
                 </button>
               </div>

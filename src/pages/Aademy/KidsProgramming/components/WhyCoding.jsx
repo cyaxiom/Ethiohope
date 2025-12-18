@@ -11,8 +11,8 @@ function renderBenefit({ icon, title, description, color }, animationProps) {
     >
       <div className="text-center">
         <div className="text-3xl md:text-4xl lg:text-5xl mb-2">{icon}</div>
-        <h3 className="text-lg md:text-xl font-bold text-black dark:text-black mb-1">{title}</h3>
-        <p className="text-sm md:text-base max-w-[160px] mx-auto text-muted-foreground dark:text-gray-700">{description}</p>
+        <h3 className="text-lg md:text-xl font-bold text-foreground mb-1">{title}</h3>
+        <p className="text-sm md:text-base max-w-[160px] mx-auto text-muted-foreground">{description}</p>
       </div>
     </motion.div>
   );
@@ -90,32 +90,34 @@ const WhyCodeSection = () => {
           </div>
         </div>
 
-        {/* Benefits Cards Section */}
-        <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[600px] mx-auto overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div className="relative">
-              <div className="w-[220px] md:w-[300px] lg:w-[350px] h-[220px] md:h-[300px] lg:h-[350px] rounded-full bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 p-[3px] flex items-center justify-center">
-                <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 text-transparent bg-clip-text">4 Key</div>
-                    <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 text-transparent bg-clip-text">Benefits</div>
-                  </div>
-                </div>
-              </div>
+        {/* Benefits Cards Section - Improved Responsive Grid */}
+        <div className="relative py-8">
+          {/* Section Title */}
+          <div className="text-center mb-12">
+            <div className="inline-block">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 via-blue-400 to-purple-500 text-transparent bg-clip-text">4 Key Benefits</div>
             </div>
           </div>
 
-          <div className="absolute top-[5%] right-[10%] md:right-[15%] z-20">
-            {renderBenefit(codingBenefits[0], { animate: { x: ["0%", "8%", "-10%", "5%", "0%"], y: ["0%", "-12%", "6%", "-10%", "0%"] }, transition: { duration: 15, ease: "easeInOut", repeat: Infinity } })}
-          </div>
-          <div className="absolute bottom-[10%] right-[5%] md:right-[10%] z-20">
-            {renderBenefit(codingBenefits[1], { animate: { x: ["0%", "10%", "-5%", "8%", "0%"], y: ["0%", "8%", "-12%", "-5%", "0%"] }, transition: { duration: 18, ease: "easeInOut", repeat: Infinity, delay: 1.5 } })}
-          </div>
-          <div className="absolute bottom-[10%] left-[5%] md:left-[10%] z-20">
-            {renderBenefit(codingBenefits[2], { animate: { x: ["0%", "-10%", "8%", "-5%", "0%"], y: ["0%", "12%", "-6%", "10%", "0%"] }, transition: { duration: 16, ease: "easeInOut", repeat: Infinity, delay: 0.8 } })}
-          </div>
-          <div className="absolute top-[5%] left-[10%] md:left-[15%] z-20">
-            {renderBenefit(codingBenefits[3], { animate: { x: ["0%", "-8%", "10%", "-5%", "0%"], y: ["0%", "10%", "-8%", "5%", "0%"] }, transition: { duration: 17, ease: "easeInOut", repeat: Infinity, delay: 2 } })}
+          {/* Responsive Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto">
+            {codingBenefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                className={`rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center shadow-lg border border-border ${benefit.color} aspect-square min-h-[200px] hover:scale-105 transition-transform duration-300`}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
+                whileHover={{ y: -8, boxShadow: "0 20px 40px rgba(0,0,0,0.1)" }}
+              >
+                <div className="text-center space-y-3">
+                  <div className="text-4xl md:text-5xl mb-2">{benefit.icon}</div>
+                  <h3 className="text-base md:text-lg font-bold text-foreground">{benefit.title}</h3>
+                  <p className="text-sm md:text-base text-muted-foreground leading-snug">{benefit.description}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>

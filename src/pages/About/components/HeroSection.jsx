@@ -4,10 +4,11 @@ import image4 from '../assets/image copy 3.png';
 import image5 from '../assets/image copy 4.png';
 import image2 from '../assets/image copy.png';
 import image1 from '../assets/image.png';
-React;
-function HeroSection({ darkMode }) {
+import Container from '@/components/ui/Container';
+
+function HeroSection() {
 	return (
-		<div className={`relative min-h-screen flex items-center justify-between overflow-hidden py-16 ${darkMode ? 'bg-[#000000]' : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'}` } style={{zIndex:10}}>
+		<div className="relative min-h-screen flex items-center justify-between overflow-hidden py-16 bg-background" style={{zIndex:10}}>
 			{/* Fixed Floating Images at Edges/Corners */}
 			<img src={image1} alt="Floating 1" className="floating-img absolute top-8 left-8 w-24 h-24 z-30" style={{filter:'drop-shadow(0 0 24px #60a5fa)'}} />
 			<img src={image2} alt="Floating 2" className="floating-img absolute bottom-8 left-8 w-20 h-20 z-30" style={{filter:'drop-shadow(0 0 24px #34d399)'}} />
@@ -17,21 +18,21 @@ function HeroSection({ darkMode }) {
 
 			{/* Color Overlays for Interest */}
 			<div className="absolute inset-0 z-20 pointer-events-none">
-				<div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-br from-blue-400/20 via-green-300/10 to-transparent mix-blend-multiply"></div>
-				<div className="absolute bottom-0 right-0 w-1/3 h-1/2 bg-gradient-to-tr from-purple-400/20 via-pink-300/10 to-transparent mix-blend-multiply"></div>
-				<div className="absolute top-1/3 left-1/3 w-32 h-32 rounded-full bg-yellow-300/20 blur-2xl"></div>
+				<div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-br from-primary/10 via-primary/5 to-transparent mix-blend-multiply"></div>
+				<div className="absolute bottom-0 right-0 w-1/3 h-1/2 bg-gradient-to-tr from-primary/10 via-primary/5 to-transparent mix-blend-multiply"></div>
+				<div className="absolute top-1/3 left-1/3 w-32 h-32 rounded-full bg-primary/5 blur-2xl"></div>
 			</div>
 
 			{/* Content - z-40 above all visuals */}
-			<div className="container mx-auto px-6 flex flex-col md:flex-row items-center z-40 relative">
+			<Container className="flex flex-col md:flex-row items-center z-40 relative">
 				<div className="w-full md:w-1/2 relative z-40 text-left pr-0 md:pr-8 mb-10 md:mb-0">
-					<h1 className={`text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight ${darkMode ? 'text-white' : 'text-black'}`}>
-						With A Passion For <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-green-400">Commitment</span> To Success
+					<h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 leading-tight text-foreground">
+						With A Passion For <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">Commitment</span> To Success
 					</h1>
 					{/* Indicator dot and line */}
 					<div className="flex items-center mb-10">
-						<div className={`h-2 w-2 rounded-full ${darkMode ? 'bg-[#7601d3]' : 'bg-blue-400'} mr-2`}></div>
-						<div className={`h-1 w-32 ${darkMode ? 'bg-gradient-to-r from-blue-500 to-green-400' : 'bg-gradient-to-r from-blue-300 to-green-200'}`}></div>
+						<div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
+						<div className="h-1 w-32 bg-gradient-to-r from-primary to-primary/20"></div>
 					</div>
 				</div>
 				{/* Right side image */}
@@ -53,9 +54,11 @@ function HeroSection({ darkMode }) {
 						</div>
 					</div>
 				</div>
-			</div>
+			</Container>
 		</div>
 	);
 }
+
+export default HeroSection;
 
 export default HeroSection;

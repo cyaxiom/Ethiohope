@@ -43,14 +43,14 @@ const AllCourses = () => {
         {/* Left Text */}
         <div className="flex-1 text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
-            Coding Courses <span className="text-green-600">For Kids</span>
+            Coding Courses <span className="text-primary">For Kids</span>
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto md:mx-0 mb-6">
             Ethiohope is an online coding platform that helps your kids learn
             coding in the most engaging way and improves their creativity.
             Explore courses based on age, skill level, and interest.
           </p>
-          <button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition-all duration-300">
+          <button className="bg-primary hover:bg-accent text-primary-foreground px-8 py-3 rounded-lg font-semibold shadow-md transition-all duration-300">
             Book Your Free Trial
           </button>
         </div>
@@ -90,7 +90,7 @@ const AllCourses = () => {
                   />
                 </div>
                 <div className="p-4 flex flex-col gap-1">
-                  <h3 className="text-green-600 dark:text-white text-xl font-bold">
+                  <h3 className="text-primary text-xl font-bold">
                     {course.name}
                   </h3>
                   <span className="text-muted-foreground">

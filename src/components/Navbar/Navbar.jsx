@@ -1,13 +1,11 @@
-
-// Navbar.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import {Link} from 'react-router-dom';
+import { User, ChevronDown } from 'lucide-react';
 import { dashboardLinks, navLinks } from '@common/navLinks';
 import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
 import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
-import { ChevronDown, User } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
 
-React
 
 import {
   auth_btn_border,
@@ -155,8 +153,8 @@ export default function Navbar() {
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-7 h-7 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
+            <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">C</span>
             </div>
             <span className="text-foreground font-bold text-xl tracking-tight">
               Ethiohope
@@ -173,14 +171,14 @@ export default function Navbar() {
                 onMouseLeave={handleDropdownLeave}
               >
                 {link.path ? (
-                  <a
-                    href={link.path}
-                    className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2"
+                  <Link
+                    to={link.path}
+                    className="cursor-pointer text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 ) : (
-                  <div className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2">
+                  <div className="cursor-pointer text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
                     {link.name}
                     {link.dropdown && <ChevronDown className="ml-1 w-4 h-4" />}
                   </div>
@@ -224,7 +222,7 @@ export default function Navbar() {
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
                   <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
-                    <User className="w-4 h-4 mr-2 text-cyan-400" />
+                    <User className="w-4 h-4 mr-2 text-primary" />
                     LOGIN
                   </button>
                 </div>
