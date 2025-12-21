@@ -5,17 +5,19 @@ import RecentSEOWork from "../../../components/Services/EthiohopeService/RecentS
 import AboutUs from "../../../components/Services/EthiohopeService/AboutUs";
 import SecurityFeatures from "../../../components/Services/EthiohopeService/SecurityFeatures";
 import SecurityWorkflow from "../../../components/Services/EthiohopeService/SecurityWorkflow";
+import GlobalSecurity from "../../../components/Services/EthiohopeService/GlobalSecurity";
 import IndustriesSection from "../../../components/Services/EthiohopeService/IndustriesSection";
 import CustomerStories from "../../../components/Services/EthiohopeService/CustomerStories";
 
 function EthiohopeService() {
   return (
-    <div className="bg-[#010215]">
+    <div className="bg-background">
       <Hero />
       <ClientLogos />
       <RecentSEOWork />
       <AboutUs />
       <SecurityFeatures />
+      <GlobalSecurity />
       <SecurityWorkflow />
       <IndustriesSection />
       <CustomerStories />

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useTheme } from "@provider/ThemeProvider/ThemeProvider";
 import { Plus, Minus } from "lucide-react";
+import { SectionContainer } from "@/components/ui/Container";
+import { Heading, Text } from "@/components/ui/Typography";
 
 export default function FAQSection() {
   const { isDark } = useTheme();
@@ -26,57 +28,50 @@ export default function FAQSection() {
   };
 
   return (
-    <section className={`relative py-24 bg-background ${
-      isDark ? "text-foreground" : "text-gray-900"
-    }`}>
-      <div className="max-w-4xl mx-auto px-6 md:px-12">
-        <h2 className={`text-3xl md:text-4xl font-bold text-center mb-12 ${
-          isDark ? "text-foreground" : "text-gray-900"
-        }`}>
+    <section className="bg-background">
+      <SectionContainer sectionSpacing="xl" containerSize="md">
+        <Heading variant="h2" className="text-center mb-12">
           Frequently <span className="text-[#7b5cff] italic font-semibold">asked</span> questions
-        </h2>
+        </Heading>
 
         <div className="space-y-4">
           {faqs.map((item, idx) => (
-            <div 
-              key={idx} 
-              className={`rounded-2xl shadow-sm ${
-                isDark 
-                  ? "bg-card border border-border" 
+            <div
+              key={idx}
+              className={`rounded-2xl shadow-sm ${isDark
+                  ? "bg-card border border-border"
                   : "bg-[#faf7ff]"
-              }`}
-            >
-              <div
-                onClick={() => handleToggle(idx)}
-                className={`flex justify-between items-center transition rounded-full px-6 py-4 cursor-pointer ${
-                  isDark 
-                    ? "hover:bg-[#7b5cff]/10" 
-                    : "hover:bg-[#f3edff]"
                 }`}
+            >
+              <button
+                onClick={() => handleToggle(idx)}
+                className={`w-full flex justify-between items-center transition rounded-full px-6 py-4 cursor-pointer ${isDark
+                    ? "hover:bg-[#7b5cff]/10"
+                    : "hover:bg-[#f3edff]"
+                  }`}
               >
-                <span className={`font-medium ${
-                  isDark ? "text-foreground" : "text-gray-700"
-                }`}>
+                <span className={`font-medium text-left line-clamp-2 ${isDark ? "text-foreground" : "text-gray-700"
+                  }`}>
                   {item.q}
                 </span>
                 {openIndex === idx ? (
-                  <Minus className="w-5 h-5 text-[#7b5cff]" />
+                  <Minus className="w-5 h-5 text-[#7b5cff] flex-shrink-0 ml-4" />
                 ) : (
-                  <Plus className="w-5 h-5 text-[#7b5cff]" />
+                  <Plus className="w-5 h-5 text-[#7b5cff] flex-shrink-0 ml-4" />
                 )}
-              </div>
+              </button>
 
               {openIndex === idx && (
-                <div className={`px-6 pb-4 text-sm ${
-                  isDark ? "text-muted-foreground" : "text-gray-600"
-                }`}>
-                  {item.a}
+                <div className="px-6 pb-4">
+                  <Text size="sm" className="line-clamp-4">
+                    {item.a}
+                  </Text>
                 </div>
               )}
             </div>
           ))}
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

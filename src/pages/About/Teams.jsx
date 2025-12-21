@@ -1,53 +1,37 @@
-                                                                                                                                                                                                                                
-// cspell:words Linkedin Unsplash marquee CTA
+
 import React from 'react';
-import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 import { Facebook, Instagram, Linkedin, Twitter, ArrowRight } from 'lucide-react';
+import { DS } from '@/constants/designSystem';
+import Container from '@/components/ui/Container';
 
 // Full Team page inspired by reference design with moving side photos and structured flow
 
-const Socials = ({ dark }) => (
+const Socials = () => (
   <div className="flex items-center gap-3 mt-4">
     <a
       href="#"
-      className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
-        dark
-          ? 'text-white border-gray-700 hover:bg-blue-500 hover:border-blue-500'
-          : 'text-gray-700 border-gray-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white'
-      }`}
+      className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
       aria-label="Twitter"
     >
       <Twitter className="w-4 h-4" />
     </a>
     <a
       href="#"
-      className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
-        dark
-          ? 'text-white border-gray-700 hover:bg-blue-600 hover:border-blue-600'
-          : 'text-gray-700 border-gray-300 hover:bg-blue-600 hover:border-blue-600 hover:text-white'
-      }`}
+      className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
       aria-label="Facebook"
     >
       <Facebook className="w-4 h-4" />
     </a>
     <a
       href="#"
-      className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
-        dark
-          ? 'text-white border-gray-700 hover:bg-blue-700 hover:border-blue-700'
-          : 'text-gray-700 border-gray-300 hover:bg-blue-700 hover:border-blue-700 hover:text-white'
-      }`}
+      className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
       aria-label="LinkedIn"
     >
       <Linkedin className="w-4 h-4" />
     </a>
     <a
       href="#"
-      className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
-        dark
-          ? 'text-white border-gray-700 hover:bg-purple-600 hover:border-purple-600'
-          : 'text-gray-700 border-gray-300 hover:bg-purple-600 hover:border-purple-600 hover:text-white'
-      }`}
+      className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
       aria-label="Instagram"
     >
       <Instagram className="w-4 h-4" />
@@ -56,8 +40,6 @@ const Socials = ({ dark }) => (
 );
 
 function Teams() {
-  const { isDark } = useTheme();
-
   // Gallery images for the moving side photos rows
   const gallery1 = [
     'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop',
@@ -152,17 +134,11 @@ function Teams() {
       </style>
 
       {/* Hero/Header with background TEAM text */}
-      <section
-        className={`relative pt-24 pb-16 ${
-          isDark ? 'bg-[#0b0a2a]' : 'bg-gradient-to-br from-blue-50 via-green-50 to-white'
-        }`}
-      >
+      <section className="relative pt-24 pb-16 bg-background">
         {/* Background decorative big TEAM text */}
         <div className="absolute inset-0 flex items-start justify-center select-none pointer-events-none">
           <div
-            className={`mt-10 text-[18vw] font-extrabold tracking-tight ${
-              isDark ? 'text-white/5' : 'text-black/5'
-            }`}
+            className="mt-10 text-[18vw] font-extrabold tracking-tight text-foreground opacity-20"
             style={{ lineHeight: 0.8 }}
           >
             TEAM
@@ -171,26 +147,22 @@ function Teams() {
 
         {/* Floating blobs */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl" />
-          <div className="absolute -bottom-24 -right-16 w-96 h-96 rounded-full bg-purple-500/20 blur-3xl" />
+          <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute -bottom-24 -right-16 w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
         </div>
 
-        <div className="relative container mx-auto px-6">
-          <h1
-            className={`text-4xl md:text-6xl font-extrabold text-center ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}
-          >
+        <Container className="relative">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-center text-foreground">
             Meet Our Dynamic Team
           </h1>
           <div className="flex justify-center mt-4">
-            <div className="h-2 w-24 rounded-full bg-gradient-to-r from-blue-400 to-pink-300" />
+            <div className="h-2 w-24 rounded-full bg-gradient-to-r from-primary to-primary/50" />
           </div>
-          <p className={`max-w-4xl mx-auto text-center mt-6 text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+          <p className="max-w-4xl mx-auto text-center mt-6 text-lg text-muted-foreground">
             Together, we're more than a team. We're a family driven by a shared mission to create
             exceptional solutions and deliver unparalleled service to our clients.
           </p>
-        </div>
+        </Container>
 
         {/* Moving side photos (two rows, opposite directions) */}
         <div className="relative mt-14 space-y-6">
@@ -200,9 +172,7 @@ function Teams() {
               {[...gallery1, ...gallery1].map((src, i) => (
                 <div
                   key={`g1-${i}`}
-                  className={`marquee-item mx-3 rounded-3xl overflow-hidden border ${
-                    isDark ? 'border-white/10' : 'border-black/10'
-                  } shadow-lg`}
+                  className="marquee-item mx-3 rounded-3xl overflow-hidden border border-border shadow-lg"
                 >
                   <img src={src} alt="Team gallery" className="w-full h-full object-cover" />
                 </div>
@@ -215,9 +185,7 @@ function Teams() {
               {[...gallery2, ...gallery2].map((src, i) => (
                 <div
                   key={`g2-${i}`}
-                  className={`marquee-item mx-3 rounded-3xl overflow-hidden border ${
-                    isDark ? 'border-white/10' : 'border-black/10'
-                  } shadow-lg`}
+                  className="marquee-item mx-3 rounded-3xl overflow-hidden border border-border shadow-lg"
                 >
                   <img src={src} alt="Team gallery" className="w-full h-full object-cover" />
                 </div>
@@ -228,27 +196,27 @@ function Teams() {
       </section>
 
       {/* Section title like reference */}
-      <section className={`${isDark ? 'bg-[#0b0a2a]' : 'bg-white'} pt-20 pb-10`}>
-        <div className="container mx-auto px-6">
-          <h2 className={`text-3xl md:text-5xl font-bold text-center ${isDark ? 'text-white' : 'text-black'}`}>
+      <section className="bg-background pt-20 pb-10">
+        <Container>
+          <h2 className="text-3xl md:text-5xl font-bold text-center text-foreground">
             Meet Our Dynamic Team
           </h2>
           <div className="flex justify-center mt-4">
-            <div className="h-2 w-24 rounded-full bg-gradient-to-r from-blue-400 to-pink-300" />
+            <div className="h-2 w-24 rounded-full bg-gradient-to-r from-primary to-primary/50" />
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Spotlight leader section */}
-      <section className={`${isDark ? 'bg-[#0b0a2a]' : 'bg-white'} py-10`}>
-        <div className="container mx-auto px-6">
+      <section className="bg-background py-10">
+        <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left image blob */}
             <div className="flex justify-center lg:justify-start">
               <div className="relative">
-                <div className="absolute -inset-6 rounded-[48px] bg-gradient-to-tr from-blue-500 via-cyan-400 to-purple-500 opacity-60 blur-2xl" />
-                <div className="relative bg-gradient-to-br from-blue-500 to-cyan-500 p-[6px] rounded-[48px] w-[320px] md:w-[420px]">
-                  <div className={`rounded-[44px] ${isDark ? 'bg-[#0b0a2a]' : 'bg-white'} p-2`}>
+                <div className="absolute -inset-6 rounded-[48px] bg-gradient-to-tr from-primary via-primary/50 to-primary/30 opacity-60 blur-2xl" />
+                <div className="relative bg-gradient-to-br from-primary to-primary/50 p-[6px] rounded-[48px] w-[320px] md:w-[420px]">
+                  <div className="rounded-[44px] bg-background p-2">
                     <img
                       src={spotlight.image}
                       alt={spotlight.name}
@@ -260,36 +228,38 @@ function Teams() {
             </div>
             {/* Right content */}
             <div>
-              <h3 className={`text-4xl md:text-5xl font-extrabold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <h3 className="text-4xl md:text-5xl font-extrabold text-foreground">
                 {spotlight.name}
               </h3>
-              <p className={`text-xl font-semibold mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <p className="text-xl font-semibold mt-2 text-foreground">
                 {spotlight.role}
               </p>
-              <p className={`mt-4 max-w-2xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{spotlight.desc}</p>
-              <Socials dark={isDark} />
+              <p className="mt-4 max-w-2xl text-muted-foreground">{spotlight.desc}</p>
+              <Socials />
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Two-column featured rows (2 rows) */}
-      <section className={`${isDark ? 'bg-[#0b0a2a]' : 'bg-white'} py-12`}>
+      <section className="bg-background py-12">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
           {featurePairs.map((p, idx) => (
-            <div key={idx} className="flex items-center gap-6">
+            <div key={idx} className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
               <div className="shrink-0">
-                <div className="p-[3px] rounded-full bg-gradient-to-br from-blue-500 via-pink-500 to-purple-600">
-                  <div className={`w-40 h-40 rounded-full overflow-hidden ${isDark ? 'bg-[#0b0a2a]' : 'bg-white'}`}>
+                <div className="p-[3px] rounded-full bg-gradient-to-br from-primary via-primary/50 to-primary/30">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-background">
                     <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                   </div>
                 </div>
               </div>
               <div>
-                <h4 className={`text-3xl font-extrabold ${isDark ? 'text-white' : 'text-gray-900'}`}>{p.name}</h4>
-                <p className={`font-semibold mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{p.role}</p>
-                <p className={`mt-3 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{p.desc}</p>
-                <Socials dark={isDark} />
+                <h4 className="text-2xl md:text-3xl font-extrabold text-foreground">{p.name}</h4>
+                <p className="font-semibold mt-1 text-foreground">{p.role}</p>
+                <p className="mt-3 text-muted-foreground">{p.desc}</p>
+                <div className="flex justify-center sm:justify-start">
+                  <Socials />
+                </div>
               </div>
             </div>
           ))}
@@ -297,42 +267,38 @@ function Teams() {
       </section>
 
       {/* Avatar grid (simple cards) */}
-      <section className={`${isDark ? 'bg-[#0b0a2a]' : 'bg-white'} py-8`}> 
-        <div className="container mx-auto px-6">
+      <section className="bg-background py-8">
+        <Container>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {peopleGrid.map((src, i) => (
               <div key={i} className="text-center">
                 <div className="flex justify-center">
-                  <div className="p-[3px] rounded-full bg-gradient-to-br from-blue-500 via-pink-500 to-purple-600">
-                    <div className={`w-32 h-32 rounded-full overflow-hidden ${isDark ? 'bg-[#0b0a2a]' : 'bg-white'}`}>
+                  <div className="p-[3px] rounded-full bg-gradient-to-br from-primary via-primary/50 to-primary/30">
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-background">
                       <img src={src} alt="Team member" className="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>
-                <h5 className={`mt-5 text-2xl font-extrabold ${isDark ? 'text-white' : 'text-gray-900'}`}>John Doe</h5>
-                <p className={`${isDark ? 'text-white' : 'text-gray-900'}`}>Founder & CEO</p>
+                <h5 className="mt-5 text-2xl font-extrabold text-foreground">John Doe</h5>
+                <p className="text-muted-foreground">Founder & CEO</p>
                 <div className="flex items-center justify-center gap-4 mt-4">
-                  <Facebook className={`${isDark ? 'text-white/80' : 'text-gray-700/80'}`} />
-                  <Linkedin className={`${isDark ? 'text-white/80' : 'text-gray-700/80'}`} />
-                  <Twitter className={`${isDark ? 'text-white/80' : 'text-gray-700/80'}`} />
-                  <Instagram className={`${isDark ? 'text-white/80' : 'text-gray-700/80'}`} />
+                  <Facebook className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  <Linkedin className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  <Twitter className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  <Instagram className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* CTA Join Now */}
-      <section className={`${isDark ? 'bg-[#0b0a2a]' : 'bg-gray-50'} py-16`}>
-        <div className="container mx-auto px-6">
-          <div
-            className={`rounded-[36px] p-1 ${
-              isDark ? 'bg-gradient-to-r from-blue-500 via-cyan-400 to-pink-500' : 'bg-gradient-to-r from-blue-400 via-cyan-300 to-pink-400'
-            }`}
-          >
-            <div className={`rounded-[32px] px-6 md:px-16 py-12 ${isDark ? 'bg-[#0b0a2a]' : 'bg-white'}`}>
-              <h3 className={`text-3xl md:text-4xl font-extrabold text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
+      <section className="bg-muted/30 py-16">
+        <Container>
+          <div className="rounded-[36px] p-1 bg-gradient-to-r from-primary via-primary/50 to-primary/30">
+            <div className="rounded-[32px] px-6 md:px-16 py-12 bg-background">
+              <h3 className="text-3xl md:text-4xl font-extrabold text-center text-foreground">
                 Join us on this exciting journey, as we innovate, create, and thrive together.
               </h3>
               <div className="flex justify-center mt-8">
@@ -340,8 +306,8 @@ function Teams() {
                   href="/about/contact"
                   className="group relative inline-flex items-center justify-center px-8 py-3 rounded-full btn-glow btn-shine overflow-hidden"
                 >
-                  <span className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600"></span>
-                  <span className="btn-content relative font-semibold text-white flex items-center gap-2 px-2">
+                  <span className="absolute inset-0 rounded-full bg-primary"></span>
+                  <span className="btn-content relative font-semibold text-primary-foreground flex items-center gap-2 px-2">
                     JOIN NOW
                     <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </span>
@@ -349,7 +315,7 @@ function Teams() {
               </div>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     </div>
   );

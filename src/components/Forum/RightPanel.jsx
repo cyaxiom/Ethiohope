@@ -1,41 +1,32 @@
 import React from 'react';
 import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 export default function RightPanel() {
-  const { isDark } = useTheme();
   return (
     <div className="hidden lg:block fixed">
       <div className="space-y-6">
         <div>
-          <h3 className="font-semibold mb-2">Must-read posts</h3>
-          <ul
-            className={`space-y-1 text-sm ${
-              isDark ? 'text-blue-400' : 'text-blue-600'
-            }`}
-          >
+          <h3 className="font-semibold mb-2 text-foreground">Must-read posts</h3>
+          <ul className="space-y-1 text-sm text-primary">
             <li>
-              <a href="#">Please read rules...</a>
+              <a href="#" className="hover:underline">Please read rules...</a>
             </li>
             <li>
-              <a href="#">Vision & Strategy...</a>
+              <a href="#" className="hover:underline">Vision & Strategy...</a>
             </li>
           </ul>
         </div>
 
         <div>
-          <h3 className="font-semibold mb-2">Featured links</h3>
-          <ul
-            className={`space-y-1 text-sm ${
-              isDark ? 'text-blue-400' : 'text-blue-600'
-            }`}
-          >
+          <h3 className="font-semibold mb-2 text-foreground">Featured links</h3>
+          <ul className="space-y-1 text-sm text-primary">
             <li>
-              <a href="#">Source code on GitHub</a>
+              <a href="#" className="hover:underline">Source code on GitHub</a>
             </li>
             <li>
-              <a href="#">Golang best-practices</a>
+              <a href="#" className="hover:underline">Golang best-practices</a>
             </li>
             <li>
-              <a href="#">School dashboard</a>
+              <a href="#" className="hover:underline">School dashboard</a>
             </li>
           </ul>
         </div>

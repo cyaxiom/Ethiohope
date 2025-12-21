@@ -1,6 +1,5 @@
-import React, { use } from 'react';
+import React from 'react';
 import {
-  ArrowBigRight,
   CircleCheckBig,
   Clock,
   Flame,
@@ -19,94 +18,73 @@ const Questions = () => {
   const [activeTag, setActiveTag] = React.useState('New');
   const [questions, setQuestions] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const { isDark } = useTheme();
 
   React.useEffect(() => {
-    // Simulate fetching data
-    setIsLoading(true);
     const getQuestions = async () => {
-      const response = await fetchQuestions(activeTag);
-      setQuestions(response);
-      setIsLoading(false);
+      setIsLoading(true);
+      try {
+        const response = await fetchQuestions(activeTag);
+        setQuestions(response || []);
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+        setQuestions([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
     getQuestions();
   }, [activeTag]);
 
   const tags = [
-    {
-      title: 'New',
-      icon: Clock,
-    },
-    {
-      title: 'Top',
-      icon: MoveUpRight,
-    },
-    {
-      title: 'Hot',
-      icon: Flame,
-    },
-    {
-      title: 'Trending',
-      icon: CircleCheckBig,
-    },
+    { title: 'New', icon: Clock },
+    { title: 'Top', icon: MoveUpRight },
+    { title: 'Hot', icon: Flame },
+    { title: 'Trending', icon: CircleCheckBig },
   ];
 
   return (
-    <div>
-      <h1 className="text-2xl  md:hidden font-bold mb-4">Questions</h1>
-      <div
-        style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: isDark ? '#4B5563 #1F2937' : '#9CA3AF #F3F4F6',
-          overflowY: 'auto',
-        }}
-        className="flex items-center gap-4 my-6 overflow-x-auto "
-      >
+    <div className="w-full">
+      <h1 className="text-2xl md:hidden font-bold mb-4 text-foreground">Questions</h1>
+
+      {/* Filter Tags */}
+      <div className="flex items-center gap-4 my-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-background">
         {tags.map((tag, idx) => (
           <motion.button
-            initial={{ scale: 1 }}
             whileTap={{ scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             key={idx}
-            className={`px-4 py-2 rounded-4xl flex items-center gap-2 ${
-              activeTag === tag.title
-                ? `${isDark ? 'bg-gray-600' : 'bg-blue-500'} text-white`
-                : `${
-                    isDark
-                      ? 'bg-gray-700 text-white'
-                      : 'bg-gray-200 text-[#808080]'
-                  } `
-            }`}
+            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
             onClick={() => setActiveTag(tag.title)}
           >
             <tag.icon className="w-4 h-4" />
-            <p className="text-sm">{tag.title}</p>
+            <span className="text-sm font-medium">{tag.title}</span>
           </motion.button>
         ))}
       </div>
-      <div className="space-y-6">
+
+      {/* Questions List */}
+      <div className="space-y-4">
         {isLoading ? (
-          <div className="text-center text-muted-foreground mt-20">
+          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
             <p className="text-lg">Loading questions...</p>
           </div>
         ) : questions.length === 0 ? (
-          <div className="text-center text-muted-foreground mt-20">
-            <p className="text-lg">No questions available.</p>
-            <p className="text-sm">Be the first to ask a question!</p>
+          <div className="text-center py-20 bg-card rounded-xl border border-border">
+            <p className="text-lg text-foreground font-medium">No questions available.</p>
+            <p className="text-sm text-muted-foreground mb-6">Be the first to ask a question!</p>
             <Link
               to="/community/forum/my-questions"
-              className={`${
-                isDark ? 'bg-gray-600 text-white' : 'bg-blue-500 text-white'
-              } mt-10 inline-block py-3 px-6 rounded-md hover:opacity-90 transition-opacity`}
+              className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
             >
               Ask a Question
             </Link>
           </div>
         ) : (
-          questions.map((question, index) => (
-            <div key={index} className="mb-6">
-              <QuestionCard question={question} />
-            </div>
+          questions.map((question) => (
+            <QuestionCard key={question.id} question={question} />
           ))
         )}
       </div>
@@ -116,13 +94,11 @@ const Questions = () => {
 
 export const QuestionCard = ({ question, type = 'questions' }) => {
   const navigate = useNavigate();
-  // const [answers, setAnswers] = React.useState([]);
-  const [isAnswerVisible, setIsAnswerVisible] = React.useState(false);
-  // const [showViewsTooltip, setShowViewsTooltip] = React.useState(false);
-  const [voteCount, setVoteCount] = React.useState(question.votes || 0);
   const { isDark } = useTheme();
+  const [voteCount, setVoteCount] = React.useState(question.upvotes || question.votes || 0);
 
-  function formatTimeAgo(dateString) {
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return 'some time ago';
     const date = new Date(dateString);
     const now = new Date();
     const secondsAgo = Math.floor((now - date) / 1000);
@@ -143,177 +119,129 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
       }
     }
     return 'just now';
-  }
+  };
 
-  // Handlers for CRUD actions
+  const handleUpvote = async (e) => {
+    e.stopPropagation();
+    try {
+      const response = await upvoteQuestion(question.id);
+      if (response && (response.upvotes !== undefined || response.votes !== undefined)) {
+        setVoteCount(response.upvotes || response.votes);
+      }
+    } catch (error) {
+      console.error('Error upvoting:', error);
+    }
+  };
+
   const handleEdit = (e) => {
-    e.stopPropagation(); // prevent navigating to detail page
+    e.stopPropagation();
     navigate(`/community/forum/my-questions?type=edit&id=${question.id}`);
   };
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this question?')) {
+    if (window.confirm('Are you sure you want to delete this question?')) {
       console.log('Deleting question:', question.id);
-      // TODO: call delete API here
-    }
-  };
-
-  const handleManage = (e) => {
-    e.stopPropagation();
-    navigate(`/community/forum/questions/manage/${question.id}`);
-  };
-
-  const stats = [
-    { icon: LucideEye, count: question.views, name: 'views' },
-    { icon: LucideMessageSquare, count: question.answers, name: 'answers' },
-    {
-      icon: LucideArrowUp,
-      count: voteCount,
-      name: 'votes',
-      className: `${
-        isDark
-          ? 'bg-gray-600 hover:bg-gray-700'
-          : 'bg-blue-500 hover:bg-blue-600'
-      } text-white px-2 py-1 rounded-full`,
-    },
-  ];
-
-  const handleClickStat = async (stat) => {
-    console.log('Clicked stat:', stat);
-    if (stat.name === 'views') {
-      // Show views tooltip
-      // setShowViewsTooltip(!showViewsTooltip);
-    } else if (stat.name === 'answers') {
-      // Show answers tooltip
-      setIsAnswerVisible(!isAnswerVisible);
-    } else if (stat.name === 'votes') {
-      // call api to upvote
-      console.log('Upvoting question:', question.id);
-      const response = await upvoteQuestion(question.id);
-      console.log('Upvoted question:', response);
-      if (response) {
-        console.log('Upvoted question:', response);
-        // Update local state to reflect new vote count
-        setVoteCount(response.votes);
-      }
+      // TODO: Implement delete logic
     }
   };
 
   return (
     <motion.div
-      // onClick={() => navigate(`/community/forum/questions/${question.id}`)}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.99 }}
-      whileHover={{ scale: 1.01 }}
-      transition={{
-        duration: 0.3,
-        type: 'spring',
-        stiffness: 300,
-        damping: 20,
-      }}
-      className="bg-card p-[30px] cursor-pointer rounded-lg shadow-md border border-border"
+      whileHover={{ y: -2 }}
+      className="bg-card border border-border p-5 md:p-6 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer"
+      onClick={() => navigate(`/community/forum/questions/${question.id}`)}
     >
-      <div className="flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="flex gap-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          {/* Author Info */}
+          <div className="flex items-center gap-3 mb-3">
             <img
-              src={question.profile_pic}
-              alt="Profile"
-              className="w-10 h-10 rounded-full"
+              src={question.author?.avatar || question.profile_pic || 'https://via.placeholder.com/40'}
+              alt={question.author?.name || question.author}
+              className="w-8 h-8 rounded-full border border-border object-cover"
             />
-            <div className="flex flex-col">
-              <p className="text-card-foreground font-medium">
-                {question.author}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {question.author?.name || question.author}
               </p>
-              <p className="text-muted-foreground text-sm">
-                {formatTimeAgo(question.created_at)}
+              <p className="text-xs text-muted-foreground">
+                {formatTimeAgo(question.createdAt || question.created_at)}
               </p>
             </div>
           </div>
 
-          {/* More menu OR CRUD buttons */}
-          {type === 'my-questions' ? (
-            <div className="flex space-x-2">
-              <button
-                onClick={handleEdit}
-                className={`px-3 py-1 text-sm rounded ${
-                  isDark
-                    ? 'bg-gray-600 text-white hover:bg-gray-700'
-                    : 'bg-blue-500 text-white hover:bg-blue-600'
-                }`}
-              >
-                Edit
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:bg-red-600"
-              >
-                Delete
-              </button>
-              <button
-                onClick={handleManage}
-                className="px-3 py-1 text-sm rounded bg-gray-500 text-white hover:bg-gray-600"
-              >
-                Manage
-              </button>
-            </div>
-          ) : (
-            <div className="text-muted-foreground">
-              <LucideMoreVertical className="w-5 h-5" />
-            </div>
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="flex flex-col gap-2">
-          <h3 className="text-card-foreground font-semibold mt-2">
-            {question.question}
+          {/* Title & Content */}
+          <h3 className="text-lg font-bold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2">
+            {question.title || question.question}
           </h3>
-          <p className="text-muted-foreground mt-1">{question.description}</p>
+          <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+            {question.content || question.description}
+          </p>
 
-          {/* Tags + Stats */}
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex space-x-2 mt-2">
-              {question.tags.slice(0, 3).map((tag, idx) => (
-                <button
-                  key={idx}
-                  className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-sm"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-            {/* see details */}
-            <button
-              onClick={() =>
-                navigate(`/community/forum/questions/${question.id}`)
-              }
-              className={`flex items-center text-sm ${
-                isDark
-                  ? 'text-blue-300 hover:underline'
-                  : 'text-blue-500 hover:underline'
-              }`}
-            >
-              <span>See Details</span>
-            </button>
-          </div>
-          {/* stats */}
-          <div className="flex items-center justify-end space-x-6 mt-2 text-muted-foreground text-sm">
-            {stats.map((stat, idx) => (
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2">
+            {(question.tags || []).slice(0, 4).map((tag, idx) => (
               <span
-                onClick={() => handleClickStat(stat)}
                 key={idx}
-                className={`flex items-center cursor-pointer ${
-                  stat.className ? stat.className : ''
-                }`}
+                className="px-2.5 py-0.5 bg-muted text-muted-foreground text-xs font-medium rounded-full border border-border/50"
               >
-                <stat.icon className="w-4 h-4 mr-1" /> {stat.count}
+                {tag}
               </span>
             ))}
           </div>
+        </div>
+
+        {/* Stats & Actions */}
+        <div className="flex flex-col items-center gap-4 pt-1">
+          {type === 'my-questions' ? (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleEdit}
+                className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                title="Edit"
+              >
+                <LucideMoreVertical className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                title="Delete"
+              >
+                <LucideMoreVertical className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={handleUpvote}
+                className="flex flex-col items-center gap-1 group"
+              >
+                <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                  <LucideArrowUp className="w-5 h-5 text-primary" />
+                </div>
+                <span className="text-xs font-bold text-foreground">{voteCount}</span>
+              </button>
+
+              <div className="flex flex-col items-center gap-1">
+                <div className="p-2 rounded-lg bg-muted/50">
+                  <LucideMessageSquare className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <span className="text-xs font-bold text-foreground">
+                  {Array.isArray(question.answers) ? question.answers.length : (question.answers || 0)}
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center gap-1">
+                <div className="p-2 rounded-lg bg-muted/50">
+                  <LucideEye className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <span className="text-xs font-bold text-foreground">{question.views || 0}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </motion.div>

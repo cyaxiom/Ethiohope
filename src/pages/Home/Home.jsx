@@ -8,13 +8,15 @@ import Community from '@components/Home/Community';
 
 function Home() {
   return (
-    <div className="max-w-6xl mx-auto font-sans">
-      <Hero />
-      <Partners />
-      <Stats />
-      <Features />
-      <Growth />
-      <Community />
+    <div className="pt-20 font-sans px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <Hero />
+        <Partners />
+        <Stats />
+        <Features />
+        <Growth />
+        <Community />
+      </div>
     </div>
   );
 }

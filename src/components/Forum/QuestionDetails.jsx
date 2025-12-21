@@ -189,9 +189,8 @@ const QuestionDetails = () => {
               <button
                 key={stat.name}
                 onClick={stat.onClick}
-                className={`flex items-center focus:outline-none ${
-                  activeStat === stat.name ? 'text-primary font-semibold' : ''
-                }`}
+                className={`flex items-center focus:outline-none transition-colors ${activeStat === stat.name ? 'text-primary font-semibold' : 'hover:text-foreground'
+                  }`}
               >
                 <Icon className="w-5 h-5 mr-1" />
                 {stat.count}{' '}
@@ -200,45 +199,42 @@ const QuestionDetails = () => {
             );
           })}
         </div>
-        {/* <div> */}
         <button
           onClick={handleUpVote}
-          className="bg-blue-500 py-2 px-3 rounded-xl text-white flex gap-2 hover:scale-105 active:scale-100 transition-all"
+          className="bg-primary py-2 px-4 rounded-xl text-white flex gap-2 hover:scale-105 active:scale-100 transition-all shadow-sm hover:shadow-md"
         >
-          <ArrowUp />
-          upvote
+          <ArrowUp className="w-5 h-5" />
+          Upvote
         </button>
-        {/* </div> */}
       </div>
 
       {/* suggestions */}
-      <div className="mt-8 p-4 border border-border rounded-lg bg-background">
-        <h3 className="text-xl font-semibold opacity-85 text-center">
-          Suggestions
+      <div className="mt-8 p-6 border border-border rounded-xl bg-muted/30">
+        <h3 className="text-xl font-semibold text-foreground mb-6">
+          Your Suggestion
         </h3>
-        <input
+        <textarea
           value={suggestion}
           onChange={(e) => {
             setErrors((prev) => ({ ...prev, ['suggestion']: '' }));
             setSuggestion(e.target.value);
           }}
-          type="text"
           placeholder="Add a suggestion..."
-          className="border border-border mt-10 rounded-lg p-4 w-full"
+          className="w-full min-h-[120px] bg-background border border-border rounded-xl p-4 text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
         />
         {errors.suggestion && (
-          <p className="text-red-500">{errors.suggestion}</p>
+          <p className="text-red-500 text-sm mt-2">{errors.suggestion}</p>
         )}
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-end mt-4 gap-3">
           <button
             onClick={() => setSuggestion('')}
-            className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:scale-105 active:scale-100 transition-all"
+            className="bg-muted text-muted-foreground py-2 px-6 rounded-lg hover:bg-muted/80 transition-all font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSuggestion}
-            className="bg-amber-500 text-white py-2 px-4 rounded-lg ml-2 flex items-center gap-2 hover:scale-105 active:scale-100 transition-all"
+            className="bg-primary text-white py-2 px-6 rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-all font-medium shadow-sm"
           >
             <MessageSquare className="w-4 h-4" />
             Suggest
@@ -284,7 +280,7 @@ const QuestionDetails = () => {
 
                   {/*  Reply Button */}
                   <div className="flex justify-end">
-                    <button className="flex items-center gap-2 hover:bg-gray-100 px-4 py-2 rounded-2xl">
+                    <button className="flex items-center gap-2 hover:bg-muted px-4 py-2 rounded-2xl text-muted-foreground hover:text-foreground transition-colors">
                       <CornerDownRight className="w-4 h-4 mr-1" />
                       Reply
                     </button>

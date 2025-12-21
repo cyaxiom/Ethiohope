@@ -36,7 +36,7 @@ const SecurityWorkflow = () => {
 
   return (
     <div
-      className="py-16 px-4 text-white rounded-3xl mx-4 md:mx-12 lg:mx-10 my-12"
+      className="py-16 px-4 text-foreground rounded-3xl mx-4 md:mx-12 lg:mx-10 my-12"
       style={{
         backgroundImage: `url(${bgservicework})`,
         backgroundSize: "cover",
@@ -45,13 +45,13 @@ const SecurityWorkflow = () => {
       }}
     >
       <div className="text-center mb-12">
-        <div className="px-4 py-1 flex justify-center text-[#8D8C97] mb-3">
-          <span className="flex justify-evenly gap-1 w-[130px] border-[#6e6c75] rounded-full border bg-[#1C1C2E] ">
+        <div className="px-4 py-1 flex justify-center text-muted-foreground mb-3">
+          <span className="flex justify-evenly gap-1 w-[130px] border-border rounded-full border bg-card ">
             <img src={img7} alt="" className="text-[15px]" />
             How we work
           </span>
         </div>
-        <h2 className="text-3xl md:text-5xl font-bold inline-block px-4 py-1 rounded-md">
+        <h2 className="text-3xl md:text-5xl font-bold inline-block px-4 py-1 rounded-md text-foreground">
           Our Security Workflow
         </h2>
       </div>
@@ -82,7 +82,7 @@ const SecurityWorkflow = () => {
             <div
               className={`absolute top-[33%] transform -translate-y-[38%] flex flex-col items-center justify-center ${step.id == '02' ? 'w-48 h-48 md:w-52 md:h-52 lg:w-60 lg:h-60' : ' w-38 h-38 md:w-40 md:h-40 lg:w-48 lg:h-48'}  rounded-full`}
               style={{
-                backgroundColor: "#6D3CCB",
+                backgroundColor: "var(--primary)",
               }}
             >
               <img
@@ -90,19 +90,19 @@ const SecurityWorkflow = () => {
                 alt="icon"
                 className="w-12 md:w-14 mb-2"
               />
-              <h3 className="text-center text-[15px] md:text-[18px]">
+              <h3 className="text-center text-[15px] md:text-[18px] text-white">
                 {step.title}
               </h3>
             </div>
 
             {/* Step Number */}
-            <div className="mt-4 hidden lg:block rounded-sm px-2 py-0.5 text-xl font-semibold">
+            <div className="mt-4 hidden lg:block rounded-sm px-2 py-0.5 text-xl font-semibold text-foreground">
               {step.id}
             </div>
 
             {/* Arrow (between items except last) */}
             {index < steps.length - 1 && (
-              <div className="absolute hidden md:block text-blue-400 mt-[130px] ml-[390px]">
+              <div className="absolute hidden md:block text-primary mt-[130px] ml-[390px]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="80"
@@ -112,7 +112,7 @@ const SecurityWorkflow = () => {
                 >
                   <path
                     d="M0 15h75m0 0l-5-5m5 5l-5 5"
-                    stroke="#3B82F6"
+                    stroke="currentColor"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"

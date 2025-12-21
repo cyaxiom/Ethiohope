@@ -7,7 +7,7 @@ import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 function Badge({ children, className = '' }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border ${className}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border border-border bg-muted text-muted-foreground ${className}`}
     >
       {children}
     </span>
@@ -15,12 +15,9 @@ function Badge({ children, className = '' }) {
 }
 
 function Card({ children, className = '' }) {
-  const { isDark } = useTheme();
   return (
     <div
-      className={`rounded-lg border ${
-        isDark ? 'border-gray-700' : 'border-gray-200'
-      } shadow-sm  ${className}`}
+      className={`rounded-xl border border-border bg-card shadow-sm ${className}`}
     >
       {children}
     </div>
@@ -28,12 +25,9 @@ function Card({ children, className = '' }) {
 }
 
 function CardHeader({ children, className = '' }) {
-  const { isDark } = useTheme();
   return (
     <div
-      className={`p-4 border-b ${
-        isDark ? 'border-gray-700' : 'border-gray-200'
-      } ${className}`}
+      className={`p-6 border-b border-border ${className}`}
     >
       {children}
     </div>
@@ -41,16 +35,13 @@ function CardHeader({ children, className = '' }) {
 }
 
 function CardContent({ children, className = '' }) {
-  return <div className={`p-4 ${className}`}>{children}</div>;
+  return <div className={`p-6 ${className}`}>{children}</div>;
 }
 
 function Avatar({ name }) {
-  const { isDark } = useTheme();
   return (
     <div
-      className={`flex h-6 w-6 items-center justify-center rounded-full ${
-        isDark ? 'bg-gray-700' : 'bg-gray-300'
-      }  text-xs font-bold`}
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white text-xs font-bold"
     >
       {name[0]}
     </div>
@@ -58,11 +49,10 @@ function Avatar({ name }) {
 }
 
 export default function MyAnswers() {
-  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen p-0 ">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <h1 className="text-2xl font-bold mb-4 md:hidden">My Answers</h1>
       <div className="flex">
@@ -71,11 +61,7 @@ export default function MyAnswers() {
           <div className="">
             {/* Header */}
             <div className="mb-8">
-              <p
-                className={`${
-                  isDark ? 'text-gray-300' : 'text-gray-800'
-                }  mb-2 `}
-              >
+              <p className="text-muted-foreground mb-2">
                 Track your contributions to the community. Here are all the
                 answers you’ve provided to help community members.
               </p>
@@ -84,7 +70,7 @@ export default function MyAnswers() {
             {/* Stats */}
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-sm">{answers.length} answers</span>
+                <span className="text-sm font-medium text-foreground">{answers.length} answers</span>
               </div>
             </div>
 
@@ -93,7 +79,7 @@ export default function MyAnswers() {
               {answers.map((answer) => (
                 <Card
                   key={answer.id}
-                  className="hover:shadow-md transition-shadow"
+                  className="hover:shadow-md transition-all border border-border"
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">

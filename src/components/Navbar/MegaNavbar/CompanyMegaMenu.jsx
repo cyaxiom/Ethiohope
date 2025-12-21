@@ -12,7 +12,7 @@ const CompanyMegaMenu = ({ data, onClose }) => {
           <h2 className="text-2xl font-bold text-foreground mb-4">Company</h2>
 
           <p className="text-muted-foreground mb-6">{data.description}</p>
-          <div className="bg-gradient-to-r from-cyan-500/10 to-blue-600/10 p-4 rounded-xl">
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-xl">
             <h4 className="font-semibold text-foreground mb-2">
               Why Choose Us?
             </h4>
@@ -28,7 +28,7 @@ const CompanyMegaMenu = ({ data, onClose }) => {
             <Link
               to={item.path}
               onClick={onClose}
-              className="hover:text-cyan-500"
+              className="hover:text-primary"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-2xl">{item.icon}</div>
@@ -42,7 +42,7 @@ const CompanyMegaMenu = ({ data, onClose }) => {
               </p>
 
               {item.stats && (
-                <div className="flex items-center gap-2 text-sm text-cyan-600">
+                <div className="flex items-center gap-2 text-sm text-primary">
                   <Award className="w-4 h-4" />
                   <span>{item.stats}</span>
                 </div>
@@ -73,7 +73,7 @@ const CompanyMegaMenu = ({ data, onClose }) => {
           <Link
             to="/about"
             onClick={onClose}
-            className="text-cyan-500 hover:text-cyan-600 transition-colors"
+            className="text-primary hover:text-accent transition-colors"
           >
             View Company Overview →
           </Link>

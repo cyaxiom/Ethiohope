@@ -6,8 +6,6 @@ import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 export default function Tags() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('popular');
-  const { isDark } = useTheme();
-  console.log('tags component rendered');
   const [filteredTags, setFilteredTags] = useState([]);
   // Filter + sort tags
   React.useEffect(() => {
@@ -21,10 +19,8 @@ export default function Tags() {
     fetchTags();
   }, [search, sort]);
 
-  console.log('filteredTags', filteredTags);
-
   return (
-    <div className="p-6">
+    <div className="p-6 bg-background text-foreground">
       {/* Header */}
       <h1 className="text-2xl md:hidden font-bold mb-4">Tags</h1>
       <div className="flex justify-between items-center mb-6">
@@ -32,11 +28,7 @@ export default function Tags() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value)}
-          className={`border rounded-lg px-3 py-2 text-sm ${
-            isDark
-              ? 'bg-gray-700 border-gray-600 text-white'
-              : 'bg-white border-gray-300 text-black'
-          }`}
+          className="border border-border rounded-lg px-3 py-2 text-sm bg-card text-foreground focus:ring-2 focus:ring-primary outline-none"
         >
           <option value="popular">Most Popular</option>
           <option value="newest">Newest</option>
@@ -51,7 +43,7 @@ export default function Tags() {
           placeholder="Search tags..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-1/2 border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-400"
+          className="w-full md:w-1/2 border border-border rounded-lg px-4 py-2 text-sm bg-card text-foreground focus:ring-2 focus:ring-primary outline-none"
         />
       </div>
 
@@ -60,25 +52,17 @@ export default function Tags() {
         {filteredTags.map((tag, idx) => (
           <div
             key={idx}
-            className="border rounded-xl p-5 shadow-sm hover:shadow-md transition"
+            className="bg-card border border-border rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
           >
-            <h3
-              className={`${
-                isDark ? 'text-blue-800' : 'text-blue-600'
-              } font-medium text-lg`}
-            >
+            <h3 className="text-primary font-bold text-lg">
               #{tag.name}
             </h3>
-            <p className="text-sm  mt-1 line-clamp-2">{tag.description}</p>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{tag.description}</p>
 
-            <div className="flex justify-between items-center mt-4 text-sm ">
+            <div className="flex justify-between items-center mt-4 text-sm text-muted-foreground">
               <span>{tag.questions} questions</span>
               <span>{tag.followers} followers</span>
             </div>
-
-            {/* <button className="mt-4 w-full px-3 py-2 rounded-lg bg-blue-50 text-blue-600 text-sm font-medium hover:bg-blue-100">
-              Follow
-            </button> */}
           </div>
         ))}
       </div>

@@ -1,5 +1,9 @@
 import React from "react";
 import { useTheme } from "@provider/ThemeProvider/ThemeProvider";
+import { DS } from "@/constants/designSystem";
+import { SectionContainer } from "@/components/ui/Container";
+import { Heading, Text } from "@/components/ui/Typography";
+import { Card } from "@/components/ui/Card";
 
 export default function FeaturesSection() {
   const { isDark } = useTheme();
@@ -36,89 +40,84 @@ export default function FeaturesSection() {
 
   return (
     <section
-      className={`relative py-20 bg-gradient-to-b overflow-hidden ${
-        isDark ? "from-[#1a1625] to-background" : "from-[#FFF8F3] to-white"
-      }`}
+      className={`relative bg-gradient-to-b overflow-hidden ${isDark ? "from-[#1a1625] to-background" : "from-[#FFF8F3] to-white"
+        }`}
     >
+      {/* Decorative Blobs */}
       <div
-        className={`absolute -top-10 -left-10 w-32 h-32 rounded-full opacity-40 blur-3xl ${
-          isDark ? "bg-yellow-600" : "bg-yellow-200"
-        }`}
-      ></div>
+        className={`absolute -top-10 -left-10 w-32 h-32 rounded-full opacity-40 blur-3xl ${isDark ? "bg-yellow-600" : "bg-yellow-200"
+          }`}
+      />
       <div
-        className={`absolute bottom-0 right-0 w-40 h-40 rounded-full opacity-30 blur-2xl ${
-          isDark ? "bg-pink-600" : "bg-pink-200"
-        }`}
-      ></div>
+        className={`absolute bottom-0 right-0 w-40 h-40 rounded-full opacity-30 blur-2xl ${isDark ? "bg-pink-600" : "bg-pink-200"
+          }`}
+      />
 
-      <div className="container mx-auto px-6 md:px-16">
-        <div className="text-center mb-16">
-          <h2
-            className={`text-3xl md:text-4xl font-bold ${
-              isDark ? "text-foreground" : "text-gray-800"
-            }`}
-          >
+      <SectionContainer sectionSpacing="xl" containerSize="lg">
+        {/* Header */}
+        <div className="text-center mb-16 space-y-4">
+          <Heading variant="h2">
             Our <span className="text-purple-500">interactive</span> features
-          </h2>
-          <p
-            className={`mt-4 max-w-2xl mx-auto ${
-              isDark ? "text-muted-foreground" : "text-gray-600"
-            }`}
-          >
+          </Heading>
+          <Text size="lg" className="max-w-2xl mx-auto line-clamp-3">
             We bring joy and creativity into learning. Each tutorial is designed
             to inspire curiosity and confidence in every child.
-          </p>
+          </Text>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-10">
+        {/* Feature Cards */}
+        <div className={`${DS.grids.cards3} ${DS.spacing.gap.lg}`}>
           {features.map((feature, index) => (
-            <div
+            <Card
               key={index}
-              className={`bg-gradient-to-br ${
-                isDark ? feature.bgDark : feature.bgLight
-              } rounded-3xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:-translate-y-3 hover:scale-[1.02] p-8 text-center relative`}
+              padding="lg"
+              hoverable
+              interactive
+              className={`bg-gradient-to-br ${isDark ? feature.bgDark : feature.bgLight
+                } text-center relative h-full flex flex-col`}
             >
+              {/* Icon */}
               <div className="relative w-20 h-20 mx-auto mb-6">
                 <div
-                  className={`absolute inset-0 rounded-full ${
-                    isDark ? feature.shapeDark : feature.shapeLight
-                  } animate-pulse`}
+                  className={`absolute inset-0 rounded-full ${isDark ? feature.shapeDark : feature.shapeLight
+                    } animate-pulse`}
                   style={{
                     clipPath:
                       "polygon(50% 0%, 65% 10%, 80% 0%, 100% 15%, 90% 35%, 100% 50%, 90% 65%, 100% 85%, 80% 100%, 65% 90%, 50% 100%, 35% 90%, 20% 100%, 0% 85%, 10% 65%, 0% 50%, 10% 35%, 0% 15%, 20% 0%, 35% 10%)",
                   }}
-                ></div>
+                />
                 <div className="absolute inset-0 flex items-center justify-center text-4xl">
                   {feature.icon}
                 </div>
               </div>
 
-              <h3
-                className={`text-xl font-semibold mb-2 ${
-                  isDark
-                    ? feature.bgDark.includes("text-white")
-                      ? "text-white"
-                      : "text-foreground"
-                    : "text-gray-800"
-                }`}
-              >
-                {feature.title}
-              </h3>
-              <p
-                className={
-                  isDark
-                    ? feature.bgDark.includes("text-white")
-                      ? "text-white/90"
-                      : "text-muted-foreground"
-                    : "text-gray-600"
-                }
-              >
-                {feature.description}
-              </p>
-            </div>
+              {/* Content */}
+              <div className="space-y-3 flex-grow flex flex-col">
+                <h3
+                  className={`text-xl font-semibold line-clamp-2 min-h-[3.5rem] ${isDark
+                      ? feature.bgDark.includes("text-white")
+                        ? "text-white"
+                        : "text-foreground"
+                      : "text-gray-800"
+                    }`}
+                >
+                  {feature.title}
+                </h3>
+                <p
+                  className={`line-clamp-3 min-h-[4.5rem] ${isDark
+                      ? feature.bgDark.includes("text-white")
+                        ? "text-white/90"
+                        : "text-muted-foreground"
+                      : "text-gray-600"
+                    }`}
+                >
+                  {feature.description}
+                </p>
+              </div>
+            </Card>
           ))}
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

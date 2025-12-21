@@ -3,11 +3,11 @@ React;
 
 const VideoSection = () => {
   return (
-    <section className="relative pt-0 pb-16 px-4 overflow-hidden bg-background -mt-1">
+    <section className="relative pt-16 md:pt-20 pb-16 px-4 overflow-hidden bg-background">
       {/* No decorative gradients - matching CoursesSection style */}
       
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center">
           {/* Left Side - Content */}
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">

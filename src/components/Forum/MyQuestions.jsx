@@ -1,4 +1,4 @@
-import { Image, Send } from 'lucide-react';
+import { Image, Send, MoreVertical } from 'lucide-react';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { sampleQuestions } from '../../api/forum/mock.data';
@@ -101,7 +101,7 @@ const MyQuestions = () => {
   };
   console.log('selectedCategory', selectedCategory);
   return type !== 'edit' && type !== 'create' ? (
-    <div>
+    <div className="bg-background text-foreground">
       <h1 className="text-2xl font-bold mb-2 md:hidden">My Questions</h1>
       <p className="text-muted-foreground">
         Here are the questions you have asked. You can view, edit, or delete
@@ -118,117 +118,124 @@ const MyQuestions = () => {
       </div>
     </div>
   ) : (
-    <div className="max-w-4xl mx-auto mt-8 rounded-lg shadow p-8 bg-card text-card-foreground">
+    <div className="max-w-4xl mx-auto mt-8 rounded-xl shadow-sm p-8 bg-card border border-border text-card-foreground">
       <form className="space-y-6" onSubmit={handleQuestionSubmit}>
-        <select
-          className="w-full border border-border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success bg-background text-foreground"
-          defaultValue=""
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="" disabled>
-            Choose categories
-          </option>
-          {categories.map((category) => (
-            <option
-              key={category.id}
-              // onChange={() => setSelectedCategory(category.name.toLowerCase())}
-              // value={category.name.toLowerCase()}
-            >
-              {category.name}
-            </option>
-          ))}
-        </select>
-        {errors.category && <Error message={errors.category} />}
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          type="text"
-          placeholder="Type catching attention title"
-          className="w-full border border-border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success bg-background text-foreground"
-        />
-        {errors.title && <Error message={errors.title} />}
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={10}
-          placeholder="Type your question"
-          className="w-full border border-border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success bg-background text-foreground resize-none"
-        />
-        {errors.description && <Error message={errors.description} />}
-        {/* add tags */}
-        <div className="flex items-center mt-4">
-          <input
-            value={tags}
-            onChange={(e) => setTags(e.target.value.split(','))}
-            type="text"
-            placeholder="Add a tag separeted by comma"
-            className="border border-border w-full rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success bg-background text-foreground"
-          />
-          {/* <button
-            type="button"
-            className="bg-primary text-primary-foreground px-4 py-2 rounded ml-2"
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-foreground">Category</label>
+          <select
+            className="w-full border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground transition-all"
+            defaultValue=""
+            onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            Add Tag
-          </button> */}
-        </div>
-        <div className="mt-2">
-          <span className="text-sm text-muted-foreground">Tags:</span>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="bg-secondary text-secondary-foreground px-3 py-1 rounded text-sm"
-              >
-                {tag}
-              </span>
+            <option value="" disabled>
+              Choose categories
+            </option>
+            {categories.map((category) => (
+              <option key={category.id}>
+                {category.name}
+              </option>
             ))}
+          </select>
+          {errors.category && <Error message={errors.category} />}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-foreground">Title</label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            type="text"
+            placeholder="Type catching attention title"
+            className="w-full border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground transition-all"
+          />
+          {errors.title && <Error message={errors.title} />}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-foreground">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={8}
+            placeholder="Type your question"
+            className="w-full border border-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground resize-none transition-all"
+          />
+          {errors.description && <Error message={errors.description} />}
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-bold text-foreground">Tags</label>
+          <div className="flex items-center">
+            <input
+              value={tags}
+              onChange={(e) => setTags(e.target.value.split(','))}
+              type="text"
+              placeholder="Add a tag separated by comma"
+              className="border border-border w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground transition-all"
+            />
+          </div>
+          <div className="mt-2">
+            <div className="flex flex-wrap gap-2 mt-1">
+              {tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs font-medium"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="flex items-center justify-between mt-4">
-          {/* add image */}
-          <input
-            type="file"
-            id="fileInput"
-            className="hidden"
-            accept="image/*"
-            onChange={(e) => handleImageChange(e)}
-          />
+
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
           <div className="flex gap-2 items-center">
+            <input
+              type="file"
+              id="fileInput"
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e)}
+            />
             <label
               htmlFor="fileInput"
-              className="cursor-pointer bg-primary text-primary-foreground px-2 md:px-4 py-1 md:py-2 rounded flex items-center gap-2 hover:bg-primary/80"
+              className="cursor-pointer bg-muted text-muted-foreground px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-muted/80 transition-all border border-border"
             >
-              <div className="flex items-center gap-2 ">
-                <Image size={18} />
-                <span>Add Image</span>
-              </div>
+              <Image size={18} />
+              <span className="text-sm font-medium">Add Image</span>
             </label>
-
             {errors.image && <Error message={errors.image} />}
           </div>
-          {/* <div>
-            {image && <img src={image} alt="Selected" className="mt-4" />}
-          </div> */}
-          <div className="flex gap-2">
+
+          <div className="flex gap-3">
             <button
               type="button"
-              className="bg-muted text-muted-foreground px-1  md:px-4 py-1 md:py-2 rounded cursor-not-allowed"
+              className="bg-muted text-muted-foreground px-6 py-2 rounded-xl cursor-not-allowed opacity-50 text-sm font-medium"
               disabled
             >
               Save as draft
             </button>
             <button
               type="submit"
-              className="bg-warning text-white px-1 md:px-4 py-1 md:py-2 rounded hover:bg-error flex items-center gap-2"
+              className="bg-primary text-white px-8 py-2 rounded-xl hover:bg-primary/90 flex items-center gap-2 transition-all font-bold shadow-sm"
             >
               <Send size={18} />
               <span>Publish</span>
             </button>
           </div>
         </div>
-        <div>
-          {image && <img src={image} alt="Selected" className="mt-4" />}
-        </div>
+        {image && (
+          <div className="mt-4 relative group">
+            <img src={image} alt="Selected" className="rounded-xl max-h-64 object-cover border border-border" />
+            <button
+              type="button"
+              onClick={() => setImage('')}
+              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <MoreVertical size={16} />
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

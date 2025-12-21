@@ -11,13 +11,13 @@ import { getProfileDetails } from '../../api/forum';
 
 // --- Small Reusable Components --- //
 function Card({ children, className = '' }) {
-  return <div className={`rounded-lg shadow-sm ${className}`}>{children}</div>;
+  return <div className={`bg-card border border-border rounded-xl shadow-sm ${className}`}>{children}</div>;
 }
 
 function Button({ children, className = '', ...props }) {
   return (
     <button
-      className={`inline-flex items-center justify-center bg-orange font-medium px-4 py-2 rounded-lg hover:bg-orange/90 transition ${className}`}
+      className={`inline-flex items-center justify-center bg-primary text-white font-bold px-6 py-2 rounded-xl hover:bg-primary/90 transition-all shadow-sm hover:shadow-md ${className}`}
       {...props}
     >
       {children}
@@ -27,7 +27,7 @@ function Button({ children, className = '', ...props }) {
 
 function Badge({ children, className = '' }) {
   return (
-    <span className={`px-2 py-1 rounded-md text-xs font-medium ${className}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-bold bg-muted text-muted-foreground border border-border ${className}`}>
       {children}
     </span>
   );
@@ -36,12 +36,12 @@ function Badge({ children, className = '' }) {
 function Avatar({ src, fallback, alt, className = '' }) {
   return (
     <div
-      className={`rounded-full overflow-hidden bg-gray-200 flex items-center justify-center ${className}`}
+      className={`rounded-full overflow-hidden bg-muted border border-border flex items-center justify-center ${className}`}
     >
       {src ? (
         <img src={src} alt={alt} className="w-full h-full object-cover" />
       ) : (
-        <span className="text-lg font-semibold">{fallback}</span>
+        <span className="text-lg font-bold text-muted-foreground">{fallback}</span>
       )}
     </div>
   );
@@ -126,7 +126,7 @@ export default function ForumProfile() {
         <div className="grid grid-cols-3 gap-4 mb-12">
           <Card className="p-6 text-center border border-border">
             <div className="flex items-center justify-center mb-2">
-              <MessageSquare className="w-5 h-5 text-orange" />
+              <MessageSquare className="w-5 h-5 text-primary" />
             </div>
             <div className="text-2xl font-bold text-foreground">
               {profileDetails.answers}
@@ -136,7 +136,7 @@ export default function ForumProfile() {
 
           <Card className="p-6 text-center border border-border">
             <div className="flex items-center justify-center mb-2">
-              <Heart className="w-5 h-5 text-orange" />
+              <Heart className="w-5 h-5 text-primary" />
             </div>
             <div className="text-2xl font-bold text-foreground">
               {profileDetails.likes}
@@ -146,7 +146,7 @@ export default function ForumProfile() {
 
           <Card className="p-6 text-center border border-border">
             <div className="flex items-center justify-center mb-2">
-              <TrendingUp className="w-5 h-5 text-orange" />
+              <TrendingUp className="w-5 h-5 text-primary" />
             </div>
             <div className="text-2xl font-bold text-foreground">
               {profileDetails.reputation}
@@ -157,7 +157,7 @@ export default function ForumProfile() {
 
         {/* About Section */}
         <Card className="p-8 mb-8 border border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">About</h2>
+          <h2 className="text-xl font-bold text-foreground mb-4">About</h2>
           <p className="text-muted-foreground leading-relaxed mb-6">
             {profileDetails.about}
           </p>
@@ -172,7 +172,7 @@ export default function ForumProfile() {
 
         {/* Recent Activity */}
         <Card className="p-8 border border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-6">
+          <h2 className="text-xl font-bold text-foreground mb-6">
             Recent Activity
           </h2>
 
@@ -183,9 +183,9 @@ export default function ForumProfile() {
                   key={idx}
                   className="flex items-start gap-3 pb-4 border-b border-border last:border-b-0"
                 >
-                  <div className="w-2 h-2 bg-orange rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                   <div>
-                    <p className="text-foreground font-medium">
+                    <p className="text-foreground font-bold">
                       {activity.type}: "{activity.content}"
                     </p>
                     <p className="text-sm text-muted-foreground">

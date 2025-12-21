@@ -17,7 +17,7 @@ import { useTheme } from '@provider/ThemeProvider/ThemeProvider';
 function Badge({ children, className = '' }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border ${className}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border border-border bg-muted text-muted-foreground ${className}`}
     >
       {children}
     </span>
@@ -25,12 +25,9 @@ function Badge({ children, className = '' }) {
 }
 
 function Card({ children, className = '' }) {
-  const { isDark } = useTheme();
   return (
     <div
-      className={`rounded-lg border ${
-        isDark ? 'border-gray-700' : 'border-gray-200'
-      } shadow-sm ${className}`}
+      className={`rounded-xl border border-border bg-card shadow-sm ${className}`}
     >
       {children}
     </div>
@@ -38,12 +35,9 @@ function Card({ children, className = '' }) {
 }
 
 function CardHeader({ children, className = '' }) {
-  const { isDark } = useTheme();
   return (
     <div
-      className={`p-4 border-b ${
-        isDark ? 'border-gray-700' : 'border-gray-200'
-      } ${className}`}
+      className={`p-6 border-b border-border ${className}`}
     >
       {children}
     </div>
@@ -51,16 +45,13 @@ function CardHeader({ children, className = '' }) {
 }
 
 function CardContent({ children, className = '' }) {
-  return <div className={`p-4 ${className}`}>{children}</div>;
+  return <div className={`p-6 ${className}`}>{children}</div>;
 }
 
 function Avatar({ name }) {
-  const { isDark } = useTheme();
   return (
     <div
-      className={`flex h-6 w-6 items-center justify-center rounded-full ${
-        isDark ? 'bg-gray-700 text-gray-100' : 'bg-gray-300'
-      }  text-xs font-bold`}
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white text-xs font-bold"
     >
       {name[0]}
     </div>
@@ -95,7 +86,7 @@ function Tabs({ defaultValue, children }) {
 
 function TabsList({ children, active, setActive }) {
   return (
-    <div className="grid w-full grid-cols-2 mb-6 border rounded-lg overflow-hidden">
+    <div className="grid w-full grid-cols-2 mb-8 border border-border rounded-xl overflow-hidden bg-muted/30 p-1">
       {React.Children.map(children, (child) =>
         React.cloneElement(child, { active, setActive })
       )}
@@ -105,19 +96,13 @@ function TabsList({ children, active, setActive }) {
 
 function TabsTrigger({ value, children, active, setActive }) {
   const isActive = active === value;
-  const { isDark } = useTheme();
   return (
     <button
       onClick={() => setActive(value)}
-      className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium ${
-        isActive
-          ? `${isDark ? 'bg-gray-800 text-white' : 'bg-blue-600 text-white'}`
-          : `${
-              isDark
-                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`
-      }`}
+      className={`flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold transition-all rounded-lg ${isActive
+          ? 'bg-card text-primary shadow-sm'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+        }`}
     >
       {children}
     </button>
@@ -132,34 +117,32 @@ function TabsContent({ value, children, active }) {
 //post card
 function PostCard({ post, actionType, actionTime }) {
   const navigate = useNavigate();
-  const { isDark } = useTheme();
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-all border border-border">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               {actionType === 'vote' && (
-                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-0">
+                <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
                   <ArrowUp className="w-4 h-4 inline-block mr-0.5" /> Upvoted
                 </Badge>
               )}
               {actionType === 'like' && (
-                <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-0">
+                <Badge className="bg-red-500/10 text-red-500 border-red-500/20">
                   <Heart className="w-4 h-4 inline-block mr-0.5" /> Liked
                 </Badge>
               )}
             </div>
             <h3
               onClick={() => navigate(`/community/forum/questions/${post.id}`)}
-              className="text-lg font-semibold hover:text-blue-600 cursor-pointer"
+              className="text-lg font-bold text-foreground hover:text-primary cursor-pointer transition-colors"
             >
               {post.title}
             </h3>
             <div
-              className={`flex items-center gap-2 mt-2 text-sm ${
-                isDark ? 'text-gray-400' : 'text-gray-500'
-              }`}
+              className={`flex items-center gap-2 mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'
+                }`}
             >
               <span>by</span>
               <Avatar name={post.author} />
