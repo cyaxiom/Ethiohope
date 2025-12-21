@@ -47,7 +47,7 @@ export default function Stats() {
                 className="group text-center lg:text-left transition-transform duration-300 hover:-translate-y-1"
               >
                 <p 
-                  className={`text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent transition-transform duration-300 group-hover:scale-105`}
+                  className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent transition-transform duration-300 group-hover:scale-105`}
                 >
                   {s.value}
                 </p>

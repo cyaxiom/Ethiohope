@@ -43,8 +43,9 @@ const SecurityFeatures = () => {
             <p className="text-lg text-muted-foreground max-w-xs">{item.desc}</p>
           </div>
         ))}
+          </div>
+        </div>
       </div>
-    </div>
   );
 };
 

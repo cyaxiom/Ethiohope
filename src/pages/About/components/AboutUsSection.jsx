@@ -55,5 +55,3 @@ function AboutUsSection() {
 }
 
 export default AboutUsSection;
-
-export default AboutUsSection;

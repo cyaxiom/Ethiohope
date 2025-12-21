@@ -6,6 +6,7 @@ import RightImage from '../../../assets/images/services/EthiohopeService/heroRig
 import styles from './styles/Hero.module.css';
 import hero2 from '../../../assets/images/services/EthiohopeService/hero2.png';
 import hero3 from '../../../assets/images/services/EthiohopeService/hero3.png';
+import GlobeAnimation from './GlobeAnimation';
 import { GoChevronRight } from "react-icons/go";
 import { Link } from 'react-router-dom';
 
@@ -159,7 +160,7 @@ const Hero = () => {
    return (
       <>
          <div
-            className="relative min-h-screen justify-center  overflow-hidden"
+            className="relative min-h-screen justify-center overflow-hidden"
             style={{
                backgroundImage: `url(${Hero1})`,
                backgroundSize: 'cover',
@@ -170,67 +171,58 @@ const Hero = () => {
             {/* Animated stars background */}
             <canvas
                ref={canvasRef}
-               className="absolute inset-0 w-full h-full"
+               className="absolute inset-0 w-full h-full pointer-events-none"
+               aria-hidden="true"
             />
-            {/* Top  Image */}
-            <div className="absolute top-0 left-0 right-0 z-10 ">
-               <img
-                  src={TopImage}
-                  alt="Security icon"
-                  className=""
-               />
+            {/* Decorative images - hide on small screens */}
+            <div className="hidden md:block absolute top-0 left-0 right-0 z-10 pointer-events-none">
+               <img src={TopImage} alt="Security top" className="w-full" />
             </div>
-            {/*  left  Image */}
-            <div className="absolute  !left-0 z-10  ">
-               <img
-                  src={LeftImage}
-                  alt="Security icon"
-                  className=" "
-               />
+            <div className="hidden lg:block absolute left-0 z-10 pointer-events-none">
+               <img src={LeftImage} alt="Security left" className="max-w-xs lg:max-w-sm" />
             </div>
-            {/*  Right  Image */}
-            <div className="absolute right-0 z-10  ">
-               <img
-                  src={RightImage}
-                  alt="Security icon"
-                  className=""
-               />
+            <div className="hidden lg:block absolute right-0 z-10 pointer-events-none">
+               <img src={RightImage} alt="Security right" className="max-w-xs lg:max-w-sm" />
             </div>
 
             {/* Hero Content */}
-            <div className="relative mx-auto md:max-w-4xl xl:max-w-6xl !pt-[180px] px-6 min-h-[calc(100vh-60px)]">
-               <div className="flex flex-col pb-8 max-md:pb-0 max-md:text-center max-md:items-center justify-start">
-                  <div className='flex max-md:justify-center justify-start'>
-                     <h1 className="text-[60px] md:text-[120px] lg:text-[140px] xl:text-[180px] mb-4 leading-tight uppercase font-medium tracking-[0.2em] inline-block bg-gradient-to-b from-white to-[#292152] bg-clip-text text-transparent font-stretch-ultra-condensed"
-                     >
-                        {displayText}
-                     </h1>
-                  </div>
-                  <div className="lg:flex lg:justify-between lg:items-center max-md:text-center max-md:flex-col max-md:items-center">
-                     <p className="text-4xl text-gray-300 max-w-2xl capitalize font-medium max-md:text-center">
-                        Your Organization's Digital Landscape From Cyber Risks
+            <div className="relative mx-auto md:max-w-4xl xl:max-w-6xl pt-36 px-6 min-h-[calc(100vh-60px)]">
+               <div className="flex flex-col pb-8 text-center md:text-left justify-start">
+                  <div className='flex justify-center md:justify-start'>
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 leading-tight uppercase font-extrabold tracking-tight md:tracking-widest bg-gradient-to-b from-primary to-primary/80 bg-clip-text text-transparent">
+                           {displayText}
+                        </h1>
+                     </div>
+                  <div className="mt-4 lg:flex lg:justify-between lg:items-center md:items-start text-center lg:text-left">
+                     <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 capitalize font-medium">
+                        Protecting your organization's digital landscape from cyber risks.
                      </p>
-                     <button
-                        onClick={scrollToServices}
-                        className={`text-white ... max-md:mx-auto cursor-pointer ${styles.ctaButton}`}
-                     >  
-                        <Link to="/#/">Explore Solutions</Link> <GoChevronRight className="inline-block ml-2" />
-                     </button>
+                     <div className="mt-6 lg:mt-0">
+                        <Link
+                           to="/#/"
+                           onClick={(e) => { e.preventDefault(); scrollToServices(); }}
+                           className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-5 py-3 rounded-full shadow-lg hover:brightness-105 transition text-sm sm:text-base"
+                           aria-label="Explore Solutions"
+                        >
+                           Explore Solutions
+                           <GoChevronRight className="inline-block ml-1" />
+                        </Link>
+                     </div>
                   </div>
                </div>
             </div>
-            <div className="relative bg-transparent p-10">
+            <div className="relative bg-transparent p-8 md:p-10">
                <div className="mx-auto px-6 flex flex-col justify-between items-center">
-                  {/* Animated hero3 image with smooth up and down motion */}
-                  <img
-                     src={hero3}
-                     alt="Bottom image 1"
-                     className="max-w-4xl animate-float  md:-mb-16"
-                  />
+                  {/* Replace static image with animated globe for GIF-like visual */}
+                           <div className="w-full flex justify-center">
+                              <div className="w-full">
+                                 <GlobeAnimation className="max-w-xl md:max-w-2xl lg:max-w-4xl" />
+                              </div>
+                           </div>
                   <img
                      src={hero2}
-                     alt="Bottom image 2"
-                     className="w-full"
+                     alt="Bottom decorative"
+                     className="w-full mt-6 rounded-lg object-cover"
                   />
                </div>
             </div>

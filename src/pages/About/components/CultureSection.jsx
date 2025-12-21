@@ -58,5 +58,3 @@ function CultureSection() {
 }
 
 export default CultureSection;
-
-export default CultureSection;

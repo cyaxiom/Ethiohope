@@ -22,7 +22,7 @@ export default function Growth() {
   const [activeCategory, setActiveCategory] = React.useState('NFTs');
 
   return (
-    <div className="container mx-auto px-4 py-16 bg-background">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-background">
       
       {/* Header & Category Buttons  */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -107,28 +107,28 @@ export default function Growth() {
       <img
         src={logo1}
         alt="CuriousMaze Logo"
-        className="h-10 object-contain"
+        className="h-8 md:h-10 object-contain"
       />
 
       {/* Logo 2 */}
       <img
         src={logo2}
         alt="Monkey Logo"
-        className="h-10 object-contain"
+        className="h-8 md:h-10 object-contain"
       />
 
       {/* Logo 3 */}
       <img
         src={logo3}
         alt="Fox Logo"
-        className="h-10 object-contain"
+        className="h-8 md:h-10 object-contain"
       />
 
       {/* Logo 4 */}
       <img
         src={logo4}
         alt="Okay Logo"
-        className="h-10 object-contain"
+        className="h-8 md:h-10 object-contain"
       />
     </div>
     </div>

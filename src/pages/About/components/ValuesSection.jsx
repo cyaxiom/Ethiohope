@@ -94,5 +94,3 @@ function ValuesSection() {
 }
 
 export default ValuesSection;
-
-export default ValuesSection;

@@ -1,4 +1,4 @@
-import { Image, Send } from 'lucide-react';
+import { Image, Send, MoreVertical } from 'lucide-react';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { sampleQuestions } from '../../api/forum/mock.data';
@@ -232,14 +232,12 @@ const MyQuestions = () => {
               onClick={() => setImage('')}
               className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <LucideMoreVertical size={16} />
+              <MoreVertical size={16} />
             </button>
           </div>
         )}
       </form>
     </div>
-  );
-};
   );
 };
 

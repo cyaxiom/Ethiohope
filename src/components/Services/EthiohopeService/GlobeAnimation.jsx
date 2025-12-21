@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const GlobeAnimation = ({ className = "" }) => {
+export const GlobeAnimation = ({ className = "max-w-md md:max-w-xl lg:max-w-2xl" }) => {
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className} mx-auto`}>
       {/* Container with proper aspect ratio */}
-      <div className="relative w-full max-w-md mx-auto aspect-square">
+      <div className="relative w-full aspect-square">
         {/* Animated Globe */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-full h-full">

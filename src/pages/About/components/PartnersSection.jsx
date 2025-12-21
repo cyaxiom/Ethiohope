@@ -129,22 +129,23 @@ function PartnersSection() {
             </div>
           </div>
         </div>
+        </Container>
         {/* Stats Section */}
   <div className="flex flex-col md:flex-row justify-center items-end gap-8 mt-10 z-10 relative">
           <div className="flex-1 text-center">
             <span className="text-5xl md:text-6xl font-extrabold text-green-400">+123M</span>
             <div className="w-24 h-2 bg-gradient-to-r from-blue-500 to-green-400 mx-auto my-2 rounded-full"></div>
-            <span className={`block text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Clients</span>
+            <span className="block text-2xl font-bold text-foreground">Clients</span>
           </div>
           <div className="flex-1 text-center">
             <span className="text-5xl md:text-6xl font-extrabold text-blue-400">+456K</span>
             <div className="w-24 h-2 bg-gradient-to-r from-green-400 to-blue-500 mx-auto my-2 rounded-full"></div>
-            <span className={`block text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Partners</span>
+            <span className="block text-2xl font-bold text-foreground">Partners</span>
           </div>
           <div className="flex-1 text-center">
             <span className="text-5xl md:text-6xl font-extrabold text-green-400">+789</span>
             <div className="w-24 h-2 bg-gradient-to-r from-blue-500 to-green-400 mx-auto my-2 rounded-full"></div>
-            <span className={`block text-2xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Customers</span>
+            <span className="block text-2xl font-bold text-foreground">Customers</span>
           </div>
         </div>
         {/* Animation keyframes for floating logos */}
@@ -177,7 +178,7 @@ function PartnersSection() {
           }
         `}</style>
       </div>
-    </div>
+
   );
 }
 

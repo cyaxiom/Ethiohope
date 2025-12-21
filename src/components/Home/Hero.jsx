@@ -9,12 +9,12 @@ export default function Hero() {
     <section className="relative text-center overflow-hidden bg-background">
       <SectionContainer sectionSpacing="2xl" containerSize="md">
         <div className="space-y-6">
-          <Display className="leading-tight">
+          <Display className="leading-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
             Powerful for developers. <br />
             <span className="text-muted-foreground">Fast for everyone.</span>
           </Display>
-          
-          <Text size="xl" className="max-w-3xl mx-auto line-clamp-3">
+
+          <Text size="xl" className="max-w-3xl mx-auto line-clamp-3 text-base sm:text-lg md:text-xl">
             Bring blockchain to the people. Solana supports experiences for power
             users, new consumers, and everyone in between.
           </Text>

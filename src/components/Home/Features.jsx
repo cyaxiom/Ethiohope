@@ -41,7 +41,7 @@ export default function Features() {
       <SectionContainer sectionSpacing="xl" containerSize="xl">
         <div className="flex flex-col lg:flex-row items-start gap-12">
           {/* Left Section */}
-          <div className="lg:w-1/3">
+          <div className="w-full lg:w-1/3">
             <Heading variant="h2" className="mb-2">Made for mass adoption.</Heading>
             <a 
               href="#"
@@ -52,7 +52,7 @@ export default function Features() {
           </div>
 
           {/* Right Section: Feature Grid */}
-          <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="w-full lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Fast */}
           <div className="bg-card border border-border p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
             <h3 className="text-xl font-semibold mb-3 flex items-center">
