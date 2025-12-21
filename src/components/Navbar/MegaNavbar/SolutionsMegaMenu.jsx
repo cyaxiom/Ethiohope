@@ -28,7 +28,7 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
           {data.dropdown.map((item, index) => (
             <div
               key={index}
-              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${item.featured
+              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${item.featured
                   ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
                   : 'bg-background border-border/20'
                 }`}
@@ -64,7 +64,7 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
                 <button onClick={() => {
                   navigate(item.path);
                   onClose();
-                }} className="text-sm text-primary hover:text-accent transition-colors">
+                }} className="text-sm text-primary hover:text-accent transition-colors cursor-pointer">
                   Get Started →
                 </button>
               </div>

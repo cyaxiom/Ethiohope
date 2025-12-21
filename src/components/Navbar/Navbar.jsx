@@ -171,12 +171,12 @@ export default function Navbar() {
                 {link.path ? (
                   <Link
                     to={link.path}
-                    className="cursor-pointer text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
+                    className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
                   >
                     {link.name}
                   </Link>
                 ) : (
-                  <div className="cursor-pointer text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
+                  <div className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
                     {link.name}
                     {link.dropdown && <ChevronDown className="ml-1 w-4 h-4" />}
                   </div>
