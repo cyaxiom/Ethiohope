@@ -86,7 +86,7 @@ export default function AboutUs() {
     }
   };
   return (
-    <div className="min-h-screen overflow-hidden flex items-center justify-center bg-[#010315] p-8">
+    <div className="min-h-screen overflow-hidden flex items-center justify-center bg-background p-8">
       <div
         className="flex flex-col lg:flex-row gap-8 justify-between w-full w-[992px]:justify-start items-center w-[992px]:max-w-full relative"
         style={{

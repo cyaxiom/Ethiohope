@@ -1,51 +1,45 @@
 import React from 'react';
-
+import { SectionContainer } from '@/components/ui/Container';
+import { Display, Text } from '@/components/ui/Typography';
+import { Button } from '@/components/ui/Button';
+import { ArrowRight, BookOpen } from 'lucide-react';
 
 export default function Hero() {
   return (
-    
-    <section className="h-80% relative text-center px-6 py-20 md:py-32 overflow-hidden bg-background">
-      
+    <section className="relative text-center overflow-hidden bg-background">
+      <SectionContainer sectionSpacing="2xl" containerSize="md">
+        <div className="space-y-6">
+          <Display className="leading-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+            Powerful for developers. <br />
+            <span className="text-muted-foreground">Fast for everyone.</span>
+          </Display>
 
-      <div className="relative z-10 max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-bold text-foreground">
-          Powerful for developers. <br />
-          <span className="text-muted-foreground">Fast for everyone.</span>
-        </h1>
-        <p className="mt-6 text-lg md:text-xl text-muted-foreground">
-          Bring blockchain to the people. Solana supports experiences for power
-          users, new consumers, and everyone in between.
-        </p>
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-          {/* --- Primary Button --- */}
-          <button
-            onClick={() => window.open("#", "_blank")}
-            className="
-              px-8 py-3 w-full sm:w-auto rounded-lg font-semibold
-              bg-primary text-primary-foreground
-              transition-all duration-300 ease-in-out
-              hover:bg-accent hover:scale-105
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background
-            "
-          >
-            Start Building
-          </button>
+          <Text size="xl" className="max-w-3xl mx-auto line-clamp-3 text-base sm:text-lg md:text-xl">
+            Bring blockchain to the people. Solana supports experiences for power
+            users, new consumers, and everyone in between.
+          </Text>
+          
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button
+              variant="primary"
+              size="lg"
+              rightIcon={<ArrowRight className="w-5 h-5" />}
+              onClick={() => window.open("#", "_blank")}
+            >
+              Start Building
+            </Button>
 
-          {/* --- Secondary Button --- */}
-          <button
-            onClick={() => window.open("#", "_blank")}
-            className="
-              px-8 py-3 w-full sm:w-auto rounded-lg font-semibold
-              border border-border bg-transparent text-foreground
-              transition-all duration-300 ease-in-out
-              hover:bg-secondary hover:border-accent hover:scale-105
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background
-            "
-          >
-            Read Docs
-          </button>
+            <Button
+              variant="outline"
+              size="lg"
+              rightIcon={<BookOpen className="w-5 h-5" />}
+              onClick={() => window.open("#", "_blank")}
+            >
+              Read Docs
+            </Button>
+          </div>
         </div>
-      </div>
+      </SectionContainer>
     </section>
   );
 }

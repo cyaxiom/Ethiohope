@@ -61,15 +61,15 @@ export default function IndustriesSection() {
       }
    };
    return (
-      <section className="bg-[#010315] py-20 text-center text-white overflow-hidden">
+      <section className="bg-background py-20 text-center text-foreground overflow-hidden">
          <div className="inline-block mb-6 ">
-            <span className="px-3 py-1 bg-[#151727] rounded-full flex justify-between gap-2 border border-[#6e6c75] text-sm">
+            <span className="px-3 py-1 bg-card rounded-full flex justify-between gap-2 border border-border text-sm text-muted-foreground">
                <img src={about} alt="" />
                Industries we work
             </span>
          </div>
 
-         <h2 className="text-5xl font-bold mt-4">
+         <h2 className="text-5xl font-bold mt-4 text-foreground">
             Serving Diverse Industries
          </h2>
 
@@ -90,14 +90,11 @@ export default function IndustriesSection() {
                   <motion.div
                      key={index}
                      className="w-[400px] h-[220px] flex flex-col justify-center items-center rounded-2xl 
-                         bg-gradient-to-b from-[#343140] to-[#1A1440] 
-                         border border-gray-700 
-                         hover:from-[#1A1440] hover:to-[#1A2B70]"
-                  // whileHover={{ scale: 1.05 }}
-                  // whileTap={{ scale: 0.95 }}
+                         bg-card border border-border 
+                         hover:bg-primary/10 transition-colors duration-300"
                   >
-                     <div className="text-purple-300 text-2xl mb-3">{item.icon}</div>
-                     <h3 className="font-semibold text-white text-3xl justify-bottom">{item.title}</h3>
+                     <div className="text-primary text-2xl mb-3">{item.icon}</div>
+                     <h3 className="font-semibold text-foreground text-3xl justify-bottom">{item.title}</h3>
                   </motion.div>
                ))}
             </motion.div>

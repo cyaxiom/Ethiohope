@@ -47,12 +47,12 @@ const NavBar = ({ user }) => {
   };
 
   return (
-    <div className="sticky w-full top-0  z-50 bg-background bg-red-400">
-      <nav className="flex w-full justify-between items-center px-2 md:px-20 py-6 shadow-md">
+    <div className="sticky w-full top-0 z-50 bg-background border-b border-border">
+      <nav className="flex w-full justify-between items-center px-2 md:px-20 py-6 shadow-sm">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-3">
           <div
-            className={`w-7 h-7 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center`}
+            className={`w-7 h-7 bg-primary rounded-full flex items-center justify-center`}
           >
             <span className="text-white font-bold text-sm">C</span>
           </div>
@@ -73,23 +73,17 @@ const NavBar = ({ user }) => {
             <div className="flex gap-4 ml-10">
               <Link
                 to="/community/forum/register"
-                className={`${
-                  location.pathname === '/community/forum/register' &&
-                  `bg-orange-500 text-white  rounded-md hover:bg-orange-600`
-                } px-2 py-1 md:px-4 md:py-2 ${
-                  isDark ? 'text-blue-200' : 'text-blue-600'
-                } hover:underline transition-colors duration-300`}
+                className={`${location.pathname === '/community/forum/register' &&
+                  `bg-primary text-white rounded-md hover:bg-primary/90`
+                  } px-2 py-1 md:px-4 md:py-2 text-primary hover:underline transition-colors duration-300`}
               >
                 Register
               </Link>
               <Link
                 to="/community/forum/login"
-                className={`${
-                  location.pathname === '/community/forum/login' &&
-                  'bg-orange-500 text-white  rounded-md hover:bg-orange-600'
-                } px-2 py-1 md:px-4 md:py-2 ${
-                  isDark ? 'text-blue-200' : 'text-blue-600'
-                } hover:underline transition-colors duration-300`}
+                className={`${location.pathname === '/community/forum/login' &&
+                  'bg-primary text-white rounded-md hover:bg-primary/90'
+                  } px-2 py-1 md:px-4 md:py-2 text-primary hover:underline transition-colors duration-300`}
               >
                 Login
               </Link>
@@ -99,9 +93,8 @@ const NavBar = ({ user }) => {
               <div className="hidden md:flex items-center gap-8">
                 <Link
                   to="/community/forum/my-questions?type=create"
-                  className={`${
-                    isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-orange-500'
-                  } text-white px-4 py-2 rounded-md flex items-center`}
+                  className={`${isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-orange-500'
+                    } text-white px-4 py-2 rounded-md flex items-center`}
                 >
                   <CirclePlus size={16} className="text-white opacity-80" />
                   <span className="ml-2">Ask Question</span>
@@ -110,17 +103,15 @@ const NavBar = ({ user }) => {
                 {/* Notifications */}
                 <div className="relative">
                   <span
-                    className={`material-icons ${
-                      isDark ? 'text-white' : 'text-gray-600'
-                    }`}
+                    className={`material-icons ${isDark ? 'text-white' : 'text-gray-600'
+                      }`}
                   >
                     <Bell />
                   </span>
                   {user.notifications > 0 && (
                     <span
-                      className={`absolute -top-1 -right-2 ${
-                        isDark ? 'bg-gray-800' : 'bg-orange-500'
-                      } text-white text-xs w-5 h-5 flex items-center justify-center rounded-full`}
+                      className={`absolute -top-1 -right-2 ${isDark ? 'bg-gray-800' : 'bg-orange-500'
+                        } text-white text-xs w-5 h-5 flex items-center justify-center rounded-full`}
                     >
                       {user.notifications}
                     </span>
@@ -135,9 +126,8 @@ const NavBar = ({ user }) => {
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    className={`w-12 h-12 rounded-full cursor-pointer border-2 ${
-                      isDark ? 'border-gray-600' : 'border-orange-500'
-                    }`}
+                    className={`w-12 h-12 rounded-full cursor-pointer border-2 ${isDark ? 'border-gray-600' : 'border-orange-500'
+                      }`}
                   />
                   <ChevronDown
                     size={10}
@@ -152,9 +142,8 @@ const NavBar = ({ user }) => {
                   {showMobileMenu ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-6 w-6 ${
-                        isDark ? 'text-white' : 'text-gray-800'
-                      }`}
+                      className={`h-6 w-6 ${isDark ? 'text-white' : 'text-gray-800'
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -169,9 +158,8 @@ const NavBar = ({ user }) => {
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-6 w-6 ${
-                        isDark ? 'text-white' : 'text-gray-800'
-                      }`}
+                      className={`h-6 w-6 ${isDark ? 'text-white' : 'text-gray-800'
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -272,9 +260,8 @@ const MobileRightNav = ({ user, isLoggedIn, onClose }) => {
             <Link
               key={idx}
               to={item.link}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition ${
-                activeMenu === item.name ? 'bg-muted' : ''
-              }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition ${activeMenu === item.name ? 'bg-muted' : ''
+                }`}
               onClick={() => setActiveMenu(item.name)}
             >
               {item.icon}
@@ -301,9 +288,8 @@ const MobileRightNav = ({ user, isLoggedIn, onClose }) => {
                   <Link
                     key={idx}
                     to={item.link}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition ${
-                      activeMenu === item.name ? 'bg-muted' : ''
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition ${activeMenu === item.name ? 'bg-muted' : ''
+                      }`}
                     onClick={() => setActiveMenu(item.name)}
                   >
                     {item.icon}
@@ -320,9 +306,8 @@ const MobileRightNav = ({ user, isLoggedIn, onClose }) => {
             </div>
             <Link
               to="./profile"
-              className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition ${
-                activeMenu === 'Profile' ? 'bg-muted' : ''
-              }`}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition ${activeMenu === 'Profile' ? 'bg-muted' : ''
+                }`}
               onClick={() => setActiveMenu('Profile')}
             >
               <User />

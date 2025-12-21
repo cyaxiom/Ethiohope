@@ -39,12 +39,12 @@ const ContactForm = ({ darkMode }) => {
          <div className={`relative rounded-xl mx-5 ${darkMode ? 'bg-[#1D1D3E]' : 'bg-white border border-gray-200 shadow-xl'
             }`}>
             {/* Side Images with smooth scroll animation */}
-            <div className="hidden md:block lg:block xl:block"
+            <div className="hidden xl:block"
             >
                <img
                   src={contactleftside}
                   alt="left decoration"
-                  className="absolute -left-6 top-1/3 w-45"
+                  className="absolute -left-4 xl:-left-6 top-1/3 w-32 xl:w-45"
                   style={{
                      transition: 'transform 1.6s cubic-bezier(0.55, 0, 0.1, 1)',
                      transform:
@@ -57,7 +57,7 @@ const ContactForm = ({ darkMode }) => {
                <img
                   src={contactrightside}
                   alt="right decoration"
-                  className="absolute -right-5 top-1/3 w-45"
+                  className="absolute -right-3 xl:-right-5 top-1/3 w-32 xl:w-45"
                   style={{
                      transition: 'transform 3.6s cubic-bezier(0.55, 0, 0.1, 1)',
                      transform:

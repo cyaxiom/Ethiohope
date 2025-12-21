@@ -5,8 +5,6 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '@components/Forum/Sidebar';
 import RightPanel from '@components/Forum/RightPanel';
 function Forum() {
-  //theme
-  const [theme, isDark, toggleTheme] = React.useState('light');
   const [isLoggedIn, setIsLoggedIn] = React.useState(true);
 
   const user = {
@@ -15,11 +13,11 @@ function Forum() {
     notifications: 3,
   };
   return (
-    <div className="min-h-screen transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <NavBar user={user} />
       <div className="flex">
         {/* sidebar*/}
-        <aside className="hidden md:flex fixed md:w-[310px] border-r border-border h-full">
+        <aside className="hidden md:flex fixed md:w-[310px] border-r border-border h-full bg-card">
           <Sidebar isLoggedIn={isLoggedIn} />
         </aside>
         {/* Main content area */}
@@ -27,7 +25,7 @@ function Forum() {
           <Outlet />
         </main>
         {/* Right panel */}
-        <aside className="hidden lg:block w-60 border-l border-border p-4">
+        <aside className="hidden lg:block w-60 border-l border-border p-4 bg-card">
           <RightPanel />
         </aside>
       </div>

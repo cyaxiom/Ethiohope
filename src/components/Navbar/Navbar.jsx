@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { User, ChevronDown } from 'lucide-react';
 import { dashboardLinks, navLinks } from '@common/navLinks';
 import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
@@ -142,19 +142,17 @@ export default function Navbar() {
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-transform duration-300 ${
-          isVisible ? 'translate-y-0' : '-translate-y-full'
-        } ${
-          isScrolled
+        className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
+          } ${isScrolled
             ? 'bg-background/80 backdrop-blur-md backdrop-saturate-150'
             : 'bg-background/50 backdrop-blur-sm'
-        }`}
+          }`}
       >
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-7 h-7 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
+            <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">C</span>
             </div>
             <span className="text-foreground font-bold text-xl tracking-tight">
               Ethiohope
@@ -173,12 +171,12 @@ export default function Navbar() {
                 {link.path ? (
                   <Link
                     to={link.path}
-                    className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2"
+                    className="cursor-pointer text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
                   >
                     {link.name}
                   </Link>
                 ) : (
-                  <div className="cursor-pointer text-sm hover:text-cyan-500 transition-colors duration-200 flex items-center py-2">
+                  <div className="cursor-pointer text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
                     {link.name}
                     {link.dropdown && <ChevronDown className="ml-1 w-4 h-4" />}
                   </div>
@@ -222,7 +220,7 @@ export default function Navbar() {
                     className="transition-transform duration-200 group-hover:scale-105"
                   />
                   <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
-                    <User className="w-4 h-4 mr-2 text-cyan-400" />
+                    <User className="w-4 h-4 mr-2 text-primary" />
                     LOGIN
                   </button>
                 </div>

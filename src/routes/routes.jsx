@@ -118,7 +118,7 @@ export const routes = [
   {
     path: '/community/forum',
     name: 'ForumMain',
-    element: Forum,
+    element: <Forum />,
     routes: [
       {
         path: '/community/forum/tags',

@@ -9,10 +9,10 @@ import image5 from '@images/community/IMAGE.png';
 
 export default function Community() {
   return (
-    <div className="container  mx-auto px-4 py-16 bg-background">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-background">
       
       {/* Heading */}
-      <h1 className="text-4xl font-extrabold text-foreground text-center mb-16">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground text-center mb-16">
         Join a thriving community
       </h1>
       {/* Stats */}
@@ -30,7 +30,7 @@ export default function Community() {
                        hover:shadow-xl hover:shadow-primary/10 
                        transform hover:-translate-y-1 transition-all duration-300"
           >
-            <div className={`text-4xl font-bold mb-3 ${stat.color}`}>{stat.number}</div>
+            <div className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-3 ${stat.color}`}>{stat.number}</div>
             <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
           </div>
         ))}

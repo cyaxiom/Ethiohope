@@ -62,7 +62,7 @@ const CourseDetail = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-green-600 text-white rounded-lg shadow-lg font-semibold hover:bg-green-700"
+              className="px-8 py-4 bg-primary text-primary-foreground rounded-lg shadow-lg font-semibold hover:bg-accent"
             >
               Book a Free Class
             </motion.button>
@@ -74,7 +74,7 @@ const CourseDetail = () => {
             transition={{ duration: 4, repeat: Infinity }}
             className="flex justify-center"
           >
-            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden border-8 border-green-400 shadow-xl">
+            <div className="w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden border-8 border-primary shadow-xl">
               <img
                 src={course.modules[0]?.image}
                 alt={course.name}
@@ -87,26 +87,26 @@ const CourseDetail = () => {
         {/* ---------------- STATS SECTION ---------------- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto px-6 py-12 text-center">
           <div>
-            <Star className="mx-auto text-green-500 mb-2" />
+            <Star className="mx-auto text-primary mb-2" />
             <p className="font-semibold">Age</p>
             <p className="text-muted-foreground">
               {course.modules[0]?.ageGroup}
             </p>
           </div>
           <div>
-            <Star className="mx-auto text-green-500 mb-2" />
+            <Star className="mx-auto text-primary mb-2" />
             <p className="font-semibold">Duration</p>
             <p className="text-muted-foreground">
               {course.modules[0]?.duration || "Varies"}
             </p>
           </div>
           <div>
-            <Star className="mx-auto text-green-500 mb-2" />
+            <Star className="mx-auto text-primary mb-2" />
             <p className="font-semibold">Language</p>
             <p className="text-muted-foreground">English & Amharic</p>
           </div>
           <div>
-            <Star className="mx-auto text-green-500 mb-2" />
+            <Star className="mx-auto text-primary mb-2" />
             <p className="font-semibold">Level</p>
             <p className="text-muted-foreground">Beginner Friendly</p>
           </div>
@@ -129,25 +129,25 @@ const CourseDetail = () => {
         {/* ---------------- RELATED COURSES ---------------- */}
         <div className="max-w-6xl mx-auto px-6 py-16">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-bold text-green-600">
+            <h2 className="text-3xl font-bold text-primary">
               Related Courses
             </h2>
             <div className="flex gap-3">
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                 disabled={page === 0}
-                className="p-2 rounded-full bg-green-100 hover:bg-green-200 disabled:opacity-40"
+                className="p-2 rounded-full bg-primary/10 hover:bg-primary/20 disabled:opacity-40"
               >
-                <ArrowLeft className="text-green-600" />
+                <ArrowLeft className="text-primary" />
               </button>
               <button
                 onClick={() =>
                   setPage((prev) => Math.min(prev + 1, totalPages - 1))
                 }
                 disabled={page === totalPages - 1}
-                className="p-2 rounded-full bg-green-100 hover:bg-green-200 disabled:opacity-40"
+                className="p-2 rounded-full bg-primary/10 hover:bg-primary/20 disabled:opacity-40"
               >
-                <ArrowRight className="text-green-600" />
+                <ArrowRight className="text-primary" />
               </button>
             </div>
           </div>
@@ -165,7 +165,7 @@ const CourseDetail = () => {
                   className="h-56 w-full object-cover"
                 />
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-green-600 mb-2">
+                  <h3 className="text-xl font-semibold text-primary mb-2">
                     {related.name}
                   </h3>
                   <p className="text-muted-foreground text-sm mb-4">
@@ -175,7 +175,7 @@ const CourseDetail = () => {
                     onClick={() =>
                       navigate(`/academy/kids-programming/course/${related.id}`)
                     }
-                    className="px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
+                    className="px-5 py-2 bg-primary text-primary-foreground rounded-lg shadow hover:bg-accent"
                   >
                     View Details
                   </button>
@@ -194,7 +194,7 @@ const CourseDetail = () => {
                         boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
                       }}
                       whileTap={{ scale: 0.95 }}
-                      className="px-10 py-3  bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
+                      className="px-10 py-3  bg-primary text-primary-foreground rounded-lg shadow hover:bg-accent"
                     >
                       View All Courses
                     </motion.button>
@@ -217,8 +217,8 @@ const CourseDetail = () => {
                   key={index}
                   className="flex flex-col items-center bg-card border border-border rounded-xl p-6 shadow-lg"
                 >
-                  <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mb-4">
-                    <Star className="text-white w-10 h-10" />
+                  <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mb-4">
+                    <Star className="text-primary-foreground w-10 h-10" />
                   </div>
                   <h4 className="font-semibold text-lg mb-2">{role}</h4>
                   <p className="text-sm text-muted-foreground text-center">

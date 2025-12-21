@@ -29,27 +29,21 @@ const SecurityFeatures = () => {
   ];
 
   return (
-    <div className="bg-[#010315] text-white mx-5 px-5 py-10">
-      <div
-        className="
-          grid gap-10 
-          sm:grid-cols-1 
-          md:grid-cols-2 
-          lg:grid-cols-4 
-          max-w-full mx-auto
-        "
-      >
-        {features.map((item, index) => (
-          <div key={index} className="flex flex-col space-y-2">
-            <img
-              src={item.icon}
-              alt={item.title}
-              className="w-18 h-18 object-contain"
-            />
-            <h3 className="text-2xl font-medium">{item.title}</h3>
-            <p className="text-lg text-gray-300 max-w-xs">{item.desc}</p>
-          </div>
-        ))}
+    <div className="bg-background text-foreground px-4 md:px-6 lg:px-8 py-10 md:py-12 lg:py-16">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid gap-6 md:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map((item, index) => (
+            <div key={index} className="flex flex-col space-y-3 p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 hover:transform hover:-translate-y-2">
+              <img
+                src={item.icon}
+                alt={item.title}
+                className="w-18 h-18 object-contain"
+              />
+              <h3 className="text-2xl font-medium text-foreground">{item.title}</h3>
+              <p className="text-lg text-muted-foreground max-w-xs">{item.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
