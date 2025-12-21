@@ -127,13 +127,13 @@ const Web3Development = () => {
               {features.map((feature, index) => (
                 <div key={index} className="group relative h-full flex">
                   <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-                  <div className="relative bg-card/90 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-border hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col w-full min-h-[320px]">
+                  <div className="relative bg-card/90 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-border hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col h-full">
                     <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
                       {React.cloneElement(feature.icon, { className: "w-8 h-8 text-white" })}
                     </div>
                     <h3 className="text-xl font-bold text-card-foreground mb-4 group-hover:text-primary transition-colors">{feature.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                    <div className="mt-6 flex items-center text-muted-foreground font-medium">
+                    <div className="mt-auto flex items-center text-muted-foreground font-medium">
                       <ChevronRight className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
                       Learn More
                     </div>
@@ -199,7 +199,7 @@ const Web3Development = () => {
           <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             <div className="group relative">
               <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-              <div className="relative bg-card/50 backdrop-blur-xl rounded-2xl p-8 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2">
+              <div className="relative bg-card/50 backdrop-blur-xl rounded-2xl p-8 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2 flex flex-col h-full">
                 <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
                   <Network className="w-8 h-8 text-primary" />
                 </div>
@@ -209,7 +209,7 @@ const Web3Development = () => {
                 <p className="text-muted-foreground leading-relaxed mb-6">
                   Enable frictionless data and asset transfers across platforms with military-grade security and authentication.
                 </p>
-                <div className="flex items-center text-muted-foreground font-medium group-hover:text-primary transition-colors">
+                <div className="flex items-center text-muted-foreground font-medium group-hover:text-primary transition-colors mt-auto">
                   <ChevronRight className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
                   Explore Networks
                 </div>
@@ -218,7 +218,7 @@ const Web3Development = () => {
 
             <div className="group relative">
               <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-              <div className="relative bg-card/50 backdrop-blur-xl rounded-2xl p-8 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2">
+              <div className="relative bg-card/50 backdrop-blur-xl rounded-2xl p-8 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2 flex flex-col h-full">
                 <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
                   <Shield className="w-8 h-8 text-primary" />
                 </div>
@@ -228,7 +228,7 @@ const Web3Development = () => {
                 <p className="text-muted-foreground leading-relaxed mb-6">
                   Leverage blockchain's decentralized architecture for tamper-proof security with advanced cryptographic protocols.
                 </p>
-                <div className="flex items-center text-muted-foreground font-medium group-hover:text-primary transition-colors">
+                <div className="flex items-center text-muted-foreground font-medium group-hover:text-primary transition-colors mt-auto">
                   <ChevronRight className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
                   Learn Security
                 </div>
@@ -237,7 +237,7 @@ const Web3Development = () => {
 
             <div className="group relative">
               <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-              <div className="relative bg-card/50 backdrop-blur-xl rounded-2xl p-8 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2">
+              <div className="relative bg-card/50 backdrop-blur-xl rounded-2xl p-8 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2 flex flex-col h-full">
                 <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
                   <Code className="w-8 h-8 text-primary" />
                 </div>
@@ -247,7 +247,7 @@ const Web3Development = () => {
                 <p className="text-muted-foreground leading-relaxed mb-6">
                   Self-executing smart contracts reduce intermediaries and enhance efficiency through autonomous code execution.
                 </p>
-                <div className="flex items-center text-muted-foreground font-medium group-hover:text-primary transition-colors">
+                <div className="flex items-center text-muted-foreground font-medium group-hover:text-primary transition-colors mt-auto">
                   <ChevronRight className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
                   Build Contracts
                 </div>
@@ -305,7 +305,7 @@ const Web3Development = () => {
                 }
               ].map((item, index) => (
                 <div key={index} className="text-center group relative">
-                  <div className="relative bg-card backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-border hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+                  <div className="relative bg-card backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-border hover:shadow-xl transition-all duration-500 hover:-translate-y-2 flex flex-col h-full">
                     <div className={`w-16 h-16 bg-gradient-to-r ${item.color} rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
                       {React.cloneElement(item.icon, { className: "w-8 h-8 text-white" })}
                     </div>
@@ -313,7 +313,7 @@ const Web3Development = () => {
                     <p className="text-muted-foreground leading-relaxed mb-6">
                       {item.description}
                     </p>
-                    <div className="flex items-center justify-center text-primary font-medium group-hover:text-primary/80 transition-colors">
+                    <div className="mt-auto flex items-center justify-center text-primary font-medium group-hover:text-primary/80 transition-colors">
                       <ChevronRight className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
                       {item.action}
                     </div>
@@ -351,7 +351,7 @@ const Web3Development = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {events.map((event, index) => (
                 <div key={index} className="group relative">
-                  <div className="relative bg-card backdrop-blur-xl rounded-2xl p-6 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2">
+                  <div className="relative bg-card backdrop-blur-xl rounded-2xl p-6 border border-border shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2 flex flex-col h-full">
                     <div className="flex items-center justify-between mb-4">
                       <div className="text-2xl font-bold text-primary">{event.date}</div>
                       <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
@@ -372,7 +372,7 @@ const Web3Development = () => {
                       {event.description}
                     </p>
 
-                    <div className="flex items-center justify-between">
+                    <div className="mt-auto flex items-center justify-between">
                       <div className="text-muted-foreground text-xs">{event.duration}</div>
                       <div className="flex items-center text-primary font-medium text-sm group-hover:text-primary/80 transition-colors">
                         Register

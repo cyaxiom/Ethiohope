@@ -27,7 +27,7 @@ function App() {
                 if (route.routes) {
                   return (
                     <Route
-                      element={<route.element />}
+                      element={route.element}
                       key={index}
                       path={route.path}
                     >
