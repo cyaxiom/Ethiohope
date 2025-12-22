@@ -122,8 +122,8 @@ const MyQuestions = () => {
             whileTap={{ scale: 0.95 }}
             key={idx}
             className={`px-3 py-1 md:px-4 md:py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             onClick={() => setActiveTag(tag.title)}
           >

@@ -53,8 +53,8 @@ const Questions = () => {
             whileTap={{ scale: 0.95 }}
             key={idx}
             className={`px-3 py-1 md:px-4 md:py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             onClick={() => setActiveTag(tag.title)}
           >
@@ -247,21 +247,21 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
                 <span className="text-xs md:text-sm font-bold text-foreground">{question.views || 0}</span>
               </div>
             </>
-              )}
+          )}
         </div>
-        </div>
+      </div>
 
-        {/* See Details link for my-questions */}
-        {type === 'my-questions' && (
-          <div className="mt-3 flex justify-end">
-            <button
-              onClick={(e) => { e.stopPropagation(); navigate(`/community/forum/questions/${question.id}`); }}
-              className="text-sm text-primary hover:underline"
-            >
-              See Details
-            </button>
-          </div>
-        )}
+      {/* See Details link for my-questions */}
+      {type === 'my-questions' && (
+        <div className="mt-3 flex justify-end">
+          <button
+            onClick={(e) => { e.stopPropagation(); navigate(`/community/forum/questions/${question.id}`); }}
+            className="text-sm text-primary hover:underline"
+          >
+            See Details
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 };
