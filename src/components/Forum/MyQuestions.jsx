@@ -1,5 +1,6 @@
-import { Image, Send, MoreVertical } from 'lucide-react';
+import { Image, Send, MoreVertical, Clock, Flame } from 'lucide-react';
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { sampleQuestions } from '../../api/forum/mock.data';
 import { QuestionCard } from './Questions';
@@ -11,6 +12,7 @@ const MyQuestions = () => {
     { id: 4, name: 'Web Development' },
   ]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [activeTag, setActiveTag] = React.useState('New');
   const [selectedCategory, setSelectedCategory] = React.useState(null);
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
@@ -101,19 +103,40 @@ const MyQuestions = () => {
   };
   console.log('selectedCategory', selectedCategory);
   return type !== 'edit' && type !== 'create' ? (
-    <div className="bg-background text-foreground">
-      <h1 className="text-2xl font-bold mb-2 md:hidden">My Questions</h1>
-      <p className="text-muted-foreground">
-        Here are the questions you have asked. You can view, edit, or delete
-        them.
+    <div className="w-full">
+      <h1 className="text-2xl md:hidden font-bold mb-4 text-foreground">My Questions</h1>
+      <h1 className="hidden md:block text-3xl font-bold text-center mb-4 text-foreground">Your Questions</h1>
+
+      <p className="text-muted-foreground mb-4">
+        Here are the questions you have asked. You can view, edit, or delete them.
       </p>
-      <div className="mt-8 space-y-6">
+
+      {/* Filter Tags - reuse Questions style */}
+      <div className="flex items-center gap-4 my-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-background">
+        {[
+          { title: 'New', icon: Clock },
+          { title: 'Top', icon: Clock },
+          { title: 'Hot', icon: Flame },
+          { title: 'Trending', icon: Clock },
+        ].map((tag, idx) => (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            key={idx}
+            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            onClick={() => setActiveTag(tag.title)}
+          >
+            <tag.icon className="w-4 h-4" />
+            <span className="text-sm font-medium">{tag.title}</span>
+          </motion.button>
+        ))}
+      </div>
+
+      <div className="space-y-6">
         {sampleQuestions.slice(0, 3).map((question) => (
-          <QuestionCard
-            key={question.id}
-            question={question}
-            type="my-questions"
-          />
+          <QuestionCard key={question.id} question={question} type="my-questions" />
         ))}
       </div>
     </div>

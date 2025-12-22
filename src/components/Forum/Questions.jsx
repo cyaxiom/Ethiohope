@@ -197,23 +197,29 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
         {/* Stats & Actions */}
         <div className="flex flex-col items-center gap-4 pt-1">
           {type === 'my-questions' ? (
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={handleEdit}
-                className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
-                title="Edit"
-              >
-                <LucideMoreVertical className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleDelete}
-                className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
-                title="Delete"
-              >
-                <LucideMoreVertical className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEdit(e); }}
+                    className="px-3 py-1 rounded-md text-sm bg-blue-500 text-white hover:opacity-95 transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(e); }}
+                    className="px-3 py-1 rounded-md text-sm bg-red-500 text-white hover:opacity-95 transition-colors"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/community/forum/questions/${question.id}`); }}
+                    className="px-3 py-1 rounded-md text-sm bg-gray-100 text-foreground hover:bg-gray-200 transition-colors"
+                  >
+                    Manage
+                  </button>
+                </div>
+              </div>
+            ) : (
             <>
               <button
                 onClick={handleUpvote}
@@ -241,9 +247,21 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
                 <span className="text-xs font-bold text-foreground">{question.views || 0}</span>
               </div>
             </>
-          )}
+              )}
         </div>
-      </div>
+        </div>
+
+        {/* See Details link for my-questions */}
+        {type === 'my-questions' && (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate(`/community/forum/questions/${question.id}`); }}
+              className="text-sm text-primary hover:underline"
+            >
+              See Details
+            </button>
+          </div>
+        )}
     </motion.div>
   );
 };
