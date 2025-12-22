@@ -43,23 +43,23 @@ const Questions = () => {
   ];
 
   return (
-    <div className="w-full">
-      <h1 className="text-2xl md:hidden font-bold mb-4 text-foreground">Questions</h1>
+    <div className="w-full pt-20 md:pt-0">
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-foreground text-left md:text-center">Questions</h1>
 
       {/* Filter Tags */}
-      <div className="flex items-center gap-4 my-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-background">
+      <div className="flex items-center gap-3 md:gap-4 my-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-background">
         {tags.map((tag, idx) => (
           <motion.button
             whileTap={{ scale: 0.95 }}
             key={idx}
-            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
+            className={`px-3 py-1 md:px-4 md:py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             onClick={() => setActiveTag(tag.title)}
           >
-            <tag.icon className="w-4 h-4" />
-            <span className="text-sm font-medium">{tag.title}</span>
+            <tag.icon className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="text-xs md:text-sm font-medium">{tag.title}</span>
           </motion.button>
         ))}
       </div>
@@ -77,7 +77,7 @@ const Questions = () => {
             <p className="text-sm text-muted-foreground mb-6">Be the first to ask a question!</p>
             <Link
               to="/community/forum/my-questions"
-              className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center px-4 md:px-6 py-2 md:py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm md:text-base"
             >
               Ask a Question
             </Link>
@@ -151,33 +151,33 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
-      className="bg-card border border-border p-5 md:p-6 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer"
+      className="bg-card border border-border p-4 md:p-6 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer"
       onClick={() => navigate(`/community/forum/questions/${question.id}`)}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:justify-between gap-4">
         <div className="flex-1 min-w-0">
           {/* Author Info */}
           <div className="flex items-center gap-3 mb-3">
             <img
               src={question.author?.avatar || question.profile_pic || 'https://via.placeholder.com/40'}
               alt={question.author?.name || question.author}
-              className="w-8 h-8 rounded-full border border-border object-cover"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-border object-cover"
             />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">
+              <p className="text-sm md:text-base font-semibold text-foreground truncate">
                 {question.author?.name || question.author}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 {formatTimeAgo(question.createdAt || question.created_at)}
               </p>
             </div>
           </div>
 
           {/* Title & Content */}
-          <h3 className="text-lg font-bold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2">
             {question.title || question.question}
           </h3>
-          <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+          <p className="text-muted-foreground text-sm md:text-base line-clamp-2 mb-4">
             {question.content || question.description}
           </p>
 
@@ -186,7 +186,7 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
             {(question.tags || []).slice(0, 4).map((tag, idx) => (
               <span
                 key={idx}
-                className="px-2.5 py-0.5 bg-muted text-muted-foreground text-xs font-medium rounded-full border border-border/50"
+                className="px-2.5 md:px-3 py-0.5 bg-muted text-muted-foreground text-xs md:text-sm font-medium rounded-full border border-border/50"
               >
                 {tag}
               </span>
@@ -195,56 +195,56 @@ export const QuestionCard = ({ question, type = 'questions' }) => {
         </div>
 
         {/* Stats & Actions */}
-        <div className="flex flex-col items-center gap-4 pt-1">
+        <div className="flex flex-row md:flex-col items-center md:items-center gap-4 pt-1">
           {type === 'my-questions' ? (
-              <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleEdit(e); }}
-                    className="px-3 py-1 rounded-md text-sm bg-blue-500 text-white hover:opacity-95 transition-colors"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(e); }}
-                    className="px-3 py-1 rounded-md text-sm bg-red-500 text-white hover:opacity-95 transition-colors"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/community/forum/questions/${question.id}`); }}
-                    className="px-3 py-1 rounded-md text-sm bg-gray-100 text-foreground hover:bg-gray-200 transition-colors"
-                  >
-                    Manage
-                  </button>
-                </div>
+            <div className="flex flex-wrap justify-end gap-2">
+              <div className="flex flex-wrap gap-2 items-center">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleEdit(e); }}
+                  className="px-2 py-1 md:px-3 md:py-1 rounded-md text-xs md:text-sm bg-blue-500 text-white hover:opacity-95 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDelete(e); }}
+                  className="px-2 py-1 md:px-3 md:py-1 rounded-md text-xs md:text-sm bg-red-500 text-white hover:opacity-95 transition-colors"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/community/forum/questions/${question.id}`); }}
+                  className="px-2 py-1 md:px-3 md:py-1 rounded-md text-xs md:text-sm bg-gray-100 text-foreground hover:bg-gray-200 transition-colors"
+                >
+                  Manage
+                </button>
               </div>
-            ) : (
+            </div>
+          ) : (
             <>
               <button
                 onClick={handleUpvote}
                 className="flex flex-col items-center gap-1 group"
               >
-                <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
-                  <LucideArrowUp className="w-5 h-5 text-primary" />
+                <div className="p-2 md:p-3 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+                  <LucideArrowUp className="w-5 h-5 md:w-6 md:h-6 text-primary" />
                 </div>
-                <span className="text-xs font-bold text-foreground">{voteCount}</span>
+                <span className="text-xs md:text-sm font-bold text-foreground">{voteCount}</span>
               </button>
 
               <div className="flex flex-col items-center gap-1">
-                <div className="p-2 rounded-lg bg-muted/50">
-                  <LucideMessageSquare className="w-5 h-5 text-muted-foreground" />
+                <div className="p-2 md:p-3 rounded-lg bg-muted/50">
+                  <LucideMessageSquare className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
                 </div>
-                <span className="text-xs font-bold text-foreground">
+                <span className="text-xs md:text-sm font-bold text-foreground">
                   {Array.isArray(question.answers) ? question.answers.length : (question.answers || 0)}
                 </span>
               </div>
 
               <div className="flex flex-col items-center gap-1">
-                <div className="p-2 rounded-lg bg-muted/50">
-                  <LucideEye className="w-5 h-5 text-muted-foreground" />
+                <div className="p-2 md:p-3 rounded-lg bg-muted/50">
+                  <LucideEye className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground" />
                 </div>
-                <span className="text-xs font-bold text-foreground">{question.views || 0}</span>
+                <span className="text-xs md:text-sm font-bold text-foreground">{question.views || 0}</span>
               </div>
             </>
               )}

@@ -103,9 +103,8 @@ const MyQuestions = () => {
   };
   console.log('selectedCategory', selectedCategory);
   return type !== 'edit' && type !== 'create' ? (
-    <div className="w-full">
-      <h1 className="text-2xl md:hidden font-bold mb-4 text-foreground">My Questions</h1>
-      <h1 className="hidden md:block text-3xl font-bold text-center mb-4 text-foreground">Your Questions</h1>
+    <div className="w-full pt-20 md:pt-0">
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-4 text-left md:text-center">Your Questions</h1>
 
       <p className="text-muted-foreground mb-4">
         Here are the questions you have asked. You can view, edit, or delete them.
@@ -122,7 +121,7 @@ const MyQuestions = () => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             key={idx}
-            className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
+            className={`px-3 py-1 md:px-4 md:py-2 rounded-full flex items-center gap-2 transition-colors whitespace-nowrap ${activeTag === tag.title
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
@@ -240,7 +239,7 @@ const MyQuestions = () => {
             </button>
             <button
               type="submit"
-              className="bg-primary text-white px-8 py-2 rounded-xl hover:bg-primary/90 flex items-center gap-2 transition-all font-bold shadow-sm"
+              className="bg-primary text-white px-6 md:px-8 py-2 rounded-xl hover:bg-primary/90 flex items-center gap-2 transition-all font-bold shadow-sm"
             >
               <Send size={18} />
               <span>Publish</span>
