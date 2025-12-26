@@ -3,7 +3,7 @@ import Container from '@/components/ui/Container';
 
 function AboutUsSection() {
 	return (
-		<div className="relative py-20 overflow-hidden bg-background">
+		<div className="relative py-20 overflow-hidden bg-muted/30 dark:bg-muted/60">
 			<Container className="relative z-10">
 				<div className="max-w-4xl mx-auto text-center mb-16">
 					  <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text mb-4">

@@ -51,7 +51,7 @@ function TeamSection() {
   ];
 
   return (
-    <div className="py-20 bg-background">
+    <div className="py-20 bg-muted/30 dark:bg-muted/60">
       <Container>
         <h2 className="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
           Meet Our Dynamic Team

@@ -22,7 +22,7 @@ export default function Growth() {
   const [activeCategory, setActiveCategory] = React.useState('NFTs');
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-background">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-muted/30 dark:bg-muted/60 rounded-2xl shadow-xl border border-border">
       
       {/* Header & Category Buttons  */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -73,7 +73,7 @@ export default function Growth() {
 
        
         <div className="lg:w-1/2 bg-card p-8 rounded-xl border border-border shadow-xl 
-                        hover:shadow-primary/30 transition-all duration-500">
+            hover:shadow-primary/30 transition-all duration-500">
           
           <div className="flex items-center mb-4">
          
@@ -102,7 +102,7 @@ export default function Growth() {
 
 
 
-    <div className="w-full bg-background  border border-border shadow-2xl flex justify-between items-center gap-16 py-4 rounded-xl mt-4">
+    <div className="w-full bg-card border border-border shadow-2xl flex justify-between items-center gap-16 py-4 rounded-xl mt-4">
       {/* Logo 1 */}
       <img
         src={logo1}

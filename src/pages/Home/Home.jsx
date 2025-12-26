@@ -8,7 +8,7 @@ import Community from '@components/Home/Community';
 
 function Home() {
   return (
-    <div className="pt-20 font-sans px-4 sm:px-6 lg:px-8">
+    <div className="pt-20 font-sans px-4 sm:px-6 lg:px-8 bg-muted/30 dark:bg-muted/60 text-foreground">
       <div className="max-w-7xl mx-auto">
         <Hero />
         <Partners />

@@ -1,222 +1,69 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
-export const GlobeAnimation = ({ className = "max-w-md md:max-w-xl lg:max-w-2xl" }) => {
+const GlobeAnimation = ({ className = 'max-w-md md:max-w-xl lg:max-w-2xl' }) => {
   return (
     <div className={`relative ${className} mx-auto`}>
-      {/* Container with proper aspect ratio */}
-      <div className="relative w-full aspect-square">
-        {/* Animated Globe */}
+      <div className="relative w-full" style={{ paddingTop: '36%' }}>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-full h-full">
-            {/* Globe base with gradient */}
-            <motion.div 
-              className="absolute inset-0 rounded-full bg-gradient-to-br 
-                         from-blue-500/20 via-cyan-500/10 to-blue-600/20 
-                         backdrop-blur-sm"
-              animate={{ 
-                scale: [1, 1.05, 1],
-                opacity: [0.5, 0.7, 0.5]
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            
-            {/* Rotating rings */}
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 200">
-              <defs>
-                <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.3" />
-                </linearGradient>
-                <linearGradient id="ring2" x1="100%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.3" />
-                </linearGradient>
-              </defs>
-              
-              {/* Main circle */}
-              <motion.ellipse 
-                cx="100" 
-                cy="100" 
-                rx="80" 
-                ry="80" 
-                fill="none" 
-                stroke="url(#ring1)" 
-                strokeWidth="0.5"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 2, ease: "easeInOut" }}
-              />
-              
-              {/* Rotating ellipse 1 */}
-              <motion.g
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                style={{ transformOrigin: "100px 100px" }}
-              >
-                <ellipse 
-                  cx="100" 
-                  cy="100" 
-                  rx="70" 
-                  ry="30" 
-                  fill="none" 
-                  stroke="url(#ring1)" 
-                  strokeWidth="0.5"
-                />
-              </motion.g>
-              
-              {/* Rotating ellipse 2 - opposite direction */}
-              <motion.g
-                animate={{ rotate: -360 }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                style={{ transformOrigin: "100px 100px" }}
-              >
-                <ellipse 
-                  cx="100" 
-                  cy="100" 
-                  rx="70" 
-                  ry="30" 
-                  fill="none" 
-                  stroke="url(#ring2)" 
-                  strokeWidth="0.5"
-                  transform="rotate(60 100 100)"
-                />
-              </motion.g>
-              
-              {/* Rotating ellipse 3 */}
-              <motion.g
-                animate={{ rotate: 360 }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                style={{ transformOrigin: "100px 100px" }}
-              >
-                <ellipse 
-                  cx="100" 
-                  cy="100" 
-                  rx="70" 
-                  ry="30" 
-                  fill="none" 
-                  stroke="url(#ring1)" 
-                  strokeWidth="0.5"
-                  transform="rotate(-60 100 100)"
-                />
-              </motion.g>
-            </svg>
+          <style>{`
+            /* Inspector-like DOM styles to match screenshot */
+            .xb-hero { position: relative; width:100%; }
+            .hero_wrap { max-width: 720px; margin: 0 auto; padding-top: 40px; }
+            .shield-wrap { position: relative; width:100%; display:flex; align-items:center; justify-content:center; padding: 40px 0 20px; }
+            .shield-img { width: 56%; max-width: 260px; }
+            .rings-wrap { position: absolute; left: 50%; transform: translateX(-50%); bottom: -6%; width: 100%; height: 160px; pointer-events:none; }
+            .ring-elem { position:absolute; left:50%; transform:translateX(-50%); border-radius:999px; }
+            .ring-elem.r1{ width:300px;height:22px; bottom:36px; border:3px solid rgba(255,192,230,0.12); box-shadow:0 0 60px rgba(255,60,150,0.18), inset 0 -6px 14px rgba(0,0,0,0.6); }
+            .ring-elem.r2{ width:380px;height:18px; bottom:58px; border:2px solid rgba(200,120,255,0.14); box-shadow:0 0 80px rgba(150,60,255,0.2); }
+            .ring-elem.r3{ width:520px;height:36px; bottom:12px; border:4px solid rgba(255,140,220,0.14); box-shadow:0 0 120px rgba(255,100,200,0.22); }
+            .ring-elem.r4{ width:220px;height:10px; bottom:86px; border-radius:999px; border:2px solid rgba(255,255,255,0.9); box-shadow:0 0 28px rgba(255,200,210,0.9); }
+            @media (max-width:480px){ .shield-img{ width:68%; max-width:240px;} .ring-elem.r3{ width:420px;} .ring-elem.r2{ width:320px;} }
+          `}</style>
 
-            {/* Pulsing connection dots */}
-            <div className="absolute inset-0">
-              {[...Array(12)].map((_, i) => {
-                const angle = (i * Math.PI * 2) / 12;
-                const radius = 40;
-                return (
-                  <motion.div
-                    key={i}
-                    className="absolute w-2 h-2 bg-blue-400 rounded-full"
-                    style={{
-                      top: `${50 + radius * Math.sin(angle)}%`,
-                      left: `${50 + radius * Math.cos(angle)}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    animate={{
-                      scale: [1, 1.5, 1],
-                      opacity: [0.3, 1, 0.3],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      delay: i * 0.15,
-                      ease: "easeInOut"
-                    }}
-                  />
-                );
-              })}
+          {/* Inspector-like markup: shield centered with rings beneath (DOM similar to inspector screenshot) */}
+          <div className="xb-hero">
+            <div className="hero_wrap">
+              <div className="shield-wrap">
+                {/* Shield SVG/image — using inline SVG to match neon look */}
+                <div className="shield-img" aria-hidden>
+                  <svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="g1" x1="0" x2="1">
+                        <stop offset="0%" stopColor="#36d1dc" />
+                        <stop offset="50%" stopColor="#3a3bff" />
+                        <stop offset="100%" stopColor="#ff3fcf" />
+                      </linearGradient>
+                      <filter id="glo2" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="6" result="b" />
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                      </filter>
+                    </defs>
+                    <g filter="url(#glo2)">
+                      <path d="M60 6 C78 20 95 22 102 34 V64 C102 102 82 128 60 148 C38 128 18 102 18 64 V34 C25 22 42 20 60 6 Z"
+                        fill="url(#g1)" opacity="0.14" />
+                      <path d="M60 12 C76 24 92 24 96 34 V64 C96 98 78 120 60 136 C42 120 24 98 24 64 V34 C28 24 44 24 60 12 Z"
+                        fill="none" stroke="url(#g1)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                    </g>
+                    <g stroke="url(#g1)" strokeWidth="1.6" fill="none" strokeLinecap="round">
+                      <path d="M60 46 C70 54 72 64 60 78" opacity="0.95" />
+                      <path d="M54 48 C63 54 66 64 54 76" opacity="0.75" />
+                      <path d="M48 52 C58 58 60 68 48 74" opacity="0.55" />
+                      <path d="M66 50 C74 56 76 66 66 74" opacity="0.6" />
+                    </g>
+                  </svg>
+                </div>
+
+                {/* Rings container placed beneath shield to mimic inspector layout */}
+                <div className="rings-wrap" aria-hidden>
+                  <div className="ring-elem r3" />
+                  <div className="ring-elem r2" />
+                  <div className="ring-elem r1" />
+                  <div className="ring-elem r4" />
+                </div>
+              </div>
             </div>
-
-            {/* Center glow */}
-            <motion.div 
-              className="absolute inset-0 flex items-center justify-center"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <div className="w-20 h-20 rounded-full bg-blue-500/30 blur-xl" />
-            </motion.div>
-
-            {/* Orbiting particles */}
-            {[...Array(6)].map((_, i) => {
-              const angle = (i * Math.PI * 2) / 6;
-              const radius = 35;
-              return (
-                <motion.div
-                  key={`orbit-${i}`}
-                  className="absolute w-1.5 h-1.5 bg-cyan-400 rounded-full"
-                  style={{
-                    top: '50%',
-                    left: '50%',
-                  }}
-                  animate={{
-                    x: [
-                      Math.cos(angle) * radius,
-                      Math.cos(angle + Math.PI * 2) * radius,
-                    ],
-                    y: [
-                      Math.sin(angle) * radius,
-                      Math.sin(angle + Math.PI * 2) * radius,
-                    ],
-                  }}
-                  transition={{
-                    duration: 10 + i,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-              );
-            })}
           </div>
         </div>
-
-        {/* Connection lines effect */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none">
-          <defs>
-            <linearGradient id="lineGradient">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0" />
-              <stop offset="50%" stopColor="#06b6d4" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <motion.line 
-            x1="50%" 
-            y1="20%" 
-            x2="50%" 
-            y2="80%" 
-            stroke="url(#lineGradient)" 
-            strokeWidth="1"
-            animate={{ strokeOpacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.line 
-            x1="20%" 
-            y1="50%" 
-            x2="80%" 
-            y2="50%" 
-            stroke="url(#lineGradient)" 
-            strokeWidth="1"
-            animate={{ strokeOpacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          />
-        </svg>
-
-        {/* Outer glow effect */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/10 via-transparent to-cyan-500/10 blur-2xl animate-pulse" />
       </div>
     </div>
   );

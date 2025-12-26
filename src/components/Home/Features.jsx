@@ -37,7 +37,7 @@ export default function Features() {
   ];
 
   return (
-    <section className="relative bg-background text-foreground overflow-hidden">
+    <section className="relative bg-muted/30 dark:bg-muted/60 text-foreground overflow-hidden rounded-2xl shadow-xl border border-border">
       <SectionContainer sectionSpacing="xl" containerSize="xl">
         <div className="flex flex-col lg:flex-row items-start gap-12">
           {/* Left Section */}

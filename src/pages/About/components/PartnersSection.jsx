@@ -3,7 +3,7 @@ import Container from '@/components/ui/Container';
 
 function PartnersSection() {
   return (
-    <div className="py-20 flex justify-center items-center bg-background">
+    <div className="py-20 flex justify-center items-center bg-muted/30 dark:bg-muted/60">
       <Container className="relative w-full max-w-4xl mx-auto rounded-3xl shadow-2xl px-6 pt-16 pb-10 bg-card border border-border overflow-hidden">
         {/* Background shape */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">

@@ -12,8 +12,9 @@ import { Link } from 'react-router-dom';
 
 const Hero = () => {
    const canvasRef = useRef(null);
+   const headlineRef = useRef(null);
    const [displayText, setDisplayText] = useState('');
-   const fullText = "Securing";
+   const fullText = "SECURING";
 
    useEffect(() => {
       const canvas = canvasRef.current;
@@ -159,23 +160,15 @@ const Hero = () => {
 
    return (
       <>
-         <div
-            className="relative min-h-screen justify-center overflow-hidden"
-            style={{
-               backgroundImage: `url(${Hero1})`,
-               backgroundSize: 'cover',
-               backgroundPosition: 'center',
-               backgroundRepeat: 'no-repeat',
-            }}
-         >
-            {/* Animated stars background */}
-            <canvas
-               ref={canvasRef}
-               className="absolute inset-0 w-full h-full pointer-events-none"
-               aria-hidden="true"
-            />
-            {/* Decorative images - hide on small screens */}
-            <div className="hidden md:block absolute top-0 left-0 right-0 z-10 pointer-events-none">
+         {/* Removed duplicate headline */}
+         {/* Animated stars background */}
+         <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            aria-hidden="true"
+         />
+         {/* Decorative images - hide on small screens */}
+         <div className="hidden md:block absolute top-0 left-0 right-0 z-10 pointer-events-none">
                <img src={TopImage} alt="Security top" className="w-full" />
             </div>
             <div className="hidden lg:block absolute left-0 z-10 pointer-events-none">
@@ -186,47 +179,61 @@ const Hero = () => {
             </div>
 
             {/* Hero Content */}
-            <div className="relative mx-auto md:max-w-4xl xl:max-w-6xl pt-36 px-6 min-h-[calc(100vh-60px)]">
-               <div className="flex flex-col pb-8 text-center md:text-left justify-start">
-                  <div className='flex justify-center md:justify-start'>
-                     <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 leading-tight uppercase font-extrabold tracking-tight md:tracking-widest bg-gradient-to-b from-primary to-primary/80 bg-clip-text text-transparent">
-                        {displayText}
-                     </h1>
-                  </div>
-                  <div className="mt-4 lg:flex lg:justify-between lg:items-center md:items-start text-center lg:text-left">
-                     <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 capitalize font-medium">
-                        Protecting your organization's digital landscape from cyber risks.
-                     </p>
-                     <div className="mt-6 lg:mt-0">
-                        <Link
-                           to="/#/"
-                           onClick={(e) => { e.preventDefault(); scrollToServices(); }}
-                           className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-5 py-3 rounded-full shadow-lg hover:brightness-105 transition text-sm sm:text-base"
-                           aria-label="Explore Solutions"
-                        >
-                           Explore Solutions
-                           <GoChevronRight className="inline-block ml-1" />
-                        </Link>
+                  <div className="relative mx-auto md:max-w-4xl xl:max-w-6xl pt-20 px-2 min-h-0">
+                     {/* Overlay for better text visibility in light mode */}
+                     <div className="absolute inset-0 z-0 pointer-events-none">
+                        <div className="hidden dark:block w-full h-full" />
+                        <div className="block dark:hidden w-full h-full bg-gradient-to-b from-white/80 to-white/60" />
+                     </div>
+                       <div className="flex flex-col pb-0 text-center md:text-left justify-start relative z-10">
+                        <div className='flex justify-center md:justify-start'>
+                           <h1 className="uppercase font-extrabold text-center text-foreground"
+                              style={{
+                                 fontSize: 'clamp(2.2rem, 5vw, 5.5rem)',
+                                 lineHeight: 1.05,
+                                 letterSpacing: '0.18em',
+                                 textTransform: 'uppercase',
+                                 marginBottom: '0.05em',
+                                 paddingBottom: '0',
+                                 textShadow: '0 2px 16px rgba(0,0,0,0.08)',
+                              }}
+                           >
+                              {displayText}
+                           </h1>
+                        </div>
+                        <div className="mt-1 flex flex-col lg:flex-row lg:justify-between lg:items-center md:items-start text-center lg:text-left gap-2">
+                           <p className="text-xl sm:text-2xl md:text-3xl max-w-2xl mx-auto lg:mx-0 font-medium text-foreground" style={{lineHeight: '1.15', textShadow: '0 2px 16px rgba(0,0,0,0.08)'}}>
+                              Your Organization's Digital Landscape From Cyber Risks
+                           </p>
+                           <div className="mt-2 lg:mt-0 flex justify-center lg:justify-end">
+                              <Link
+                                 to="/#/"
+                                 onClick={(e) => { e.preventDefault(); scrollToServices(); }}
+                                 className="inline-flex items-center gap-2 btn-primary shadow-lg hover:brightness-105 transition text-sm sm:text-base"
+                                 aria-label="Explore Solutions"
+                              >
+                                 Explore Solutions
+                                 <GoChevronRight className="inline-block ml-1" />
+                              </Link>
+                           </div>
+                        </div>
                      </div>
                   </div>
-               </div>
-            </div>
-            <div className="relative bg-transparent p-8 md:p-10">
-               <div className="mx-auto px-6 flex flex-col justify-between items-center">
-                  {/* Replace static image with animated globe for GIF-like visual */}
-                  <div className="w-full flex justify-center">
-                     <div className="w-full">
-                        <GlobeAnimation className="max-w-xl md:max-w-2xl lg:max-w-4xl" />
+                  <div className="relative bg-transparent p-0 md:p-2">
+                     <div className="mx-auto px-6 flex flex-col justify-between items-center">
+                        {/* Replace static image with animated globe for GIF-like visual */}
+                        <div className="w-full flex justify-center">
+                           <div className="w-full">
+                              <GlobeAnimation className="max-w-xl md:max-w-2xl lg:max-w-4xl" />
+                           </div>
+                        </div>
+                        <img
+                           src={hero2}
+                           alt="Bottom decorative"
+                           className="w-full mt-1 rounded-lg object-cover"
+                        />
                      </div>
                   </div>
-                  <img
-                     src={hero2}
-                     alt="Bottom decorative"
-                     className="w-full mt-6 rounded-lg object-cover"
-                  />
-               </div>
-            </div>
-         </div>
       </>
    );
 };

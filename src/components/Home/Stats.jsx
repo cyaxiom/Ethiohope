@@ -23,7 +23,7 @@ export default function Stats() {
   ];
   
   return (
-    <section className="relative text-foreground overflow-hidden bg-background">
+    <section className="relative text-foreground overflow-hidden bg-muted/30 dark:bg-muted/60 rounded-2xl shadow-xl border border-border">
       <SectionContainer sectionSpacing="xl" containerSize="xl">
         <div className={`${DS.grids.twoColumn} ${DS.spacing.gap.xl} items-center`}>
           {/* Left Side: Heading */}

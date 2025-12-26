@@ -9,7 +9,7 @@ import ValuesSection from './components/ValuesSection';
 
 function About() {
   return (
-    <div className="w-full overflow-x-hidden bg-background">
+    <div className="w-full overflow-x-hidden bg-muted/30 dark:bg-muted/60 pt-20">
       <HeroSection />
       <AboutUsSection />
       <ValuesSection />

@@ -110,7 +110,7 @@ function Teams() {
   ];
 
   return (
-    <div className="w-full overflow-x-hidden">
+    <div className="w-full overflow-x-hidden bg-muted/30 dark:bg-muted/60 text-foreground font-sans">
       {/* Inline styles for marquee/animation to avoid external CSS changes */}
       <style>
         {`
@@ -134,7 +134,7 @@ function Teams() {
       </style>
 
       {/* Hero/Header with background TEAM text */}
-      <section className="relative pt-24 pb-16 bg-background">
+      <section className="relative pt-32 pb-16">
         {/* Background decorative big TEAM text */}
         <div className="absolute inset-0 flex items-start justify-center select-none pointer-events-none">
           <div
@@ -152,13 +152,13 @@ function Teams() {
         </div>
 
         <Container className="relative">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-center text-foreground">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-center text-foreground font-sans">
             Meet Our Dynamic Team
           </h1>
           <div className="flex justify-center mt-4">
             <div className="h-2 w-24 rounded-full bg-gradient-to-r from-primary to-primary/50" />
           </div>
-          <p className="max-w-4xl mx-auto text-center mt-6 text-lg text-muted-foreground">
+          <p className="max-w-4xl mx-auto text-center mt-6 text-lg text-muted-foreground font-sans">
             Together, we're more than a team. We're a family driven by a shared mission to create
             exceptional solutions and deliver unparalleled service to our clients.
           </p>
@@ -172,7 +172,7 @@ function Teams() {
               {[...gallery1, ...gallery1].map((src, i) => (
                 <div
                   key={`g1-${i}`}
-                  className="marquee-item mx-3 rounded-3xl overflow-hidden border border-border shadow-lg"
+                  className="marquee-item mx-3 card bg-card text-foreground border border-border shadow-lg rounded-2xl overflow-hidden"
                 >
                   <img src={src} alt="Team gallery" className="w-full h-full object-cover" />
                 </div>
@@ -185,7 +185,7 @@ function Teams() {
               {[...gallery2, ...gallery2].map((src, i) => (
                 <div
                   key={`g2-${i}`}
-                  className="marquee-item mx-3 rounded-3xl overflow-hidden border border-border shadow-lg"
+                  className="marquee-item mx-3 card bg-card text-foreground border border-border shadow-lg rounded-2xl overflow-hidden"
                 >
                   <img src={src} alt="Team gallery" className="w-full h-full object-cover" />
                 </div>
@@ -196,7 +196,7 @@ function Teams() {
       </section>
 
       {/* Section title like reference */}
-      <section className="bg-background pt-20 pb-10">
+      <section className="bg-muted/30 dark:bg-muted/60 pt-20 pb-10">
         <Container>
           <h2 className="text-3xl md:text-5xl font-bold text-center text-foreground">
             Meet Our Dynamic Team
@@ -208,7 +208,7 @@ function Teams() {
       </section>
 
       {/* Spotlight leader section */}
-      <section className="bg-background py-10">
+      <section className="bg-muted/30 dark:bg-muted/60 py-10">
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             {/* Left image blob */}
@@ -216,7 +216,7 @@ function Teams() {
               <div className="relative">
                 <div className="absolute -inset-6 rounded-[48px] bg-gradient-to-tr from-primary via-primary/50 to-primary/30 opacity-60 blur-2xl" />
                 <div className="relative bg-gradient-to-br from-primary to-primary/50 p-[6px] rounded-[48px] w-[320px] md:w-[420px]">
-                  <div className="rounded-[44px] bg-background p-2">
+                  <div className="rounded-[44px] bg-muted/30 dark:bg-muted/60 p-2">
                     <img
                       src={spotlight.image}
                       alt={spotlight.name}
@@ -231,7 +231,7 @@ function Teams() {
               <h3 className="text-4xl md:text-5xl font-extrabold text-foreground">
                 {spotlight.name}
               </h3>
-              <p className="text-xl font-semibold mt-2 text-foreground">
+              <p className="text-xl font-semibold mt-2 text-muted-foreground">
                 {spotlight.role}
               </p>
               <p className="mt-4 max-w-2xl text-muted-foreground">{spotlight.desc}</p>
@@ -242,20 +242,20 @@ function Teams() {
       </section>
 
       {/* Two-column featured rows (2 rows) */}
-      <section className="bg-background py-12">
+      <section className="bg-muted/30 dark:bg-muted/60 py-12">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
           {featurePairs.map((p, idx) => (
             <div key={idx} className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
               <div className="shrink-0">
                 <div className="p-[3px] rounded-full bg-gradient-to-br from-primary via-primary/50 to-primary/30">
-                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-background">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-muted/30 dark:bg-muted/60">
                     <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                   </div>
                 </div>
               </div>
               <div>
                 <h4 className="text-2xl md:text-3xl font-extrabold text-foreground">{p.name}</h4>
-                <p className="font-semibold mt-1 text-foreground">{p.role}</p>
+                <p className="font-semibold mt-1 text-muted-foreground">{p.role}</p>
                 <p className="mt-3 text-muted-foreground">{p.desc}</p>
                 <div className="flex justify-center sm:justify-start">
                   <Socials />
@@ -267,14 +267,14 @@ function Teams() {
       </section>
 
       {/* Avatar grid (simple cards) */}
-      <section className="bg-background py-8">
+      <section className="bg-muted/30 dark:bg-muted/60 py-8">
         <Container>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {peopleGrid.map((src, i) => (
               <div key={i} className="text-center">
                 <div className="flex justify-center">
                   <div className="p-[3px] rounded-full bg-gradient-to-br from-primary via-primary/50 to-primary/30">
-                    <div className="w-32 h-32 rounded-full overflow-hidden bg-background">
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-muted/30 dark:bg-muted/60">
                       <img src={src} alt="Team member" className="w-full h-full object-cover" />
                     </div>
                   </div>
@@ -294,10 +294,10 @@ function Teams() {
       </section>
 
       {/* CTA Join Now */}
-      <section className="bg-muted/30 py-16">
+      <section className="bg-muted/30 dark:bg-muted/60 py-16">
         <Container>
           <div className="rounded-[36px] p-1 bg-gradient-to-r from-primary via-primary/50 to-primary/30">
-            <div className="rounded-[32px] px-6 md:px-16 py-12 bg-background">
+            <div className="rounded-[32px] px-6 md:px-16 py-12 bg-muted/30 dark:bg-muted/60">
               <h3 className="text-3xl md:text-4xl font-extrabold text-center text-foreground">
                 Join us on this exciting journey, as we innovate, create, and thrive together.
               </h3>

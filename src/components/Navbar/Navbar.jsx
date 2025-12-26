@@ -142,25 +142,25 @@ export default function Navbar() {
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
-          } ${isScrolled
-            ? 'bg-background/80 backdrop-blur-md backdrop-saturate-150'
-            : 'bg-background/50 backdrop-blur-sm'
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} bg-white dark:bg-[#181A20] text-black dark:text-white'`}
+        style={{
+          backgroundColor: 'var(--header-bg, #fff)',
+          color: '#181A20',
+        }}
       >
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">C</span>
+              <span className="text-primary-foreground font-bold text-sm text-black dark:text-white">C</span>
             </div>
-            <span className="text-foreground font-bold text-xl tracking-tight">
+            <span className="text-foreground font-bold text-xl tracking-tight" style={{ color: '#181A20', fontWeight: 700 }}>
               Ethiohope
             </span>
           </div>
 
           {/* Desktop Navigation */}
-          <ul className="hidden md:flex space-x-6 text-foreground font-medium">
+          <ul className="hidden md:flex space-x-6 text-foreground font-medium" style={{ color: '#181A20' }}>
             {navLinks.map((link, index) => (
               <li
                 key={index}
@@ -206,7 +206,7 @@ export default function Navbar() {
                 </button>
 
                 <UserProfileDropdown
-                  links={dashboardLinks}
+                  links={[...navLinks, ...dashboardLinks]}
                   isOpen={isProfileDropdownOpen}
                   onClose={handleProfileDropdownClose}
                 />

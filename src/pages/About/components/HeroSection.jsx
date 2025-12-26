@@ -8,7 +8,7 @@ import Container from '@/components/ui/Container';
 
 function HeroSection() {
 	return (
-		<div className="relative min-h-screen flex items-center justify-between overflow-hidden py-16 bg-background" style={{zIndex:10}}>
+		<div className="relative min-h-screen flex items-center justify-between overflow-hidden py-16 bg-muted/30 dark:bg-muted/60" style={{zIndex:10}}>
 			{/* Fixed Floating Images at Edges/Corners */}
 			<img src={image1} alt="Floating 1" className="floating-img absolute top-8 left-8 w-24 h-24 z-30" style={{filter:'drop-shadow(0 0 24px #60a5fa)'}} />
 			<img src={image2} alt="Floating 2" className="floating-img absolute bottom-8 left-8 w-20 h-20 z-30" style={{filter:'drop-shadow(0 0 24px #34d399)'}} />
