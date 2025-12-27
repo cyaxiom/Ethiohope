@@ -50,8 +50,8 @@ const ResentSEOSection = () => {
         {/* Top 3 Cards */}
         <div className="relative w-full grid grid-cols-1 lg:grid-cols-3 gap-4 px-6 mx-auto mb-10 z-20">
           {/* Card 1 */}
-          <div className="bg-card p-8 rounded-2xl border border-border min-h-[300px] cursor-pointer hover:border-primary transition-all duration-300 z-30">
-            <Link to="/">
+          <Link to="/services/kids-tutoring" className="block">
+            <div className="bg-card p-8 rounded-2xl border border-border min-h-[300px] cursor-pointer hover:border-primary transition-all duration-300 z-30">
               <div className="text-muted-foreground hover:text-primary text-3xl mb-4 transition-colors duration-300">
                 <FaNetworkWired />
               </div>
@@ -78,12 +78,12 @@ const ResentSEOSection = () => {
                   Simplify with AI-Powered SASE.
                 </li>
               </ul>
-            </Link>
-          </div>
+            </div>
+          </Link>
 
           {/* Card 2 */}
-          <div className="bg-card p-8 rounded-2xl border border-border min-h-[320px] cursor-pointer hover:border-primary transition-all duration-300 z-30">
-            <Link to="/">
+          <Link to="/services/programming-service" className="block">
+            <div className="bg-card p-8 rounded-2xl border border-border min-h-[320px] cursor-pointer hover:border-primary transition-all duration-300 z-30">
               <div className="text-muted-foreground hover:text-primary text-3xl mb-4 transition-colors duration-300">
                 <FaCloud />
               </div>
@@ -110,12 +110,12 @@ const ResentSEOSection = () => {
                   Compliance & Governance.
                 </li>
               </ul>
-            </Link>
-          </div>
+            </div>
+          </Link>
 
           {/* Card 3 */}
-          <div className="bg-card p-8 rounded-2xl border border-border min-h-[320px] cursor-pointer hover:border-primary transition-all duration-300 z-30">
-            <Link to="/">
+          <Link to="/services/ethiohope-service" className="block">
+            <div className="bg-card p-8 rounded-2xl border border-border min-h-[320px] cursor-pointer hover:border-primary transition-all duration-300 z-30">
               <div className="text-muted-foreground hover:text-primary text-3xl mb-4 transition-colors duration-300">
                 <FaDatabase />
               </div>
@@ -144,8 +144,8 @@ const ResentSEOSection = () => {
                   Integrated Security Monitoring.
                 </li>
               </ul>
-            </Link>
-          </div>
+            </div>
+          </Link>
         </div>
 
         {/* Bottom Section */}
