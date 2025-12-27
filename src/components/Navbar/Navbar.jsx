@@ -14,6 +14,11 @@ import {
 } from '../../assets/images/z-index.img';
 
 export default function Navbar() {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [openSections, setOpenSections] = useState({});
+  const [drawerTop, setDrawerTop] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef(0);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -136,6 +141,33 @@ export default function Navbar() {
     setIsProfileDropdownOpen(false);
   };
 
+  const toggleSection = (idx) => {
+    setOpenSections((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      const newTop = e.clientY - dragStartRef.current;
+      setDrawerTop(Math.max(0, Math.min(newTop, window.innerHeight - 120)));
+    };
+
+    const onMouseUp = () => {
+      if (isDragging) setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [isDragging]);
+
+
 
 
   return (
@@ -149,8 +181,19 @@ export default function Navbar() {
         }}
       >
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          {/* Logo */}
+          {/* Left: hamburger + Logo */}
           <div className="flex items-center space-x-3">
+            <button
+              aria-label="Open menu"
+              onClick={() => setIsDrawerOpen(true)}
+              className="mr-2 p-2 rounded-md hover:bg-muted/50 focus:outline-none focus:ring-2"
+            >
+              <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            {/* Logo */}
             <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm text-black dark:text-white">C</span>
             </div>
@@ -206,7 +249,7 @@ export default function Navbar() {
                 </button>
 
                 <UserProfileDropdown
-                  links={[...navLinks, ...dashboardLinks]}
+                  links={[...dashboardLinks]}
                   isOpen={isProfileDropdownOpen}
                   onClose={handleProfileDropdownClose}
                 />
@@ -239,6 +282,77 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {/* Left-side Drawer Overlay + Panel */}
+      <div aria-hidden={!isDrawerOpen}>
+        {/* overlay */}
+        <div
+          className={`fixed inset-0 bg-black/40 z-50 transition-opacity ${isDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setIsDrawerOpen(false)}
+        />
+
+        {/* drawer panel */}
+        <aside
+          className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-[#0f1720] z-60 transform transition-transform duration-300 ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          aria-hidden={!isDrawerOpen}
+        >
+          <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center space-x-3">
+              <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm text-black dark:text-white">C</span>
+              </div>
+              <span className="font-bold text-gray-900 dark:text-white">Ethiohope</span>
+            </div>
+            <button onClick={() => setIsDrawerOpen(false)} aria-label="Close menu" className="p-2 rounded-md hover:bg-muted/50">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <nav className="p-4 overflow-y-auto max-h-[calc(100vh-64px)]">
+            <ul className="space-y-3">
+              {navLinks.map((link, idx) => (
+                <li key={idx}>
+                  <div className="flex items-center justify-between">
+                    {link.path && !link.dropdown ? (
+                      <Link to={link.path} onClick={() => setIsDrawerOpen(false)} className="py-3 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-100 font-medium w-full text-left">
+                        {link.name}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => toggleSection(idx)}
+                        className="w-full text-left py-3 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-100 font-medium"
+                      >
+                        <span>{link.name}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {link.dropdown && (
+                    <div className={`mt-2 pl-4 space-y-1 ${openSections[idx] ? 'block' : 'hidden'}`}>
+                      {link.dropdown.map((sub, sidx) => (
+                        <Link
+                          key={sidx}
+                          to={sub.path}
+                          onClick={() => setIsDrawerOpen(false)}
+                          className="block py-2 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-sm text-gray-800 dark:text-gray-100"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 border-t pt-4 border-gray-100 dark:border-gray-800">
+              <ThemeToggle />
+            </div>
+          </nav>
+        </aside>
+      </div>
 
 
 
