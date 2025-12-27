@@ -26,6 +26,7 @@ const CompanyMegaMenu = ({ data, onClose }) => {
         <div className="col-span-3 grid grid-cols-3 gap-6">
           {data.dropdown.map((item, index) => (
             <Link
+              key={item.path || item.name || index}
               to={item.path}
               onClick={onClose}
               className="hover:text-primary"

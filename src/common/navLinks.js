@@ -138,7 +138,7 @@ export const navLinks = [
         path: '/about/teams',
         description: 'Meet our talented professionals and experts',
         icon: '👥',
-        image: '/images/nav/team-preview.jpg',
+        image: '/LittleCoder.png',
         stats: '50+ Members',
       },
       {
