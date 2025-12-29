@@ -3,7 +3,7 @@ import Container from '@/components/ui/Container';
 
 function ValuesSection() {
 	return (
-		<div className="relative py-20 overflow-hidden bg-background">
+		<div className="relative py-20 overflow-hidden bg-muted/30 dark:bg-muted/60">
 			<Container>
 				<h2 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">Our Values</h2>
 				<div className="flex items-center mb-6">

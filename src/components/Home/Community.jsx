@@ -9,7 +9,7 @@ import image5 from '@images/community/IMAGE.png';
 
 export default function Community() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-background">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-muted/30 dark:bg-muted/60 rounded-2xl shadow-xl border border-border">
       
       {/* Heading */}
       <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground text-center mb-16">

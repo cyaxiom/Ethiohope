@@ -156,12 +156,9 @@ export default function AboutUs() {
 
         {/* Right column */}
         <div className="w-1/2 justify-end z-10 relative">
-          {" "}
-          <div className="relative">
-            {" "}
+          <div className="relative mt-16">
             <div
               className="absolute pt-6 pl-6 flex items-center md:right-78 top-5 bg-cover bg-center w-[200px] h-[200px] transform scale-150"
-              // Increased size with w/h and scale, you can adjust these values
               style={{
                 backgroundImage: `url(${smallAboutBg})`,
                 backgroundPosition: "right",
@@ -181,7 +178,6 @@ export default function AboutUs() {
                 </div>
               </div>
             </div>
-            {/* Women Image - No changes */}
             <div className="flex items-end justify-end overflow-hidden">
               <div className="w-full h-full min-h-[200px] flex items-center justify-end">
                 <img src={womenImg} alt="team member" className="" />

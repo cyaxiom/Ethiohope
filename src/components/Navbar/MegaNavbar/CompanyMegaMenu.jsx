@@ -23,37 +23,32 @@ const CompanyMegaMenu = ({ data, onClose }) => {
         </div>
 
         {/* Main Content */}
-        <div className="col-span-3 grid grid-cols-3 gap-6">
+        <div className="col-span-3 grid grid-cols-3 gap-6 items-stretch">
           {data.dropdown.map((item, index) => (
             <Link
+              key={item.path || item.name || index}
               to={item.path}
               onClick={onClose}
-              className="hover:text-primary"
+              className="flex flex-col h-full bg-card rounded-2xl p-6 border border-border shadow-sm hover:shadow-md transition-colors"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-2xl">{item.icon}</div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  {item.name}
-                </h3>
+              <div className="flex-shrink-0 flex flex-col items-center text-center">
+                <div className="text-3xl mb-3">{item.icon}</div>
+                <h3 className="text-lg font-semibold text-foreground">{item.name}</h3>
               </div>
 
-              <p className="text-muted-foreground mb-4 text-sm">
-                {item.description}
-              </p>
+              <p className="text-muted-foreground mt-3 text-sm flex-1 text-center">{item.description}</p>
 
               {item.stats && (
-                <div className="flex items-center gap-2 text-sm text-primary">
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm text-primary">
                   <Award className="w-4 h-4" />
                   <span>{item.stats}</span>
                 </div>
               )}
 
               {item.image && (
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-32 object-cover rounded-lg mt-4"
-                />
+                <div className="mt-4">
+                  <img src={item.image} alt={item.name} className="w-full h-32 object-cover rounded-lg mx-auto" />
+                </div>
               )}
             </Link>
           ))}

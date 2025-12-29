@@ -28,7 +28,7 @@ const CommunityMegaMenu = ({ data, onClose }) => {
                 onClose();
               }}
               key={index}
-              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg ${item.featured
+              className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${item.featured
                 ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
                 : 'bg-background border-border/20'
                 }`}

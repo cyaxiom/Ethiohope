@@ -3,6 +3,7 @@ import React from "react";
 import phoneCall from "../../../assets/images/contact/phoneCall.svg";
 import mail from "../../../assets/images/contact/mail.svg";
 import location from "../../../assets/images/contact/location.svg";
+import { Card } from '@/components/ui/Card';
 
 const ContactInfo = ({ darkMode }) => {
    return (
@@ -11,10 +12,7 @@ const ContactInfo = ({ darkMode }) => {
          {/* Contact Cards */}
          <div className="flex flex-col md:flex-row md:flex-wrap gap-5 w-full items-center px-6 justify-center">
             {/* Phone Number Section */}
-            <div className={`rounded-2xl px-12 py-8 pb-12 w-full md:w-[calc(50%-0.625rem)] custom-md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.833rem)] ${darkMode
-               ? 'bg-[#1D1D3E]'
-               : 'bg-white border border-gray-200 shadow-lg'
-               }`}>
+            <Card className={`rounded-2xl px-12 py-8 pb-12 w-full md:w-[calc(50%-0.625rem)] custom-md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.833rem)] ${darkMode ? 'bg-[#1D1D3E]' : 'bg-white border border-gray-200 shadow-lg'}`}>
                <div className="text-center md:text-left">
                   <div className="flex my-12 gap-4 items-center justify-center md:justify-start">
                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${darkMode
@@ -40,13 +38,10 @@ const ContactInfo = ({ darkMode }) => {
                      </p>
                   </div>
                </div>
-            </div>
+            </Card>
 
             {/* Mail Address Section */}
-            <div className={`rounded-2xl px-12 py-8 pb-12 w-full md:w-[calc(50%-0.625rem)] custom-md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.833rem)] ${darkMode
-               ? 'bg-[#1D1D3E]'
-               : 'bg-white border border-gray-200 shadow-lg'
-               }`}>
+            <Card className={`rounded-2xl px-12 py-8 pb-12 w-full md:w-[calc(50%-0.625rem)] custom-md:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.833rem)] ${darkMode ? 'bg-[#1D1D3E]' : 'bg-white border border-gray-200 shadow-lg'}`}>
                <div className="text-center md:text-left">
                   <div className="flex my-12 gap-4 items-center justify-center md:justify-start">
                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${darkMode
@@ -72,13 +67,10 @@ const ContactInfo = ({ darkMode }) => {
                      </p>
                   </div>
                </div>
-            </div>
+            </Card>
 
             {/* Location Section */}
-            <div className={`rounded-2xl px-12 py-8 pb-12 w-full md:w-[calc(50%-0.625rem)] custom-md:w-full lg:w-[calc(33.333%-0.833rem)] custom-md:max-w-[calc(50%-0.625rem)] custom-md:mx-auto ${darkMode
-               ? 'bg-[#1D1D3E]'
-               : 'bg-white border border-gray-200 shadow-lg'
-               }`}>
+            <Card className={`rounded-2xl px-12 py-8 pb-12 w-full md:w-[calc(50%-0.625rem)] custom-md:w-full lg:w-[calc(33.333%-0.833rem)] custom-md:max-w-[calc(50%-0.625rem)] custom-md:mx-auto ${darkMode ? 'bg-[#1D1D3E]' : 'bg-white border border-gray-200 shadow-lg'}`}>
                <div className="text-center md:text-left">
                   <div className="flex my-12 gap-4 items-center justify-center md:justify-start">
                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${darkMode
@@ -104,7 +96,7 @@ const ContactInfo = ({ darkMode }) => {
                      </p>
                   </div>
                </div>
-            </div>
+            </Card>
          </div>
 
          {/* Map Section */}

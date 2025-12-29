@@ -19,7 +19,9 @@ export const Card = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = DS.cards[variant] || DS.cards.base;
+  // Force visible card for About page: white bg, border, shadow
+  const forceVisibleCard = 'rounded-2xl border border-gray-300 bg-white shadow-lg';
+  const baseClasses = variant === 'force-visible' ? forceVisibleCard : (DS.cards[variant] || DS.cards.base);
   const paddingClasses = DS.cards.padding[padding];
   const hoverClasses = hoverable ? DS.cards.hover : '';
   const interactiveClasses = interactive ? `${DS.cards.active} cursor-pointer` : '';

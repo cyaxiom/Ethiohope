@@ -5,7 +5,7 @@ import { AiOutlineBarChart } from "react-icons/ai";
 
 const ProgrammingService = () => {
   return (
-    <div className="bg-background text-foreground font-sans">
+    <div className="bg-muted/30 dark:bg-muted/60 text-foreground font-sans">
 
       {/* Hero Section */}
       <section className="py-50">

@@ -4,7 +4,7 @@ import Container from '@/components/ui/Container';
 
 function NewsSection() {
   return (
-    <div className="py-20 bg-background overflow-hidden">
+    <div className="py-20 bg-muted/30 dark:bg-muted/60 overflow-hidden">
       <Container>
         <h2 className="text-4xl font-bold mb-6 text-center text-foreground">Latest News</h2>
         <div className="flex items-center justify-center mb-12">

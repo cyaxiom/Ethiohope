@@ -11,8 +11,8 @@ import CustomerStories from "../../../components/Services/EthiohopeService/Custo
 
 function EthiohopeService() {
   return (
-    <div className="bg-background">
-      <Hero />
+    <div className="bg-muted/30 dark:bg-muted/60 text-foreground">
+      <Hero backgroundImage="/path-to-image-2" />
       <ClientLogos />
       <RecentSEOWork />
       <AboutUs />
@@ -26,3 +26,6 @@ function EthiohopeService() {
 }
 
 export default EthiohopeService;
+
+
+
