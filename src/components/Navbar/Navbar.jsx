@@ -213,11 +213,14 @@ export default function Navbar() {
               >
                 {link.path ? (
                   <Link
-                    to={link.path}
-                    className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
-                  >
-                    {link.name}
-                  </Link>
+                      to={link.path}
+                      className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
+                    >
+                      <span className="flex items-center">
+                        <span>{link.name}</span>
+                        {link.name === 'Company' && <ChevronDown className="ml-2 w-4 h-4" />}
+                      </span>
+                    </Link>
                 ) : (
                   <div className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
                     {link.name}

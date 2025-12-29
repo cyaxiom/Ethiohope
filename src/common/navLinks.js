@@ -123,6 +123,7 @@ export const navLinks = [
   },
   {
     name: 'Company',
+    path: '/company',
     description: 'Discover our mission, vision, and amazing team',
     dropdown: [
       {
