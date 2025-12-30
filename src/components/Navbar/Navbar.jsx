@@ -180,20 +180,18 @@ export default function Navbar() {
           color: '#181A20',
         }}
       >
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          {/* Left: hamburger + Logo */}
-          <div className="flex items-center space-x-3">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Left: hamburger (mobile) + Logo + Ethiohope text */}
+          <div className="flex items-center space-x-2">
             <button
               aria-label="Open menu"
               onClick={() => setIsDrawerOpen(true)}
-              className="mr-2 p-2 rounded-md hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden"
+              className="p-2 rounded-md hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden"
             >
               <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-
-            {/* Logo */}
             <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm text-black dark:text-white">C</span>
             </div>
@@ -202,7 +200,7 @@ export default function Navbar() {
             </span>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Navigation: only visible on md+ */}
           <ul className="hidden md:flex space-x-6 text-foreground font-medium" style={{ color: '#181A20' }}>
             {navLinks.map((link, index) => (
               <li
@@ -231,57 +229,31 @@ export default function Navbar() {
             ))}
           </ul>
 
-          {/* Right Side */}
+          {/* Right Side: always visible, profile icon always shown */}
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Auth Button */}
-            {isLoggedIn ? (
-              <div className="relative">
-                <button
-                  onClick={handleProfileClick}
-                  className="flex items-center justify-center w-10 h-10 transition-all duration-200"
-                >
-                  <img
-                    src={profile_bg}
-                    alt=""
-                    className="transition-transform duration-200 group-hover:scale-105"
-                  />
-                  <User className="w-5 h-5 absolute text-white" />
-                </button>
-
-                <UserProfileDropdown
-                  links={[...dashboardLinks]}
-                  isOpen={isProfileDropdownOpen}
-                  onClose={handleProfileDropdownClose}
+            {/* Profile icon always visible */}
+            <div className="relative">
+              <button
+                onClick={handleProfileClick}
+                className="flex items-center justify-center w-10 h-10 transition-all duration-200"
+              >
+                <img
+                  src={profile_bg}
+                  alt=""
+                  className="transition-transform duration-200 group-hover:scale-105"
                 />
-              </div>
-            ) : (
-              <>
-                <div className="relative w-24 h-10 flex items-center justify-center group">
-                  <img
-                    src={auth_btn_border}
-                    alt=""
-                    className="transition-transform duration-200 group-hover:scale-105"
-                  />
-                  <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
-                    <User className="w-4 h-4 mr-2 text-primary" />
-                    LOGIN
-                  </button>
-                </div>
-                <div className="relative w-24 h-10 flex items-center justify-center group">
-                  <img
-                    src={auth_btn_border_2}
-                    alt=""
-                    className="transition-transform duration-200 group-hover:scale-105"
-                  />
-                  <button className="absolute text-sm flex items-center text-white font-medium z-10 bg-transparent">
-                    SIGN UP
-                  </button>
-                </div>
-              </>
-            )}
+                <User className="w-5 h-5 absolute text-white" />
+              </button>
+
+              <UserProfileDropdown
+                links={[...dashboardLinks]}
+                isOpen={isProfileDropdownOpen}
+                onClose={handleProfileDropdownClose}
+              />
+            </div>
           </div>
         </div>
       </nav>
