@@ -186,9 +186,9 @@ export default function Navbar() {
             <button
               aria-label="Open menu"
               onClick={() => setIsDrawerOpen(true)}
-              className="p-2 rounded-md hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden"
+              className="p-2 rounded-md bg-white/80 dark:bg-card hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden border border-border shadow"
             >
-              <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-6 h-6 text-black dark:text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
