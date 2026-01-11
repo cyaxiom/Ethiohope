@@ -11,7 +11,13 @@ function App() {
   const location = useLocation();
 
   // Define routes where you want to hide navbar and footer
-  const hideLayoutRoutes = ['/login', '/register', '/auth', '/community'];
+  const hideLayoutRoutes = [
+    '/login',
+    '/register',
+    '/auth',
+    '/community',
+    '/dashboard/chats',
+  ];
   const shouldHideLayout = hideLayoutRoutes.some((route) =>
     location.pathname.startsWith(route)
   );
