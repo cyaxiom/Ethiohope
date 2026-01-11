@@ -31,11 +31,7 @@ function App() {
             {routes.map((route, index) => {
               if (route.routes) {
                 return (
-                  <Route
-                    element={route.element}
-                    key={index}
-                    path={route.path}
-                  >
+                  <Route element={route.element} key={index} path={route.path}>
                     {route.routes.map((subRoute, subIndex) => (
                       <Route
                         key={subIndex}
