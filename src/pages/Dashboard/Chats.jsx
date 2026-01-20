@@ -1,10 +1,10 @@
 'use client';
-import './Temp.jsx';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
 
 import { useState, useRef, useEffect } from 'react';
 import { DS } from '@/constants/designSystem.js';
+import { motion } from 'framer-motion';
 // Reusable design-system class helpers
 const ICON_BTN = `${DS.buttons.base} ${DS.buttons.sizes.sm} ${DS.buttons.variants.ghost}`;
 const ICON_BTN_MD = `${DS.buttons.base} ${DS.buttons.sizes.md} ${DS.buttons.variants.ghost}`;
@@ -42,121 +42,11 @@ import {
   ChevronRight,
   UserX,
   Flag,
+  ChevronDown,
+  MessageCircleX,
 } from 'lucide-react';
-
-// --- Mock Data ---
-const CONTACTS = [
-  {
-    id: '1',
-    name: 'Mark Villiams',
-    avatar: '/LittleCoder1.png',
-    lastMessage: 'Have you called them?',
-    time: '10:20 PM',
-    isOnline: true,
-    isPinned: true,
-    bio: 'Product Designer | Tech Enthusiast',
-    phone: '555-555-21541',
-    email: 'info@example.com',
-  },
-  {
-    id: '2',
-    name: 'Elizabeth Sosa',
-    avatar: '/heroimgKids.png',
-    lastMessage: 'Typing...',
-    time: 'Yesterday',
-    isOnline: false,
-    isPinned: true,
-    isTyping: true,
-  },
-  {
-    id: '3',
-    name: 'Michael Howard',
-    avatar: '/LittleCoder1.png',
-    lastMessage: 'Thank you',
-    time: '10:20 PM',
-    isOnline: true,
-    isPinned: true,
-  },
-  {
-    id: '4',
-    name: 'Horace Keene',
-    avatar: '/LittleCoder1.png',
-    lastMessage: 'Have you called them?',
-    time: 'Just Now',
-    isOnline: true,
-    isPinned: false,
-    unreadCount: 11,
-  },
-  {
-    id: '5',
-    name: 'Hollis Tran',
-    avatar: '/LittleCoder1.png',
-    lastMessage: 'Video call ended',
-    time: 'Yesterday',
-    isOnline: true,
-    isPinned: false,
-    isVideoCall: true,
-  },
-];
-
-const INITIAL_MESSAGES = [
-  {
-    id: 'm1',
-    text: 'Hello @Alex Thank you for the beautiful web design ahead schedule.',
-    time: '8:16 PM',
-    isSender: false,
-    senderName: 'Mark Villiams',
-  },
-  {
-    id: 'm2',
-    type: 'audio',
-    duration: '0:05',
-    time: '8:16 PM',
-    isSender: true,
-    senderName: 'Alex Smith',
-    status: 'read',
-  },
-  {
-    id: 'm3',
-    type: 'link',
-    text: 'https://www.youtube.com/watch?v=GCmL3mS0Psk',
-    linkPreview: {
-      url: 'https://www.youtube.com/watch?v=GCmL3mS0Psk',
-      image: '/LittleCoder1.png',
-    },
-    time: '8:16 PM',
-    isSender: false,
-    senderName: 'Mark Villiams',
-    isStarred: true,
-  },
-  {
-    id: 'm4',
-    text: 'Please check and review the files 😊',
-    time: '8:16 PM',
-    isSender: false,
-    senderName: 'Mark Villiams',
-    reactions: [
-      { emoji: '👍', count: 2 },
-      { emoji: '❤️', count: 2 },
-    ],
-  },
-  {
-    id: 'm5',
-    type: 'file',
-    fileName: 'Landing_page_V1.doc',
-    fileSize: '80 Bytes',
-    time: '8:16 PM',
-    isSender: false,
-    senderName: 'Mark Villiams',
-  },
-  {
-    id: 'm6',
-    text: 'Thank you for your support',
-    time: '8:16 PM',
-    isSender: false,
-    senderName: 'Mark Villiams',
-  },
-];
+import { debounce } from '../../lib/utils';
+import { CONTACTS } from '../../data/mockChat.js';
 
 // --- Components ---
 
@@ -184,17 +74,20 @@ const Avatar = ({ src, isOnline, size = 'md' }) => {
 const Dropdown = ({ items, onClose, width = 'w-56' }) => (
   <>
     {/* backdrop */}
-    <div className="fixed inset-0 z-40" onClick={onClose} />
+    {/* <div className="fixed inset-0 bg-amber-300" onClick={onClose} /> */}
 
     {/* dropdown itself */}
     <div
-      className={`${width} bg-card border border-border rounded-xl shadow-xl z-50 p-1 py-2
+      onClick={(e) => e.stopPropagation()}
+      className={`${width} bg-card border border-border rounded-xl shadow-xl z-30 p-1 py-2
       animate-in fade-in zoom-in duration-150 text-foreground`}
     >
       {items.map((item, i) => (
         <button
           key={i}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log(`Clicked on ${item.label}`);
             item.onClick?.();
             onClose();
           }}
@@ -223,22 +116,19 @@ const Dropdown = ({ items, onClose, width = 'w-56' }) => (
 );
 
 const ReactionPicker = ({ onReact, onClose }) => {
-  const emojis = ['👍', '❤️', '😂', '😮', '🙏', '➕'];
+  const emojis = ['👍', '❤️', '😂', '😮', '🙏'];
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute bottom-full mb-2 left-0 bg-card border border-border rounded-full shadow-lg p-1.5 flex gap-1 animate-in slide-in-from-bottom-2 duration-200 z-50">
+      {/* <div className="fixed inset-0 z-40" onClick={onClose} /> */}
+      <div className="absolute bottom-full mb-2 left-0 bg-card border border-border rounded-full shadow-lg p-1.5 flex gap-1 animate-in slide-in-from-bottom-2 duration-200">
         {emojis.map((emoji) => (
           <button
+            type="button"
             key={emoji}
             onClick={() => onReact(emoji)}
             className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded-full text-lg transition-transform hover:scale-125"
           >
-            {emoji === '➕' ? (
-              <span className="text-primary text-xl font-bold">+</span>
-            ) : (
-              emoji
-            )}
+            {emoji}
           </button>
         ))}
       </div>
@@ -246,10 +136,26 @@ const ReactionPicker = ({ onReact, onClose }) => {
   );
 };
 //onOpenContext is not used currently but can be used to open context menu on message
-const MessageBubble = ({ message, onOpenContext, onReact }) => {
+const MessageBubble = ({
+  message,
+  onOpenContext,
+  onReact,
+  onReply,
+  onStarMessage,
+}) => {
   const isSender = message.isSender;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
+
+  const isOnlyEmoji = (char) => {
+    if (!char) return false;
+    //trim
+    char = char.trim();
+    //can be multiple emojis,
+    const emojiOnly =
+      /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}(?:\p{Emoji_Modifier})?|\p{Emoji_Component}|\u200D)+$/u;
+    return emojiOnly.test(char);
+  };
 
   return (
     <div
@@ -268,8 +174,11 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
         </span>
         <div className="relative">
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-1 hover:bg-muted rounded-full transition-opacity opacity-0 group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+            className="p-1"
           >
             <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
           </button>
@@ -279,8 +188,18 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
                 width="w-48"
                 onClose={() => setIsMenuOpen(false)}
                 items={[
-                  { icon: <Info className="h-4 w-4" />, label: 'Message Info' },
-                  { icon: <Reply className="h-4 w-4" />, label: 'Reply' },
+                  {
+                    icon: <Info className="h-4 w-4" />,
+                    label: 'Message Info',
+                    onClick: () => {
+                      console.log('Message Info clicked');
+                    },
+                  },
+                  {
+                    icon: <Reply className="h-4 w-4" />,
+                    label: 'Reply',
+                    onClick: () => onReply(message),
+                  },
                   {
                     icon: <Smile className="h-4 w-4" />,
                     label: 'React',
@@ -289,13 +208,34 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
                       setIsMenuOpen(false);
                     },
                   },
-                  { icon: <Forward className="h-4 w-4" />, label: 'Forward' },
-                  { icon: <Star className="h-4 w-4" />, label: 'Star Message' },
-                  { icon: <Flag className="h-4 w-4" />, label: 'Report' },
+                  {
+                    icon: <Forward className="h-4 w-4" />,
+                    label: 'Forward',
+                    onClick: () => {
+                      console.log('Forward clicked');
+                    },
+                  },
+                  {
+                    icon: <Star className="h-4 w-4" />,
+                    label: 'Star Message',
+                    onClick: () => {
+                      onStarMessage(message.id);
+                    },
+                  },
+                  {
+                    icon: <Flag className="h-4 w-4" />,
+                    label: 'Report',
+                    onClick: () => {
+                      console.log('Report clicked');
+                    },
+                  },
                   {
                     icon: <Trash2 className="h-4 w-4 text-red-500" />,
                     label: 'Delete',
                     destructive: true,
+                    onClick: () => {
+                      console.log('Delete clicked');
+                    },
                   },
                 ]}
               />
@@ -313,9 +253,11 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
         <div className="flex flex-col gap-1 relative">
           <div
             className={`relative p-3 rounded-2xl ${
-              isSender
-                ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
-                : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
+              !isOnlyEmoji(message.text) && message.type !== 'audio'
+                ? isSender
+                  ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
+                  : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
+                : ''
             }`}
           >
             {showReactions && (
@@ -324,30 +266,46 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
                 onReact={(e) => onReact(message.id, e)}
               />
             )}
+            {/* Message being replied to */}
+            {message.replyTo && (
+              <div
+                className={`mb-2 rounded-lg px-3 py-2 text-xs
+      ${
+        isSender
+          ? 'bg-primary/10 border-l-4 border-primary'
+          : 'bg-muted border-l-4 border-muted-foreground'
+      }
+    `}
+              >
+                <div className="font-semibold text-[11px] opacity-80">
+                  Replying to {message.replyTo.senderName}
+                </div>
+                <div className="truncate text-[11px] opacity-70">
+                  {message.replyTo.text
+                    ? message.replyTo.text.length > 10
+                      ? `${message.replyTo.text.slice(0, 10)}...`
+                      : message.replyTo.text
+                    : message.replyTo.type === 'image'
+                      ? 'Image'
+                      : message.replyTo.type === 'file'
+                        ? 'File'
+                        : message.replyTo.type === 'audio'
+                          ? 'Audio'
+                          : '...'}
+                </div>
+              </div>
+            )}
 
             {message.type === 'audio' ? (
               <div className="flex items-center gap-3 min-w-[220px]">
-                <button className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
-                  <Play className="h-5 w-5 text-white fill-white" />
-                </button>
-                <div className="flex-1 h-6 flex items-center gap-0.5">
-                  {[...Array(20)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-0.5 rounded-full bg-warning"
-                      style={{ height: `${20 + Math.random() * 80}%` }}
-                    />
-                  ))}
-                </div>
-                <span
-                  className={`text-xs font-semibold ${
-                    isSender
-                      ? 'text-primary-foreground'
-                      : 'text-card-foreground'
-                  }`}
+                <audio
+                  controls
+                  className="w-full outline-none bg-transparent"
+                  onClick={() => console.log('clicked audio')}
                 >
-                  {message.duration}
-                </span>
+                  <source src={message.audioUrl} />
+                  Your browser does not support the audio element.
+                </audio>
               </div>
             ) : message.type === 'file' ? (
               <div className="flex flex-col gap-2">
@@ -391,10 +349,39 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
                   </div>
                 )}
               </div>
+            ) : isOnlyEmoji(message.text) ? (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, rotate: [-10, 10] }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 20,
+                  duration: 0.5,
+                }}
+                className="text-5xl leading-tight"
+              >
+                {message.text.trim()}
+              </motion.div>
             ) : (
-              <p className="text-sm leading-relaxed text-card-foreground">
-                {message.text}
-              </p>
+              <div
+                className={`flex flex-col gap-2 relative 
+               `}
+              >
+                {message.imageUrl && (
+                  <img
+                    src={message.imageUrl}
+                    alt="message-img"
+                    className="
+                  max-w-xs md:max-w-sm lg:max-w-md rounded-lg object-cover
+                    "
+                  />
+                )}
+
+                <p className="text-sm leading-relaxed text-card-foreground whitespace-pre-wrap break-words  max-w-xs md:max-w-sm lg:max-w-md ">
+                  {message.text.trim()}
+                </p>
+              </div>
             )}
 
             {message.isStarred && (
@@ -425,6 +412,218 @@ const MessageBubble = ({ message, onOpenContext, onReact }) => {
     </div>
   );
 };
+//Camera Component
+const CameraComponent = ({ onCapture, onClose }) => {
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error('Error accessing camera:', err);
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, []);
+
+  const handleCapture = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    onCapture(canvas.toDataURL('image/png'));
+  };
+
+  return (
+    <div className="relative w-full h-full bg-black rounded-xl overflow-hidden">
+      {/* Video Feed */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+
+      {/* Top Bar */}
+      <div className="absolute top-0 left-0 right-0 p-4 flex justify-end bg-gradient-to-b from-black/60 to-transparent">
+        <button
+          onClick={onClose}
+          className="w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Bottom Controls */}
+      <div className="absolute bottom-0 left-0 right-0 pb-6 pt-4 flex justify-center bg-gradient-to-t from-black/60 to-transparent">
+        <button
+          onClick={handleCapture}
+          className="w-16 h-16 rounded-full border-4 border-white bg-white/20 hover:bg-white/30 active:scale-95 transition"
+        />
+      </div>
+    </div>
+  );
+};
+// Audio Recorder Component
+const AudioRecorder = ({ onSave, onClose }) => {
+  const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const audioRef = useRef(null);
+  const chunksRef = useRef([]);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [seconds, setSeconds] = useState(0);
+
+  // timer
+  useEffect(() => {
+    if (!isRecording) return;
+
+    const interval = setInterval(() => {
+      setSeconds((s) => s + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    streamRef.current = stream;
+
+    const recorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = recorder;
+    chunksRef.current = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+    };
+
+    recorder.start();
+    setSeconds(0);
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    setIsRecording(false);
+  };
+
+  const handleSave = () => {
+    onSave(audioUrl);
+    onClose();
+  };
+
+  return (
+    <div className="relative w-full max-w-md mx-auto bg-background rounded-xl p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-semibold">
+          {isRecording ? 'Recording...' : 'Share Audio'}
+        </h2>
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Timer */}
+      <div className="text-center text-2xl font-mono mb-6">
+        {new Date(seconds * 1000).toISOString().substring(14, 19)}
+      </div>
+
+      {/* Mic Indicator */}
+      <div className="flex justify-center mb-8">
+        <div
+          className={`w-20 h-20 rounded-full flex items-center justify-center
+          ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-white/10'}`}
+        >
+          <Mic className="h-10 w-10" />
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex justify-center gap-4">
+        {!isRecording && !audioUrl && (
+          <button
+            onClick={startRecording}
+            className="px-6 py-2 rounded-full bg-green-500 hover:bg-green-600"
+          >
+            Start
+          </button>
+        )}
+
+        {isRecording && (
+          <button
+            onClick={stopRecording}
+            className="px-6 py-2 rounded-full bg-red-500 hover:bg-red-600"
+          >
+            Stop
+          </button>
+        )}
+      </div>
+
+      {/* Playback */}
+      {audioUrl && (
+        <div className="mt-6">
+          <audio ref={audioRef} src={audioUrl} controls className="w-full" />
+
+          <div className="mt-4 flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg bg-white/10"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- Main App ---
 
@@ -434,7 +633,11 @@ export default function Chats() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
   const [isContactInfoOpen, setIsContactInfoOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
-
+  const [showTopSearchInput, setShowSearchInput] = useState(false);
+  const [showAllOnline, setShowAllOnline] = useState(false);
+  const [contactslist, setContactslist] = useState(CONTACTS);
+  //reply state
+  const [replyingTo, setReplyingTo] = useState(null);
   // State for menus
   //menu for new chat, create group, invite others
   const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
@@ -443,24 +646,34 @@ export default function Chats() {
   //menu for attachment options like document, camera, gallery
   const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
   const [mediaTab, setMediaTab] = useState('photos');
-
+  //show details for starredMessage,block user,report user and delete chat dialog
+  const [showDetails, setShowDetails] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [muted, setMuted] = useState(false);
+  //share image
+  const [sharedImage, setSharedImage] = useState(null);
+  const [showMediaPreview, setShowMediaPreview] = useState(false);
+  const [takePictureMode, setTakePictureMode] = useState(false);
+  const [recordAudioMode, setRecordAudioMode] = useState(false);
   // Messages state
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  // const [messages, setMessages] = useState(INITIAL_MESSAGES);//use contactsList[index].messages
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef(null);
 
-  const activeContact = CONTACTS.find((c) => c.id === activeId) || CONTACTS[0];
+  const activeContact = useMemo(() => {
+    return contactslist.find((c) => c.id === activeId);
+  }, [contactslist, activeId]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, scrollRef]);
+  }, [contactslist, scrollRef]);
 
   const handleSend = (e) => {
     e?.preventDefault();
     if (!inputText.trim()) return;
-
+    //with replied message
     const newMessage = {
       id: Date.now().toString(),
       text: inputText,
@@ -473,32 +686,292 @@ export default function Chats() {
       senderName: 'Alex Smith',
       status: 'sent',
     };
-    setMessages([...messages, newMessage]);
+    if (replyingTo) {
+      newMessage.replyTo = replyingTo;
+    }
+
+    // setMessages([...messages, newMessage]);
+    setContactslist((prev) =>
+      prev.map((c) => {
+        if (c.id === activeId) {
+          return {
+            ...c,
+            messages: [...(c.messages || []), newMessage],
+          };
+        }
+        return c;
+      }),
+    );
     setInputText('');
+    //close replying to
+    setReplyingTo(null);
   };
 
   const handleReact = (id, emoji) => {
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id === id) {
-          const reactions = [...(m.reactions || [])];
-          const idx = reactions.findIndex((r) => r.emoji === emoji);
-          if (idx > -1) {
-            reactions[idx] = {
-              ...reactions[idx],
-              count: reactions[idx].count + 1,
-            };
-          } else {
-            reactions.push({ emoji, count: 1 });
-          }
-          return { ...m, reactions };
+    setContactslist((prev) =>
+      prev.map((c) => {
+        if (c.id === activeId) {
+          return {
+            ...c,
+            messages: c.messages.map((m) => {
+              if (m.id === id) {
+                const reactions = [...(m.reactions || [])];
+                const idx = reactions.findIndex((r) => r.emoji === emoji);
+                if (idx > -1) {
+                  reactions[idx] = {
+                    ...reactions[idx],
+                    count: reactions[idx].count + 1,
+                  };
+                } else {
+                  reactions.push({ emoji, count: 1 });
+                }
+                return { ...m, reactions };
+              }
+              return m;
+            }),
+          };
         }
-        return m;
-      })
+        return c;
+      }),
     );
   };
+  // ===========================
+  // search friends in sidebar
+  // ===========================
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query) => {
+        const filtered = CONTACTS.filter((c) =>
+          c.name.toLowerCase().includes(query.toLowerCase()),
+        );
+        setContactslist(filtered);
+      }, 300),
+    [],
+  );
+  // ===========================
+  // search chats in active chat
+  // ===========================
+  const searchChatDebounce = useMemo(
+    () =>
+      debounce((query) => {
+        const filtered = activeContact.messages.filter((m) =>
+          m.text?.toLowerCase().includes(query.toLowerCase()),
+        );
+        setContactslist((prev) =>
+          prev.map((c) => {
+            if (c.id === activeId) {
+              return {
+                ...c,
+                messages: filtered,
+              };
+            }
+            return c;
+          }),
+        );
+      }, 300),
+    [activeContact, activeId],
+  );
+  const searchContactRef = useRef(null);
+
+  //atach global events to close search input when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchContactRef.current &&
+        !searchContactRef.current.contains(event.target)
+      ) {
+        setShowSearchInput(false);
+        setContactslist(CONTACTS);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [searchContactRef]);
+
+  //============================
+  // handle reply to message
+  //============================
+  const handleReply = (message) => {
+    console.log('message to reply:', message);
+    setReplyingTo(message);
+  };
+  //============================
+  // starred messages
+  //============================
+  const handleStarMessage = (messageId) => {
+    setContactslist((prev) =>
+      prev.map((c) => {
+        if (c.id === activeId) {
+          return {
+            ...c,
+            messages: c.messages.map((m) => {
+              if (m.id === messageId) {
+                return { ...m, isStarred: !m.isStarred };
+              }
+              return m;
+            }),
+          };
+        }
+        return c;
+      }),
+    );
+  };
+  //============================
+  //starred message list
+  // ===========================
+  const starredMessagesList = useMemo(() => {
+    const active = contactslist.find((c) => c.id === activeId);
+    if (active) {
+      return active.messages.filter((m) => m.isStarred);
+    }
+    return [];
+  }, [contactslist, activeId]);
+
+  const sharedMedia = (label) => {
+    // filter the media with label from messages list
+    const filtered = activeContact.messages.filter((m) => {
+      if (label === 'photos') return m.type === 'image';
+      if (label === 'videos') return m.type === 'video';
+      if (label === 'link') return m.type === 'link';
+      if (label === 'audio') return m.type === 'audio';
+      if (label === 'files') return m.type === 'file';
+    });
+    return filtered;
+  };
+
+  //better to memoize each function output
+  // const getSharedMedia = useMemo(() => {
+  //   return sharedMedia(mediaTab);
+  // }, [mediaTab, activeContact]);
+
+  //memoize each function
+  const photoMedia = useMemo(() => {
+    return sharedMedia('photos');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContact]);
+  const videoMedia = useMemo(() => {
+    return sharedMedia('videos');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContact]);
+  const linkMedia = useMemo(() => {
+    return sharedMedia('link');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContact]);
+  const audioMedia = useMemo(() => {
+    return sharedMedia('audio');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContact]);
+  const fileMedia = useMemo(() => {
+    return sharedMedia('files');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeContact]);
+
+  const pickAndSendEmoji = (emoji) => {
+    setInputText((prev) => prev + emoji);
+  };
+
+  function pickImage() {
+    console.log('picking image');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setSharedImage(reader.result);
+          setShowMediaPreview(true);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    //
+  }
+
+  //========================
+  //  Media Handler utility functions
+  //========================
+
+  const openDocumentHandler = () => {
+    console.log('opening document');
+  };
+
+  const shareLocationHandler = () => {
+    console.log('sharing location');
+  };
+  const shareContactHandler = () => {
+    console.log('sharing contact');
+  };
+  const handleSendMedia = () => {
+    if (!sharedImage) return;
+    const newMessage = {
+      id: 'mt555',
+      text: inputText,
+      time: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      isSender: true,
+      senderName: 'Alex Smith',
+      type: 'text',
+      reactions: [
+        { emoji: '👍', count: 2 },
+        { emoji: '❤️', count: 2 },
+      ],
+      imageUrl: sharedImage,
+    };
+    setContactslist((prev) =>
+      prev.map((c) => {
+        if (c.id === activeId) {
+          return {
+            ...c,
+            messages: [...(c.messages || []), newMessage],
+          };
+        }
+        return c;
+      }),
+    );
+
+    setSharedImage(null);
+    setShowMediaPreview(false);
+    setInputText('');
+  };
+
+  //send audio
+  const handleSendAudio = (audioUrl, duration) => {
+    const newMessage = {
+      id: 'mdfd2',
+      duration: duration,
+      time: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }),
+      isSender: true,
+      senderName: 'Alex Smith',
+      status: 'read',
+      type: 'audio',
+      audioUrl: audioUrl,
+    };
+    setContactslist((prev) =>
+      prev.map((c) => {
+        if (c.id === activeId) {
+          return {
+            ...c,
+            messages: [...(c.messages || []), newMessage],
+          };
+        }
+        return c;
+      }),
+    );
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
+    <div className="flex pt-16 h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
       {/* Sidebar Area */}
       <aside
         className={`${
@@ -506,13 +979,35 @@ export default function Chats() {
         } md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
       >
         <div className="p-5 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">All Chats</h1>
+          {!showTopSearchInput && (
+            <h1 className="text-xl font-bold text-foreground">All Chats</h1>
+          )}
+          {showTopSearchInput && (
+            <motion.input
+              // start from end
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{
+                duration: 0.2,
+                ease: 'easeInOut',
+              }}
+              onChange={(e) => debouncedSearch(e.target.value)}
+              className="ring-1 ring-gray-500 focus:ring-blue-500 focus:border-none focus:outline-none focus:ring-1 rounded-md px-4 py-1 w-full"
+              type="text"
+              placeholder="search"
+              ref={searchContactRef}
+            />
+          )}
           <div className="flex items-center gap-2">
-            <button
-              className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
-            >
-              <Search className="h-5 w-5" />
-            </button>
+            {!showTopSearchInput && (
+              <button
+                onClick={() => setShowSearchInput((prev) => !prev)}
+                className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            )}
+
             <div className="relative">
               <button
                 onClick={() => setSidebarMenuOpen(!sidebarMenuOpen)}
@@ -548,106 +1043,131 @@ export default function Chats() {
         <div className="px-5 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-foreground">Online Now</h2>
-            <button className="text-xs font-bold text-primary hover:underline uppercase tracking-wider">
-              View All
+            <button
+              onClick={setShowAllOnline.bind(null, (prev) => !prev)}
+              className="text-xs font-bold text-primary hover:underline uppercase tracking-wider"
+            >
+              {showAllOnline ? 'Show Less' : 'View All'}
             </button>
           </div>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
-            {CONTACTS.map((c) => (
-              <Avatar
-                key={c.id}
-                src={c.avatar}
-                isOnline={c.isOnline}
-                size="lg"
-              />
+            {(showAllOnline
+              ? contactslist.filter((c) => c.isOnline)
+              : contactslist.filter((c) => c.isOnline).slice(0, 3)
+            ).map((contact) => (
+              <button
+                key={contact.id}
+                onClick={() => {
+                  setActiveId(contact.id);
+                  setIsMobileSidebarOpen(false);
+                }}
+                className="flex flex-col items-center gap-2"
+              >
+                <Avatar src={contact.avatar} isOnline={contact.isOnline} />
+                <span className="text-xs font-medium text-foreground truncate w-16 text-center">
+                  {contact.name}
+                </span>
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 space-y-6 pb-4 custom-scrollbar">
-          <div>
-            <h3 className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <div className="flex-1 h-full px-2 space-y-6 pb-4">
+          <div className="overflow-y-scroll custom-scrollbar h-[30%] relative">
+            <h3
+              className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground
+            sticky top-0 left-0 w-full py-2 bg-background z-50
+            "
+            >
               Pinned Chat
             </h3>
-            {CONTACTS.filter((c) => c.isPinned).map((c) => (
-              <button
-                key={c.id}
-                onClick={() => {
-                  setActiveId(c.id);
-                  setIsMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${
-                  activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
-                }`}
-              >
-                <Avatar src={c.avatar} isOnline={c.isOnline} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline mb-0.5">
-                    <h4 className="font-bold text-sm truncate text-foreground">
-                      {c.name}
-                    </h4>
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {c.time}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p
-                      className={`text-xs truncate ${
-                        c.isTyping
-                          ? 'text-primary font-semibold'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      {c.lastMessage}
-                    </p>
-                    <div className="flex items-center gap-1.5 ml-2">
-                      <Pin className="h-3 w-3 text-muted-foreground" />
-                      <CheckCheck className="h-3.5 w-3.5 text-primary" />
+            {contactslist
+              .filter((c) => c.isPinned)
+              .map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setActiveId(c.id);
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${
+                    activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                  }`}
+                >
+                  <Avatar src={c.avatar} isOnline={c.isOnline} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-0.5">
+                      <h4 className="font-bold text-sm truncate text-foreground">
+                        {c.name}
+                      </h4>
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {c.time}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p
+                        className={`text-xs truncate ${
+                          c.isTyping
+                            ? 'text-primary font-semibold'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {c.lastMessage}
+                      </p>
+                      <div className="flex items-center gap-1.5 ml-2">
+                        <Pin className="h-3 w-3 text-muted-foreground" />
+                        <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
           </div>
 
-          <div>
-            <h3 className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="overflow-y-scroll custom-scrollbar h-[70%] relative">
+            <h3
+              className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground
+            sticky top-0 left-0 w-full py-2 bg-background z-50
+            "
+            >
               Recent Chat
             </h3>
-            {CONTACTS.filter((c) => !c.isPinned).map((c) => (
-              <button
-                key={c.id}
-                onClick={() => {
-                  setActiveId(c.id);
-                  setIsMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${
-                  activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
-                }`}
-              >
-                <Avatar src={c.avatar} isOnline={c.isOnline} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline mb-0.5">
-                    <h4 className="font-bold text-sm truncate text-foreground">
-                      {c.name}
-                    </h4>
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {c.time}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs truncate text-muted-foreground">
-                      {c.lastMessage}
-                    </p>
-                    {c.unreadCount && (
-                      <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                        {c.unreadCount}
+            {contactslist
+              .filter((c) => !c.isPinned)
+              .map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setActiveId(c.id);
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${
+                    activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                  }`}
+                >
+                  <Avatar src={c.avatar} isOnline={c.isOnline} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-0.5">
+                      <h4 className="font-bold text-sm truncate text-foreground">
+                        {c.name}
+                      </h4>
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {c.time}
                       </span>
-                    )}
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs truncate text-muted-foreground">
+                        {c.lastMessage}
+                      </p>
+                      {c.unreadCount && (
+                        <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                          {c.unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
           </div>
         </div>
       </aside>
@@ -669,15 +1189,15 @@ export default function Chats() {
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <Avatar
-                src={activeContact.avatar}
-                isOnline={activeContact.isOnline}
+                src={activeContact?.avatar}
+                isOnline={activeContact?.isOnline}
               />
               <div className="min-w-0">
                 <h2 className="font-bold text-base truncate">
-                  {activeContact.name}
+                  {activeContact?.name}
                 </h2>
-                <p className="text-[11px] font-medium text-muted-foreground">
-                  {activeContact.isOnline
+                <p className="text-[11px] font-medium text-muted-foreground hidden md:block">
+                  {activeContact?.isOnline
                     ? 'Active Now'
                     : 'Last seen at 07:15 PM'}
                 </p>
@@ -752,13 +1272,15 @@ export default function Chats() {
           </>
         </header>
         {isSearchActive && (
-          <div className="flex items-center gap-4 animate-in slide-in-from-top duration-200 bg-muted shadow-sm px-6 py-2">
+          <div className="flex items-center  gap-4 animate-in slide-in-from-top duration-200 bg-muted shadow-sm px-6 py-2">
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               autoFocus
+              onChange={(e) => searchChatDebounce(e.target.value)}
               type="text"
               placeholder="Search Chats"
-              className="flex-1 bg-transparent border-none outline-none text-sm font-medium focus:outline-none"
+              className="flex-1 bg-transparent border-none outline-none  px-2 py-1 rounded-2xl text-sm font-medium focus:outline-none"
+              ref={searchContactRef}
             />
             <button
               onClick={() => setIsSearchActive(false)}
@@ -778,84 +1300,160 @@ export default function Chats() {
               Today, July 24
             </span>
           </div>
-          {messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              message={m}
-              onOpenContext={() => {}}
-              onReact={handleReact}
-            />
-          ))}
+          {contactslist.find((c) => c.id === activeId)?.messages.length > 0 ? (
+            contactslist
+              .find((c) => c.id === activeId)
+              ?.messages.map((m) => (
+                <MessageBubble
+                  onReply={handleReply}
+                  key={m.id}
+                  message={m}
+                  onOpenContext={() => {}}
+                  onReact={handleReact}
+                  onStarMessage={handleStarMessage}
+                />
+              ))
+          ) : (
+            <div className="flex flex-col items-center justify-center mt-20 gap-4">
+              <MessageCircleX className="w-48 h-48 text-muted-foreground" />
+
+              <h3 className="text-lg font-bold text-foreground">
+                No messages yet
+              </h3>
+              <p className="text-sm text-muted-foreground text-center max-w-xs">
+                Start a conversation by sending a message to your contact.
+              </p>
+            </div>
+          )}
         </div>
         {/* Input Bar */}
-        <div className="p-6 bg-card border-t border-border">
-          <form onSubmit={handleSend} className="flex items-center gap-3">
-            <div className="relative">
+        <div className="border-t border-border bg-card px-5 py-4">
+          {/* Reply preview */}
+          {replyingTo && (
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/60 px-4 py-2.5">
+              <div className="flex flex-col text-sm">
+                <span className="text-xs font-semibold text-primary">
+                  Replying to
+                </span>
+                <span className="truncate text-muted-foreground">
+                  {replyingTo.text}
+                </span>
+              </div>
+
               <button
                 type="button"
-                onClick={() => setAttachmentMenuOpen(!attachmentMenuOpen)}
-                className={`${ICON_BTN_MD} p-3 rounded-xl text-muted-foreground`}
+                onClick={() => setReplyingTo(null)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition"
               >
-                <MoreVertical className="h-5 w-5" />
+                ✕
               </button>
-              {attachmentMenuOpen && (
-                <div className="absolute bottom-full mb-4 left-0">
-                  <Dropdown
-                    position="left"
-                    onClose={() => setAttachmentMenuOpen(false)}
-                    items={[
-                      {
-                        icon: <FileText className="h-4 w-4 text-blue-500" />,
-                        label: 'Document',
-                      },
-                      {
-                        icon: <Camera className="h-4 w-4 text-red-500" />,
-                        label: 'Camera',
-                      },
-                      {
-                        icon: <ImageIcon className="h-4 w-4 text-green-500" />,
-                        label: 'Gallery',
-                      },
-                      {
-                        icon: <Mic className="h-4 w-4 text-yellow-500" />,
-                        label: 'Audio',
-                      },
-                      {
-                        icon: <MapPin className="h-4 w-4 text-purple-500" />,
-                        label: 'Location',
-                      },
-                      {
-                        icon: <User className="h-4 w-4 text-orange-500" />,
-                        label: 'Contact',
-                      },
-                    ]}
-                  />
-                </div>
-              )}
             </div>
+          )}
+
+          <form onSubmit={handleSend} className="flex items-end gap-3 relative">
+            {/* Attachment button */}
             <button
               type="button"
-              className={`${ICON_BTN_MD} p-3 rounded-xl text-muted-foreground`}
+              onClick={() => setAttachmentMenuOpen(!attachmentMenuOpen)}
+              className="flex h-11 w-11 items-center justify-center rounded-xl
+                   text-muted-foreground hover:bg-muted transition"
+            >
+              <MoreVertical className="h-5 w-5" />
+            </button>
+
+            {attachmentMenuOpen && (
+              <div className="absolute bottom-full left-0 mb-3">
+                <Dropdown
+                  onClose={() => setAttachmentMenuOpen(false)}
+                  items={[
+                    {
+                      icon: <FileText className="h-4 w-4 text-blue-500" />,
+                      label: 'Document',
+                      onClick: () => openDocumentHandler(),
+                    },
+                    {
+                      icon: <Camera className="h-4 w-4 text-red-500" />,
+                      label: 'Camera',
+                      onClick: () => setTakePictureMode(true),
+                    },
+                    {
+                      icon: <ImageIcon className="h-4 w-4 text-green-500" />,
+                      label: 'Gallery',
+                      onClick: () => pickImage(),
+                    },
+                    {
+                      icon: <Mic className="h-4 w-4 text-yellow-500" />,
+                      label: 'Audio',
+                      onClick: () => setRecordAudioMode(true),
+                    },
+                    {
+                      icon: <MapPin className="h-4 w-4 text-purple-500" />,
+                      label: 'Location',
+                      onClick: () => shareLocationHandler(),
+                    },
+                    {
+                      icon: <User className="h-4 w-4 text-orange-500" />,
+                      label: 'Contact',
+                      onClick: () => shareContactHandler(),
+                    },
+                  ]}
+                />
+              </div>
+            )}
+            {showReactionPicker && (
+              <ReactionPicker
+                onClose={() => setShowReactionPicker(false)}
+                onReact={pickAndSendEmoji}
+              />
+            )}
+            {/* Emoji */}
+            <button
+              onClick={() => setShowReactionPicker((prev) => !prev)}
+              type="button"
+              className="flex h-11 w-11 items-center justify-center rounded-xl
+                 text-muted-foreground hover:bg-muted transition cursor-pointer"
             >
               <Smile className="h-5 w-5" />
             </button>
+
+            {/* Mute / Audio */}
             <button
+              onClick={() => setMuted((prev) => !prev)}
               type="button"
-              className={`${ICON_BTN_MD} p-3 rounded-xl text-muted-foreground`}
+              className={`flex h-11 w-11 items-center justify-center rounded-xl
+                 text-muted-foreground hover:bg-muted transition cursor-pointer
+                  ${muted ? 'bg-red-500/10 text-red-500' : ''}
+                 `}
             >
-              <VolumeX className="h-5 w-5" />
+              {muted ? (
+                <VolumeX className="h-5 w-5" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
             </button>
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type your message here..."
-              className="flex-1 bg-muted border-none outline-none py-3.5 px-6 rounded-xl text-sm font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all"
-            />
+
+            {/* Input */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Type a message…"
+                className="h-11 w-full rounded-xl bg-muted px-5 text-sm
+                   placeholder:text-muted-foreground
+                   focus:outline-none focus:ring-2 focus:ring-primary/60
+                   transition"
+              />
+            </div>
+
+            {/* Send */}
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="p-3.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg"
+              className="flex h-11 w-11 items-center justify-center rounded-xl
+                 bg-primary text-primary-foreground shadow-md
+                 hover:bg-primary/90 disabled:opacity-50
+                 transition active:scale-95"
             >
               <Send className="h-5 w-5" />
             </button>
@@ -884,9 +1482,9 @@ export default function Chats() {
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-8 flex flex-col items-center text-center">
-              <Avatar src={activeContact.avatar} size="xl" />
+              <Avatar src={activeContact?.avatar} size="xl" />
               <h3 className="mt-5 text-xl font-bold text-foreground">
-                {activeContact.name}
+                {activeContact?.name}
               </h3>
               <p className="text-sm font-medium text-muted-foreground mt-1">
                 Last seen at 07:15 PM
@@ -915,7 +1513,7 @@ export default function Chats() {
               <div>
                 <h4 className="text-sm font-bold text-foreground mb-2">Bio</h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {activeContact.bio || 'No bio available'}
+                  {activeContact?.bio || 'No bio available'}
                 </p>
               </div>
               <div className="space-y-4">
@@ -924,7 +1522,7 @@ export default function Chats() {
                     Phone
                   </span>
                   <span className="text-sm font-medium text-muted-foreground">
-                    {activeContact.phone || 'Not set'}
+                    {activeContact?.phone || 'Not set'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -932,7 +1530,7 @@ export default function Chats() {
                     Email Address
                   </span>
                   <span className="text-sm font-medium text-muted-foreground">
-                    {activeContact.email || 'Not set'}
+                    {activeContact?.email || 'Not set'}
                   </span>
                 </div>
               </div>
@@ -962,74 +1560,55 @@ export default function Chats() {
                       {tab === 'photos'
                         ? 'Photos'
                         : tab === 'videos'
-                        ? 'Videos'
-                        : tab === 'file'
-                        ? 'File'
-                        : 'Link'}
+                          ? 'Videos'
+                          : tab === 'file'
+                            ? 'File'
+                            : 'Link'}
                     </button>
                   ))}
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
                   {mediaTab === 'photos' &&
-                    [...Array(6)].map((_, i) => (
+                    photoMedia.map((p, i) => (
                       <div
                         key={i}
                         className="aspect-square rounded-xl bg-muted overflow-hidden border border-border"
                       >
                         <img
-                          src={`/ceholder-svg-key-e179v-height-100-width-100-text-.jpg?key=e179v&height=100&width=100&text=${
-                            i + 1
-                          }`}
+                          src={
+                            p?.url ||
+                            `/ceholder-svg-key-e179v-height-100-width-100-text-.jpg?key=e179v&height=100&width=100&text=${i + 1}`
+                          }
                           className="w-full h-full object-cover"
                           alt="media"
                         />
                       </div>
                     ))}
                   {mediaTab === 'videos' &&
-                    [...Array(5)].map((_, i) => (
+                    videoMedia.map((v, i) => (
                       <div
                         key={i}
                         className="relative aspect-square rounded-xl bg-muted overflow-hidden border border-border group cursor-pointer"
                       >
                         <img
-                          src={`/ceholder-svg-key-ho6dp-height-100-width-100-text-v.jpg?key=ho6dp&height=100&width=100&text=V${
-                            i + 1
-                          }`}
+                          src={
+                            v?.thumbnail ||
+                            `/ceholder-svg-key-e179v-height-100-width-100-text-.jpg?key=e179v&height=100&width=100&text=${i + 1}`
+                          }
                           className="w-full h-full object-cover"
                           alt="video"
                         />
                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <Play className="h-6 w-6 text-white fill-white" />
                         </div>
-                        {i === 4 && (
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold">
-                            +10
-                          </div>
-                        )}
                       </div>
                     ))}
                 </div>
 
                 {mediaTab === 'file' && (
                   <div className="space-y-4">
-                    {[
-                      {
-                        name: 'Landing_page_V1.doc',
-                        date: '12 Mar 2023',
-                        size: '246.3 KB',
-                      },
-                      {
-                        name: 'Design Guideless.pdf',
-                        date: '12 Mar 2023',
-                        size: '246.3 KB',
-                      },
-                      {
-                        name: 'sample site.txt',
-                        date: '12 Mar 2023',
-                        size: '246.3 KB',
-                      },
-                    ].map((f, i) => (
+                    {fileMedia.map((f, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between group"
@@ -1040,10 +1619,11 @@ export default function Chats() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-bold text-foreground truncate">
-                              {f.name}
+                              {f.fileName}
                             </p>
                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                              {f.date} <span className="mx-1">|</span> {f.size}
+                              {f.date} <span className="mx-1">|</span>{' '}
+                              {f?.fileSize}
                             </p>
                           </div>
                         </div>
@@ -1057,42 +1637,49 @@ export default function Chats() {
 
                 {mediaTab === 'link' && (
                   <div className="space-y-4">
-                    {[
-                      {
-                        name: 'Digital Marketing Guide',
-                        url: 'https://elements.envato.com/all-items/blog',
-                      },
-                      {
-                        name: 'Blog Post',
-                        url: 'https://elements.envato.com/blog-post-TXQ5FB8',
-                      },
-                    ].map((l, i) => (
-                      <div key={i} className="flex gap-3">
-                        <div className="h-12 w-12 shrink-0 rounded-xl bg-muted flex items-center justify-center border border-border">
-                          <Info className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-foreground truncate">
-                            {l.name}
+                    {linkMedia.map((l, i) => (
+                      <a
+                        key={i}
+                        href={l.linkPreview.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                      >
+                        {!l.linkPreview.image && (
+                          <div className="h-32 w-full bg-muted flex items-center justify-center">
+                            <Link2 className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        {l.linkPreview.image && (
+                          <img
+                            src={l.linkPreview.image}
+                            alt="link preview"
+                            className="w-full h-32 object-cover"
+                          />
+                        )}
+
+                        <div className="p-3">
+                          <h5 className="text-sm font-bold text-foreground mb-1 truncate">
+                            {l.linkPreview.title}
+                          </h5>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {l.linkPreview.description}
                           </p>
-                          <p className="text-xs text-primary truncate hover:underline cursor-pointer">
-                            {l.url}
-                          </p>
                         </div>
-                      </div>
+                      </a>
                     ))}
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="border-t border-border">
+            <div className="border-t border-border hover:bg-muted transition-colors cursor-pointer">
               <div className="p-2 space-y-1">
                 {[
                   {
                     icon: <Star className="h-4 w-4" />,
                     label: 'Starred Messages',
-                    badge: 10,
+                    badge: starredMessagesList.length,
                   },
                   {
                     icon: <VolumeX className="h-4 w-4" />,
@@ -1105,30 +1692,215 @@ export default function Chats() {
                     label: 'Delete Chat',
                   },
                 ].map((item, i) => (
-                  <button
-                    key={i}
-                    className="w-full flex items-center justify-between p-3 hover:bg-muted rounded-xl transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-muted-foreground">{item.icon}</span>
-                      <span className="text-sm font-bold text-foreground">
-                        {item.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {item.badge && (
-                        <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
-                          {item.badge}
+                  <>
+                    <button
+                      onClick={() =>
+                        setShowDetails(
+                          showDetails === item.label ? null : item.label,
+                        )
+                      }
+                      key={i}
+                      className="w-full flex items-center justify-between p-3 hover:bg-muted rounded-xl transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-muted-foreground">
+                          {item.icon}
                         </span>
+                        <span className="text-sm font-bold text-foreground">
+                          {item.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {item.badge && (
+                          <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                            {item.badge}
+                          </span>
+                        )}
+                        {showDetails === item.label ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                    </button>
+                    {showDetails === item.label &&
+                      item.label === 'Starred Messages' && (
+                        <div className="mt-2 p-4 border border-border rounded-xl bg-muted/50">
+                          <h4 className="text-sm font-bold text-foreground mb-3">
+                            Starred Messages
+                          </h4>
+                          {starredMessagesList.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                              No starred messages.
+                            </p>
+                          ) : (
+                            <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar">
+                              {starredMessagesList.map((msg) => (
+                                <div
+                                  key={msg.id}
+                                  className="p-3 bg-muted rounded-lg border border-border"
+                                >
+                                  {msg.type === 'text' ? (
+                                    <p className="text-sm text-foreground">
+                                      {msg.text}
+                                    </p>
+                                  ) : msg.type === 'image' ? (
+                                    <img
+                                      src={msg.imageUrl}
+                                      alt="starred"
+                                      className="max-w-full h-auto rounded-md"
+                                    />
+                                  ) : msg.type === 'file' ? (
+                                    <div className="flex items-center gap-3">
+                                      <div className="h-8 w-8 shrink-0 rounded-lg bg-muted flex items-center justify-center border border-border">
+                                        <FileText className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-bold text-foreground truncate">
+                                          {msg.fileName}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                                          {msg.fileSize}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ) : msg.type === 'video' ? (
+                                    <div className="relative">
+                                      <img
+                                        src={msg.videoThumbnail}
+                                        alt="starred video"
+                                        className="max-w-full h-auto rounded-md"
+                                      />
+                                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                        <Play className="h-6 w-6 text-white fill-white" />
+                                      </div>
+                                    </div>
+                                  ) : msg.type === 'audio' ? (
+                                    <div className="flex items-center gap-3">
+                                      <div className="h-8 w-8 shrink-0 rounded-lg bg-muted flex items-center justify-center border border-border">
+                                        <Mic className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-bold text-foreground truncate">
+                                          Audio Message
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                                          {msg.duration}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ) : msg.type === 'link' ? (
+                                    <a
+                                      href={msg.linkPreview.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block border border-border rounded-lg overflow-hidden"
+                                    >
+                                      <img
+                                        src={msg.linkPreview.image}
+                                        alt="link preview"
+                                        className="w-full h-24 object-cover"
+                                      />
+                                      <div className="p-3 bg-muted">
+                                        <p className="text-sm font-bold text-foreground truncate">
+                                          {msg.linkPreview.url}
+                                        </p>
+                                      </div>
+                                    </a>
+                                  ) : null}
+
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {msg.time}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )}
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </button>
+                  </>
                 ))}
               </div>
             </div>
           </div>
         </aside>
+      )}
+
+      {/* showMediaPreview */}
+      {showMediaPreview && (
+        <div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md">
+            <img
+              className="w-full h-auto rounded-md mb-4"
+              src={sharedImage}
+              alt="Preview"
+            />
+            <label
+              className="text-sm font-medium text-foreground"
+              htmlFor="caption"
+            >
+              caption
+            </label>
+            <input
+              type="text"
+              id="caption"
+              className="w-full border border-gray-300 rounded-md p-2 mt-2"
+              placeholder="Add a caption..."
+              onChange={(e) => setInputText(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowMediaPreview(false);
+                  setSharedImage(null);
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Logic to send the image with caption
+                  handleSendMedia(sharedImage);
+                  setShowMediaPreview(false);
+                  setSharedImage(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* take picture mode */}
+      {takePictureMode && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-lg p-6 w-full max-w-xl mx-auto mt-20 h-96">
+            <CameraComponent
+              onCapture={(imageData) => {
+                setTakePictureMode(false);
+                setSharedImage(imageData);
+                setShowMediaPreview(true);
+              }}
+              onClose={() => setTakePictureMode(false)}
+            />
+          </div>
+        </div>
+      )}
+      {/* record audio mode */}
+      {recordAudioMode && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md mx-auto mt-20 shadow-lg shadow-amber-300/20">
+            <AudioRecorder
+              onSave={(audioData, duration) => {
+                setRecordAudioMode(false);
+                handleSendAudio(audioData, duration);
+              }}
+              onClose={() => setRecordAudioMode(false)}
+            />
+          </div>
+        </div>
       )}
 
       {/* Global CSS for scrollbars */}
