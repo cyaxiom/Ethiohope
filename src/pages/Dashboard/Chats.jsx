@@ -5,6 +5,7 @@ import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
 import { useState, useRef, useEffect } from 'react';
 import { DS } from '@/constants/designSystem.js';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 // Reusable design-system class helpers
 const ICON_BTN = `${DS.buttons.base} ${DS.buttons.sizes.sm} ${DS.buttons.variants.ghost}`;
 const ICON_BTN_MD = `${DS.buttons.base} ${DS.buttons.sizes.md} ${DS.buttons.variants.ghost}`;
@@ -71,13 +72,25 @@ const Avatar = ({ src, isOnline, size = 'md' }) => {
   );
 };
 
-const Dropdown = ({ items, onClose, width = 'w-56' }) => (
-  <>
-    {/* backdrop */}
-    {/* <div className="fixed inset-0 bg-amber-300" onClick={onClose} /> */}
+const Dropdown = ({ items, onClose, width = 'w-56' }) => {
+  const modalRef = useRef(null);
 
-    {/* dropdown itself */}
+  useEffect(() => {
+    const clickOut_ = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', clickOut_);
+    return () => {
+      document.removeEventListener('mousedown', clickOut_);
+    };
+  }, []);
+
+  return (
     <div
+      ref={modalRef}
       onClick={(e) => e.stopPropagation()}
       className={`${width} bg-card border border-border rounded-xl shadow-xl z-30 p-1 py-2
       animate-in fade-in zoom-in duration-150 text-foreground`}
@@ -112,8 +125,8 @@ const Dropdown = ({ items, onClose, width = 'w-56' }) => (
         </button>
       ))}
     </div>
-  </>
-);
+  );
+};
 
 const ReactionPicker = ({ onReact, onClose }) => {
   const emojis = ['👍', '❤️', '😂', '😮', '🙏'];
@@ -659,6 +672,8 @@ export default function Chats() {
   // const [messages, setMessages] = useState(INITIAL_MESSAGES);//use contactsList[index].messages
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef(null);
+  const rightSideBarRef = useRef();
+  const navigator = useNavigate();
 
   const activeContact = useMemo(() => {
     return contactslist.find((c) => c.id === activeId);
@@ -669,6 +684,21 @@ export default function Chats() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [contactslist, scrollRef]);
+  //close right sidebar when clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        rightSideBarRef.current &&
+        !rightSideBarRef.current.contains(event.target)
+      ) {
+        setIsContactInfoOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [rightSideBarRef]);
 
   const handleSend = (e) => {
     e?.preventDefault();
@@ -1211,11 +1241,18 @@ export default function Chats() {
                 <Search className="h-5 w-5" />
               </button>
               <button
+                // route to /video-call
+                onClick={() => navigator('./video-call')}
                 className={`${ICON_BTN} p-2.5 rounded-xl text-muted-foreground`}
               >
                 <Video className="h-5 w-5" />
               </button>
               <button
+                onClick={() =>
+                  navigator('./voice-call', {
+                    replace: false,
+                  })
+                }
                 className={`${ICON_BTN} p-2.5 rounded-xl text-muted-foreground`}
               >
                 <Phone className="h-5 w-5" />
@@ -1272,7 +1309,12 @@ export default function Chats() {
           </>
         </header>
         {isSearchActive && (
-          <div className="flex items-center  gap-4 animate-in slide-in-from-top duration-200 bg-muted shadow-sm px-6 py-2">
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="flex items-center  gap-4 animate-in slide-in-from-top duration-200 bg-muted shadow-sm px-6 py-2"
+          >
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               autoFocus
@@ -1288,7 +1330,7 @@ export default function Chats() {
             >
               <X className="h-5 w-5 text-muted-foreground" />
             </button>
-          </div>
+          </motion.div>
         )}
         {/* Messages List */}
         <div
@@ -1463,7 +1505,13 @@ export default function Chats() {
 
       {/* Right Sidebar - Contact Info */}
       {isContactInfoOpen && (
-        <aside className="fixed inset-0 md:relative md:inset-auto shrink-0 w-full md:w-[320px] bg-card border-l border-border flex flex-col z-30 animate-in slide-in-from-right duration-300">
+        <motion.aside
+          ref={rightSideBarRef}
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          className="fixed inset-0 md:relative md:inset-auto shrink-0 w-full md:w-[320px] bg-card border-l border-border flex flex-col z-30"
+        >
           <div className="p-5 flex items-center justify-between border-b border-border">
             <h2 className="text-base font-bold text-foreground">
               Contact Info
@@ -1494,17 +1542,17 @@ export default function Chats() {
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
-                  <Phone className="h-4 w-4" />
+                  <Phone className="" />
                 </button>
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
-                  <Video className="h-4 w-4" />
+                  <Video className="h-full w-full" />
                 </button>
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
-                  <MessageSquarePlus className="h-4 w-4" />
+                  <MessageSquarePlus className="h-full w-full" />
                 </button>
               </div>
             </div>
@@ -1823,7 +1871,7 @@ export default function Chats() {
               </div>
             </div>
           </div>
-        </aside>
+        </motion.aside>
       )}
 
       {/* showMediaPreview */}
