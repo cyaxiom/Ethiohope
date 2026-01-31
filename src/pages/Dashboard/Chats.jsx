@@ -5,6 +5,7 @@ import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
 import { useState, useRef, useEffect } from 'react';
 import { DS } from '@/constants/designSystem.js';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 // Reusable design-system class helpers
 const ICON_BTN = `${DS.buttons.base} ${DS.buttons.sizes.sm} ${DS.buttons.variants.ghost}`;
 const ICON_BTN_MD = `${DS.buttons.base} ${DS.buttons.sizes.md} ${DS.buttons.variants.ghost}`;
@@ -71,13 +72,25 @@ const Avatar = ({ src, isOnline, size = 'md' }) => {
   );
 };
 
-const Dropdown = ({ items, onClose, width = 'w-56' }) => (
-  <>
-    {/* backdrop */}
-    {/* <div className="fixed inset-0 bg-amber-300" onClick={onClose} /> */}
+const Dropdown = ({ items, onClose, width = 'w-56' }) => {
+  const modalRef = useRef(null);
 
-    {/* dropdown itself */}
+  useEffect(() => {
+    const clickOut_ = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', clickOut_);
+    return () => {
+      document.removeEventListener('mousedown', clickOut_);
+    };
+  }, []);
+
+  return (
     <div
+      ref={modalRef}
       onClick={(e) => e.stopPropagation()}
       className={`${width} bg-card border border-border rounded-xl shadow-xl z-30 p-1 py-2
       animate-in fade-in zoom-in duration-150 text-foreground`}
@@ -112,8 +125,8 @@ const Dropdown = ({ items, onClose, width = 'w-56' }) => (
         </button>
       ))}
     </div>
-  </>
-);
+  );
+};
 
 const ReactionPicker = ({ onReact, onClose }) => {
   const emojis = ['👍', '❤️', '😂', '😮', '🙏'];
@@ -162,9 +175,8 @@ const MessageBubble = ({
       className={`flex flex-col mb-6 ${isSender ? 'items-end' : 'items-start'}`}
     >
       <div
-        className={`flex items-center gap-2 mb-1 group ${
-          isSender ? 'flex-row-reverse' : ''
-        }`}
+        className={`flex items-center gap-2 mb-1 group ${isSender ? 'flex-row-reverse' : ''
+          }`}
       >
         <span className="text-xs font-semibold text-card-foreground">
           {message.senderName}
@@ -245,20 +257,18 @@ const MessageBubble = ({
       </div>
       {/*  */}
       <div
-        className={`flex gap-3 max-w-[85%] group relative ${
-          isSender ? 'flex-row-reverse' : ''
-        }`}
+        className={`flex gap-3 max-w-[85%] group relative ${isSender ? 'flex-row-reverse' : ''
+          }`}
       >
         {!isSender && <Avatar src="/placeholder.png" size="md" />}
         <div className="flex flex-col gap-1 relative">
           <div
-            className={`relative p-3 rounded-2xl ${
-              !isOnlyEmoji(message.text) && message.type !== 'audio'
+            className={`relative p-3 rounded-2xl ${!isOnlyEmoji(message.text) && message.type !== 'audio'
                 ? isSender
                   ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
                   : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
                 : ''
-            }`}
+              }`}
           >
             {showReactions && (
               <ReactionPicker
@@ -270,11 +280,10 @@ const MessageBubble = ({
             {message.replyTo && (
               <div
                 className={`mb-2 rounded-lg px-3 py-2 text-xs
-      ${
-        isSender
-          ? 'bg-primary/10 border-l-4 border-primary'
-          : 'bg-muted border-l-4 border-muted-foreground'
-      }
+      ${isSender
+                    ? 'bg-primary/10 border-l-4 border-primary'
+                    : 'bg-muted border-l-4 border-muted-foreground'
+                  }
     `}
               >
                 <div className="font-semibold text-[11px] opacity-80">
@@ -659,6 +668,8 @@ export default function Chats() {
   // const [messages, setMessages] = useState(INITIAL_MESSAGES);//use contactsList[index].messages
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef(null);
+  const rightSideBarRef = useRef();
+  const navigator = useNavigate();
 
   const activeContact = useMemo(() => {
     return contactslist.find((c) => c.id === activeId);
@@ -669,6 +680,21 @@ export default function Chats() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [contactslist, scrollRef]);
+  //close right sidebar when clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        rightSideBarRef.current &&
+        !rightSideBarRef.current.contains(event.target)
+      ) {
+        setIsContactInfoOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [rightSideBarRef]);
 
   const handleSend = (e) => {
     e?.preventDefault();
@@ -974,9 +1000,8 @@ export default function Chats() {
     <div className="flex pt-16 h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
       {/* Sidebar Area */}
       <aside
-        className={`${
-          isMobileSidebarOpen ? 'block w-full' : 'hidden'
-        } md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
+        className={`${isMobileSidebarOpen ? 'block w-full' : 'hidden'
+          } md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
       >
         <div className="p-5 flex items-center justify-between">
           {!showTopSearchInput && (
@@ -1090,9 +1115,8 @@ export default function Chats() {
                     setActiveId(c.id);
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${
-                    activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
-                  }`}
+                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                    }`}
                 >
                   <Avatar src={c.avatar} isOnline={c.isOnline} />
                   <div className="flex-1 min-w-0">
@@ -1106,11 +1130,10 @@ export default function Chats() {
                     </div>
                     <div className="flex justify-between items-center">
                       <p
-                        className={`text-xs truncate ${
-                          c.isTyping
+                        className={`text-xs truncate ${c.isTyping
                             ? 'text-primary font-semibold'
                             : 'text-muted-foreground'
-                        }`}
+                          }`}
                       >
                         {c.lastMessage}
                       </p>
@@ -1141,9 +1164,8 @@ export default function Chats() {
                     setActiveId(c.id);
                     setIsMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${
-                    activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
-                  }`}
+                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                    }`}
                 >
                   <Avatar src={c.avatar} isOnline={c.isOnline} />
                   <div className="flex-1 min-w-0">
@@ -1174,9 +1196,8 @@ export default function Chats() {
 
       {/* Main Conversation Area */}
       <main
-        className={`${
-          !isMobileSidebarOpen ? 'flex' : 'hidden'
-        } md:flex flex-1 flex-col h-full bg-muted overflow-hidden`}
+        className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'
+          } md:flex flex-1 flex-col h-full bg-muted overflow-hidden`}
       >
         {/* Chat Header */}
         <header className="px-6 py-4  bg-car border-b border-border flex items-center justify-between z-10">
@@ -1211,20 +1232,26 @@ export default function Chats() {
                 <Search className="h-5 w-5" />
               </button>
               <button
+                // route to /video-call
+                onClick={() => navigator('./video-call')}
                 className={`${ICON_BTN} p-2.5 rounded-xl text-muted-foreground`}
               >
                 <Video className="h-5 w-5" />
               </button>
               <button
+                onClick={() =>
+                  navigator('./voice-call', {
+                    replace: false,
+                  })
+                }
                 className={`${ICON_BTN} p-2.5 rounded-xl text-muted-foreground`}
               >
                 <Phone className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setIsContactInfoOpen(!isContactInfoOpen)}
-                className={`${ICON_BTN} p-2.5 rounded-xl transition-colors ${
-                  isContactInfoOpen ? 'bg-muted text-primary' : ''
-                }`}
+                className={`${ICON_BTN} p-2.5 rounded-xl transition-colors ${isContactInfoOpen ? 'bg-muted text-primary' : ''
+                  }`}
               >
                 <Info className="h-5 w-5" />
               </button>
@@ -1272,7 +1299,12 @@ export default function Chats() {
           </>
         </header>
         {isSearchActive && (
-          <div className="flex items-center  gap-4 animate-in slide-in-from-top duration-200 bg-muted shadow-sm px-6 py-2">
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="flex items-center  gap-4 animate-in slide-in-from-top duration-200 bg-muted shadow-sm px-6 py-2"
+          >
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               autoFocus
@@ -1288,7 +1320,7 @@ export default function Chats() {
             >
               <X className="h-5 w-5 text-muted-foreground" />
             </button>
-          </div>
+          </motion.div>
         )}
         {/* Messages List */}
         <div
@@ -1308,7 +1340,7 @@ export default function Chats() {
                   onReply={handleReply}
                   key={m.id}
                   message={m}
-                  onOpenContext={() => {}}
+                  onOpenContext={() => { }}
                   onReact={handleReact}
                   onStarMessage={handleStarMessage}
                 />
@@ -1463,7 +1495,13 @@ export default function Chats() {
 
       {/* Right Sidebar - Contact Info */}
       {isContactInfoOpen && (
-        <aside className="fixed inset-0 md:relative md:inset-auto shrink-0 w-full md:w-[320px] bg-card border-l border-border flex flex-col z-30 animate-in slide-in-from-right duration-300">
+        <motion.aside
+          ref={rightSideBarRef}
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          className="fixed inset-0 md:relative md:inset-auto shrink-0 w-full md:w-[320px] bg-card border-l border-border flex flex-col z-30"
+        >
           <div className="p-5 flex items-center justify-between border-b border-border">
             <h2 className="text-base font-bold text-foreground">
               Contact Info
@@ -1494,17 +1532,17 @@ export default function Chats() {
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
-                  <Phone className="h-4 w-4" />
+                  <Phone className="" />
                 </button>
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
-                  <Video className="h-4 w-4" />
+                  <Video className="h-full w-full" />
                 </button>
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
-                  <MessageSquarePlus className="h-4 w-4" />
+                  <MessageSquarePlus className="h-full w-full" />
                 </button>
               </div>
             </div>
@@ -1551,11 +1589,10 @@ export default function Chats() {
                     <button
                       key={tab}
                       onClick={() => setMediaTab(tab)}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold capitalize transition-all ${
-                        mediaTab === tab
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold capitalize transition-all ${mediaTab === tab
                           ? 'bg-primary text-primary-foreground shadow-md'
                           : 'text-muted-foreground hover:bg-muted'
-                      }`}
+                        }`}
                     >
                       {tab === 'photos'
                         ? 'Photos'
@@ -1823,7 +1860,7 @@ export default function Chats() {
               </div>
             </div>
           </div>
-        </aside>
+        </motion.aside>
       )}
 
       {/* showMediaPreview */}
