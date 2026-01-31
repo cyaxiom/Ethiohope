@@ -24,52 +24,69 @@ const ForumLogin = React.lazy(() => import('@components/Forum/Login'));
 const Tags = React.lazy(() => import('@components/Forum/Tags'));
 const Ranking = React.lazy(() => import('@components/Forum/Ranking'));
 const Questions = React.lazy(() => import('@components/Forum/Questions'));
-const QuestionDetails = React.lazy(() =>
-  import('@components/Forum/QuestionDetails')
+const QuestionDetails = React.lazy(
+  () => import('@components/Forum/QuestionDetails'),
 );
 const MyQuestions = React.lazy(() => import('@components/Forum/MyQuestions'));
 const MyAnswers = React.lazy(() => import('@components/Forum/MyAnswers'));
 const Likes = React.lazy(() => import('@components/Forum/Likes'));
 const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 
+//dashboard routes
+const Chats = React.lazy(() => import('@pages/Dashboard/Chats'));
+const VideoCall = React.lazy(() => import('@pages/Dashboard/VideoCall'));
+const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
+
 // Academy routes
-const KidsProgramming = React.lazy(() =>
-  import('@pages/Aademy/KidsProgramming/KidsProgramming')
+const KidsProgramming = React.lazy(
+  () => import('@pages/Aademy/KidsProgramming/KidsProgramming'),
 );
 
-const KidsTutorial = React.lazy(() =>
-  import('@pages/Aademy/KidsTutorial/KidsTutorial')
-)
-const AllKidsCourses = React.lazy(() =>
-  import('@pages/Aademy/KidsProgramming/components/AllCourses')
+const KidsTutorial = React.lazy(
+  () => import('@pages/Aademy/KidsTutorial/KidsTutorial'),
 );
-const Web3Development = React.lazy(() =>
-  import('@pages/Aademy/Web3Development/Web3Development')
-)
-const FullStackDev = React.lazy(() =>
-  import('@pages/Aademy/FullStackDev/FullStackDev')
-)
+const AllKidsCourses = React.lazy(
+  () => import('@pages/Aademy/KidsProgramming/components/AllCourses'),
+);
+const Web3Development = React.lazy(
+  () => import('@pages/Aademy/Web3Development/Web3Development'),
+);
+const FullStackDev = React.lazy(
+  () => import('@pages/Aademy/FullStackDev/FullStackDev'),
+);
 // Services routes
-const EthiohopeServices = React.lazy(() =>
-  import('@pages/Services/EthiohopeService/EthiohopeService')
+const EthiohopeServices = React.lazy(
+  () => import('@pages/Services/EthiohopeService/EthiohopeService'),
 );
-const ProgrammingService = React.lazy(() =>
-  import('@pages/Services/ProgrammingService/ProgrammingService')
+const ProgrammingService = React.lazy(
+  () => import('@pages/Services/ProgrammingService/ProgrammingService'),
 );
 
-const KidsTutoring = React.lazy(() =>
-  import('@pages/Services/KidsTutoring/KidsTutoring')
+const KidsTutoring = React.lazy(
+  () => import('@pages/Services/KidsTutoring/KidsTutoring'),
 );
 // const ProjectServices = React.lazy(() =>
 //   import('@pages/Services/ProjectServices/ProjectServices')
 // );
 
-const CourseDetail = React.lazy(() =>
-  import('@pages/Aademy/KidsProgramming/components/CourseDetail')
+const CourseDetail = React.lazy(
+  () => import('@pages/Aademy/KidsProgramming/components/CourseDetail'),
 );
 
 export const routes = [
   { path: '/', exact: true, name: 'Home', element: <Home /> },
+  //dashboard routes
+  { path: '/dashboard/chats', name: 'Chats', element: <Chats /> },
+  {
+    path: '/dashboard/chats/video-call',
+    name: 'VideoCall',
+    element: <VideoCall />,
+  },
+  {
+    path: '/dashboard/chats/voice-call',
+    name: 'VoiceCall',
+    element: <VoiceCall />,
+  },
   // About routes
   { path: '/about', name: 'About', element: <About /> },
   { path: '/company', name: 'Company', element: <Company /> },
@@ -100,7 +117,11 @@ export const routes = [
   { path: '/login', name: 'Login', element: <Login /> },
   { path: '/register', name: 'Register', element: <Register /> },
   // Academy routes
-  { path: '/academy/web3-development', name: 'Web3Development', element: <Web3Development /> },
+  {
+    path: '/academy/web3-development',
+    name: 'Web3Development',
+    element: <Web3Development />,
+  },
   // Community routes
   { path: '/community/events', name: 'Events', element: <Events /> },
   { path: '/community/forum', name: 'Forum', element: <Forum /> },
@@ -191,7 +212,6 @@ export const routes = [
     name: 'ProgrammingService',
     element: <ProgrammingService />,
   },
-
 
   // 404 route - must be last
   { path: '*', name: 'NotFound', element: <NotFound /> },
