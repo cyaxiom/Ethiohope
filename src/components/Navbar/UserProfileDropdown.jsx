@@ -1,5 +1,6 @@
 // @components/UserProfileDropdown/UserProfileDropdown.jsx
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ChevronRight,
   Home,
@@ -82,20 +83,19 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
             </div>
             {hasDropdown && (
               <ChevronDown
-                className={`w-4 h-4 transition-transform duration-300 ease-in-out ${
-                  isExpanded ? 'rotate-180' : ''
-                }`}
+                className={`w-4 h-4 transition-transform duration-300 ease-in-out ${isExpanded ? 'rotate-180' : ''
+                  }`}
               />
             )}
           </button>
         ) : (
-          <a
-            href={item.path}
+          <Link
+            to={item.path}
             className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-primary transition-all duration-200 rounded-md"
           >
             <IconComponent className="w-4 h-4 mr-3 transition-colors duration-200" />
             <span className="transition-colors duration-200">{item.name}</span>
-          </a>
+          </Link>
         )}
 
         {hasDropdown && (
