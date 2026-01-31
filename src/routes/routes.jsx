@@ -36,7 +36,9 @@ const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 const Chats = React.lazy(() => import('@pages/Dashboard/Chats'));
 const VideoCall = React.lazy(() => import('@pages/Dashboard/VideoCall'));
 const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
-
+const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
+const Profile = React.lazy(() => import('@pages/Dashboard/Profile'));
+const Settings = React.lazy(() => import('@pages/Dashboard/settings/Settings'));
 // Academy routes
 const KidsProgramming = React.lazy(
   () => import('@pages/Aademy/KidsProgramming/KidsProgramming'),
@@ -81,6 +83,21 @@ export const routes = [
     path: '/dashboard/chats/video-call',
     name: 'VideoCall',
     element: <VideoCall />,
+  },
+  {
+    path: '/dashboard/achievements',
+    name: 'Achievements',
+    element: <Achievements />,
+  },
+  {
+    path: '/dashboard/profile',
+    name: 'Profile',
+    element: <Profile />,
+  },
+  {
+    path: '/dashboard/settings',
+    name: 'Settings',
+    element: <Settings />,
   },
   {
     path: '/dashboard/chats/voice-call',
