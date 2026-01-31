@@ -28,9 +28,13 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
           {data.dropdown.map((item, index) => (
             <div
               key={index}
+              role="link"
+              tabIndex={0}
+              onClick={() => { navigate(item.path); onClose(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { navigate(item.path); onClose(); } }}
               className={`p-6 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer ${item.featured
-                  ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
-                  : 'bg-background border-border/20'
+                ? 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
+                : 'bg-background border-border/20'
                 }`}
             >
               <div className="flex items-center gap-3 mb-4">
@@ -61,7 +65,8 @@ const SolutionsMegaMenu = ({ data, onClose }) => {
                 <span className="text-lg font-bold text-primary">
                   {item.price}
                 </span>
-                <button onClick={() => {
+                <button onClick={(e) => {
+                  e.stopPropagation();
                   navigate(item.path);
                   onClose();
                 }} className="text-sm text-primary hover:text-accent transition-colors cursor-pointer">

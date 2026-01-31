@@ -6,6 +6,7 @@ const NotFound = React.lazy(() => import('@pages/NotFound/NotFound'));
 
 // About routes
 const About = React.lazy(() => import('@pages/About/About'));
+const Company = React.lazy(() => import('@pages/Company/Company'));
 const Contact = React.lazy(() => import('@pages/About/Contact'));
 const Teams = React.lazy(() => import('@pages/About/Teams'));
 
@@ -71,6 +72,7 @@ export const routes = [
   { path: '/', exact: true, name: 'Home', element: <Home /> },
   // About routes
   { path: '/about', name: 'About', element: <About /> },
+  { path: '/company', name: 'Company', element: <Company /> },
   { path: '/about/contact', name: 'Contact', element: <Contact /> },
   { path: '/about/teams', name: 'Teams', element: <Teams /> },
   // Academy routes

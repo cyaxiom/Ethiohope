@@ -117,6 +117,7 @@ function TabsContent({ value, children, active }) {
 //post card
 function PostCard({ post, actionType, actionTime }) {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   return (
     <Card className="hover:shadow-md transition-all border border-border">
       <CardHeader className="pb-4">
@@ -196,7 +197,7 @@ function PostCard({ post, actionType, actionTime }) {
 
 export default function Likes() {
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen relative">
       <div className="flex">
         <main className="flex-1 p-8">
           <div className="">
