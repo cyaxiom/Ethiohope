@@ -264,10 +264,10 @@ const MessageBubble = ({
         <div className="flex flex-col gap-1 relative">
           <div
             className={`relative p-3 rounded-2xl ${!isOnlyEmoji(message.text) && message.type !== 'audio'
-              ? isSender
-                ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
-                : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
-              : ''
+                ? isSender
+                  ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
+                  : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
+                : ''
               }`}
           >
             {showReactions && (
@@ -1131,8 +1131,8 @@ export default function Chats() {
                     <div className="flex justify-between items-center">
                       <p
                         className={`text-xs truncate ${c.isTyping
-                          ? 'text-primary font-semibold'
-                          : 'text-muted-foreground'
+                            ? 'text-primary font-semibold'
+                            : 'text-muted-foreground'
                           }`}
                       >
                         {c.lastMessage}
@@ -1590,8 +1590,8 @@ export default function Chats() {
                       key={tab}
                       onClick={() => setMediaTab(tab)}
                       className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold capitalize transition-all ${mediaTab === tab
-                        ? 'bg-primary text-primary-foreground shadow-md'
-                        : 'text-muted-foreground hover:bg-muted'
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'text-muted-foreground hover:bg-muted'
                         }`}
                     >
                       {tab === 'photos'
