@@ -175,14 +175,8 @@ const MessageBubble = ({
       className={`flex flex-col mb-6 ${isSender ? 'items-end' : 'items-start'}`}
     >
       <div
-<<<<<<<<< Temporary merge branch 1
-        className={`flex items-center gap-2 mb-1 group ${
-          isSender ? 'flex-row-reverse' : ''
-        }`}
-=========
         className={`flex items-center gap-2 mb-1 group ${isSender ? 'flex-row-reverse' : ''
           }`}
->>>>>>>>> Temporary merge branch 2
       >
         <span className="text-xs font-semibold text-card-foreground">
           {message.senderName}
@@ -263,33 +257,18 @@ const MessageBubble = ({
       </div>
       {/*  */}
       <div
-<<<<<<<<< Temporary merge branch 1
-        className={`flex gap-3 max-w-[85%] group relative ${
-          isSender ? 'flex-row-reverse' : ''
-        }`}
-=========
         className={`flex gap-3 max-w-[85%] group relative ${isSender ? 'flex-row-reverse' : ''
           }`}
->>>>>>>>> Temporary merge branch 2
       >
         {!isSender && <Avatar src="/placeholder.png" size="md" />}
         <div className="flex flex-col gap-1 relative">
           <div
-<<<<<<<<< Temporary merge branch 1
-            className={`relative p-3 rounded-2xl ${
-              !isOnlyEmoji(message.text) && message.type !== 'audio'
-=========
             className={`relative p-3 rounded-2xl ${!isOnlyEmoji(message.text) && message.type !== 'audio'
->>>>>>>>> Temporary merge branch 2
                 ? isSender
                   ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
                   : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
                 : ''
-<<<<<<<<< Temporary merge branch 1
-            }`}
-=========
               }`}
->>>>>>>>> Temporary merge branch 2
           >
             {showReactions && (
               <ReactionPicker
