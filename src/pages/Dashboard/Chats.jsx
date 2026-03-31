@@ -175,8 +175,14 @@ const MessageBubble = ({
       className={`flex flex-col mb-6 ${isSender ? 'items-end' : 'items-start'}`}
     >
       <div
+<<<<<<<<< Temporary merge branch 1
+        className={`flex items-center gap-2 mb-1 group ${
+          isSender ? 'flex-row-reverse' : ''
+        }`}
+=========
         className={`flex items-center gap-2 mb-1 group ${isSender ? 'flex-row-reverse' : ''
           }`}
+>>>>>>>>> Temporary merge branch 2
       >
         <span className="text-xs font-semibold text-card-foreground">
           {message.senderName}
@@ -257,18 +263,33 @@ const MessageBubble = ({
       </div>
       {/*  */}
       <div
+<<<<<<<<< Temporary merge branch 1
+        className={`flex gap-3 max-w-[85%] group relative ${
+          isSender ? 'flex-row-reverse' : ''
+        }`}
+=========
         className={`flex gap-3 max-w-[85%] group relative ${isSender ? 'flex-row-reverse' : ''
           }`}
+>>>>>>>>> Temporary merge branch 2
       >
         {!isSender && <Avatar src="/placeholder.png" size="md" />}
         <div className="flex flex-col gap-1 relative">
           <div
+<<<<<<<<< Temporary merge branch 1
+            className={`relative p-3 rounded-2xl ${
+              !isOnlyEmoji(message.text) && message.type !== 'audio'
+=========
             className={`relative p-3 rounded-2xl ${!isOnlyEmoji(message.text) && message.type !== 'audio'
+>>>>>>>>> Temporary merge branch 2
                 ? isSender
                   ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
                   : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
                 : ''
+<<<<<<<<< Temporary merge branch 1
+            }`}
+=========
               }`}
+>>>>>>>>> Temporary merge branch 2
           >
             {showReactions && (
               <ReactionPicker
@@ -280,10 +301,18 @@ const MessageBubble = ({
             {message.replyTo && (
               <div
                 className={`mb-2 rounded-lg px-3 py-2 text-xs
+<<<<<<<<< Temporary merge branch 1
+      ${
+        isSender
+          ? 'bg-primary/10 border-l-4 border-primary'
+          : 'bg-muted border-l-4 border-muted-foreground'
+      }
+=========
       ${isSender
                     ? 'bg-primary/10 border-l-4 border-primary'
                     : 'bg-muted border-l-4 border-muted-foreground'
                   }
+>>>>>>>>> Temporary merge branch 2
     `}
               >
                 <div className="font-semibold text-[11px] opacity-80">
@@ -1000,8 +1029,14 @@ export default function Chats() {
     <div className="flex pt-16 h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
       {/* Sidebar Area */}
       <aside
+<<<<<<<<< Temporary merge branch 1
+        className={`${
+          isMobileSidebarOpen ? 'block w-full' : 'hidden'
+        } md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
+=========
         className={`${isMobileSidebarOpen ? 'block w-full' : 'hidden'
           } md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
+>>>>>>>>> Temporary merge branch 2
       >
         <div className="p-5 flex items-center justify-between">
           {!showTopSearchInput && (
@@ -1115,8 +1150,14 @@ export default function Chats() {
                     setActiveId(c.id);
                     setIsMobileSidebarOpen(false);
                   }}
+<<<<<<<<< Temporary merge branch 1
+                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${
+                    activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                  }`}
+=========
                   className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
                     }`}
+>>>>>>>>> Temporary merge branch 2
                 >
                   <Avatar src={c.avatar} isOnline={c.isOnline} />
                   <div className="flex-1 min-w-0">
@@ -1130,10 +1171,18 @@ export default function Chats() {
                     </div>
                     <div className="flex justify-between items-center">
                       <p
+<<<<<<<<< Temporary merge branch 1
+                        className={`text-xs truncate ${
+                          c.isTyping
+                            ? 'text-primary font-semibold'
+                            : 'text-muted-foreground'
+                        }`}
+=========
                         className={`text-xs truncate ${c.isTyping
                             ? 'text-primary font-semibold'
                             : 'text-muted-foreground'
                           }`}
+>>>>>>>>> Temporary merge branch 2
                       >
                         {c.lastMessage}
                       </p>
@@ -1164,8 +1213,14 @@ export default function Chats() {
                     setActiveId(c.id);
                     setIsMobileSidebarOpen(false);
                   }}
+<<<<<<<<< Temporary merge branch 1
+                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${
+                    activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                  }`}
+=========
                   className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
                     }`}
+>>>>>>>>> Temporary merge branch 2
                 >
                   <Avatar src={c.avatar} isOnline={c.isOnline} />
                   <div className="flex-1 min-w-0">
@@ -1196,8 +1251,14 @@ export default function Chats() {
 
       {/* Main Conversation Area */}
       <main
+<<<<<<<<< Temporary merge branch 1
+        className={`${
+          !isMobileSidebarOpen ? 'flex' : 'hidden'
+        } md:flex flex-1 flex-col h-full bg-muted overflow-hidden`}
+=========
         className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'
           } md:flex flex-1 flex-col h-full bg-muted overflow-hidden`}
+>>>>>>>>> Temporary merge branch 2
       >
         {/* Chat Header */}
         <header className="px-6 py-4  bg-car border-b border-border flex items-center justify-between z-10">
@@ -1250,8 +1311,14 @@ export default function Chats() {
               </button>
               <button
                 onClick={() => setIsContactInfoOpen(!isContactInfoOpen)}
+<<<<<<<<< Temporary merge branch 1
+                className={`${ICON_BTN} p-2.5 rounded-xl transition-colors ${
+                  isContactInfoOpen ? 'bg-muted text-primary' : ''
+                }`}
+=========
                 className={`${ICON_BTN} p-2.5 rounded-xl transition-colors ${isContactInfoOpen ? 'bg-muted text-primary' : ''
                   }`}
+>>>>>>>>> Temporary merge branch 2
               >
                 <Info className="h-5 w-5" />
               </button>
@@ -1340,7 +1407,11 @@ export default function Chats() {
                   onReply={handleReply}
                   key={m.id}
                   message={m}
+<<<<<<<<< Temporary merge branch 1
+                  onOpenContext={() => {}}
+=========
                   onOpenContext={() => { }}
+>>>>>>>>> Temporary merge branch 2
                   onReact={handleReact}
                   onStarMessage={handleStarMessage}
                 />
@@ -1589,10 +1660,18 @@ export default function Chats() {
                     <button
                       key={tab}
                       onClick={() => setMediaTab(tab)}
+<<<<<<<<< Temporary merge branch 1
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold capitalize transition-all ${
+                        mediaTab === tab
+                          ? 'bg-primary text-primary-foreground shadow-md'
+                          : 'text-muted-foreground hover:bg-muted'
+                      }`}
+=========
                       className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold capitalize transition-all ${mediaTab === tab
                           ? 'bg-primary text-primary-foreground shadow-md'
                           : 'text-muted-foreground hover:bg-muted'
                         }`}
+>>>>>>>>> Temporary merge branch 2
                     >
                       {tab === 'photos'
                         ? 'Photos'

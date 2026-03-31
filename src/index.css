@@ -5,6 +5,8 @@
     /* Light theme colors */
     --background: #ffffff;
     --foreground: #0f0f13;
+    /* for hover effects, when foreground color is hovered */
+    --hover: hsl(0, 0%, 69%);
     --card: #ffffff;
     --card-foreground: #0f0f13;
     --popover: #ffffff;
@@ -43,6 +45,8 @@
     /* Dark theme colors */
     --background: #0f0f13;
     --foreground: #fafafa;
+    /* for hover effects, when foreground color is hovered */
+    --hover: hsla(0, 2%, 23%, 0.884);
     --card: #0f0f13;
     --card-foreground: #fafafa;
     --popover: #0f0f13;
@@ -83,10 +87,15 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
-    font-feature-settings: "ss01", "cv01", "cv02", "cv03";
+    font-feature-settings: 'ss01', 'cv01', 'cv02', 'cv03';
     letter-spacing: 0.01em;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
     font-weight: 800;
     letter-spacing: -0.01em;
@@ -95,7 +104,11 @@
     font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
     font-weight: 600;
     border-radius: 0.75rem;
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+    transition:
+      background 0.2s,
+      color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
     box-shadow: 0 2px 8px 0 rgb(123 92 255 / 8%);
   }
   .btn-primary {
@@ -117,7 +130,9 @@
     box-shadow: 0 4px 24px 0 rgb(123 92 255 / 8%);
     border: 1px solid var(--border);
     padding: 2rem;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition:
+      box-shadow 0.2s,
+      transform 0.2s;
   }
   .card:hover {
     box-shadow: 0 8px 32px 0 rgb(123 92 255 / 16%);
@@ -132,6 +147,9 @@
   }
   .text-foreground {
     color: var(--foreground);
+  }
+  .bg-hover {
+    background-color: var(--hover);
   }
   .bg-card {
     background-color: var(--card);
@@ -190,7 +208,7 @@
   .border-border {
     border-color: var(--border);
   }
-  
+
   /* Line clamp utilities */
   .line-clamp-2 {
     overflow: hidden;
@@ -199,7 +217,7 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
   }
-  
+
   .line-clamp-3 {
     overflow: hidden;
     display: -webkit-box;
@@ -207,29 +225,29 @@
     -webkit-line-clamp: 3;
     line-clamp: 3;
   }
-  
+
   /* Aspect ratio utilities */
   .aspect-square {
     aspect-ratio: 1 / 1;
   }
-  
+
   .aspect-video {
     aspect-ratio: 16 / 9;
   }
-  
+
   /* Animation utilities */
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
+
   .animate-fadeInUp {
     animation: fadeInUp 0.6s ease-out;
   }
-  
+
   .animate-fadeInDown {
     animation: fadeInDown 0.6s ease-out;
   }
-  
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -238,7 +256,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -249,7 +267,7 @@
       transform: translateY(0);
     }
   }
-  
+
   @keyframes fadeInDown {
     from {
       opacity: 0;
@@ -260,18 +278,18 @@
       transform: translateY(0);
     }
   }
-  
+
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
-  
+
   /* Focus visible for accessibility */
   *:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
-  
+
   /* Remove default focus for mouse users */
   *:focus:not(:focus-visible) {
     outline: none;
@@ -298,8 +316,16 @@
 body {
   background-color: #ffffff;
   background-image:
-    radial-gradient(circle at 20% 30%, rgba(128, 90, 255, 0.18), transparent 40%),
-    radial-gradient(circle at 80% 60%, rgba(255, 153, 0, 0.18), transparent 45%),
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(128, 90, 255, 0.18),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 60%,
+      rgba(255, 153, 0, 0.18),
+      transparent 45%
+    ),
     radial-gradient(circle at 50% 90%, rgba(0, 200, 150, 0.15), transparent 50%);
   background-repeat: no-repeat;
   background-attachment: fixed;
