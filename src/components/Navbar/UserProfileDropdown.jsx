@@ -51,10 +51,23 @@ const CollapsibleSection = ({ children, isExpanded }) => {
   );
 };
 
+import { useDispatch } from 'react-redux';
+import { logout } from '../../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
+
 const UserProfileDropdown = ({ links, isOpen, onClose }) => {
   const [expandedItems, setExpandedItems] = useState({});
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem('token');
+    onClose();
+    navigate('/');
+  };
 
   const toggleExpand = (itemName) => {
     setExpandedItems((prev) => ({
@@ -91,6 +104,7 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
         ) : (
           <Link
             to={item.path}
+            onClick={onClose}
             className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-primary transition-all duration-200 rounded-md"
           >
             <IconComponent className="w-4 h-4 mr-3 transition-colors duration-200" />
@@ -117,7 +131,10 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
         {links.map((item) => renderDropdownItem(item))}
 
         {/* Logout button */}
-        <button className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-red-500 transition-all duration-200 rounded-md mt-2 border-t border-border/20 pt-2">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-accent hover:text-red-500 transition-all duration-200 rounded-md mt-2 border-t border-border/20 pt-2"
+        >
           <LogOut className="w-4 h-4 mr-3 transition-colors duration-200" />
           <span className="transition-colors duration-200">Logout</span>
         </button>

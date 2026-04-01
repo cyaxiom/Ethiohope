@@ -2,9 +2,8 @@ import { api } from '../../app/api';
 
 // Types for Requests and Responses
 export interface LoginRequest {
-  email: string;
+  identifier: string; // Used for both email and username
   password?: string;
-  // Extend based on the specific UserLoginDTO fields if necessary
 }
 
 export interface UserResponse {

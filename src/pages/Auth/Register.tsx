@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
 import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-import { useSignupMutation } from '../../features/auth/authApi';
+import { useSignupMutation, useLoginMutation } from '../../features/auth/authApi';
+import { setCredentials } from '../../features/auth/authSlice';
 import FormInput from '../../components/ui/FormInput';
 import { getErrorMessage } from '../../lib/error-handler';
 
@@ -19,8 +21,12 @@ interface RegisterFormInputs {
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [signup, { isLoading }] = useSignupMutation();
+  const dispatch = useDispatch();
+  const [signup, { isLoading: isSigningUp }] = useSignupMutation();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const isLoading = isSigningUp || isLoggingIn;
 
   const {
     register,
@@ -34,6 +40,7 @@ const Register: React.FC = () => {
   const onSubmit = async (data: RegisterFormInputs) => {
     setServerError(null);
     try {
+      // 1. Sign up the user
       await signup({
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
@@ -41,20 +48,39 @@ const Register: React.FC = () => {
         password: data.password,
       }).unwrap();
 
-      toast.success('Account created successfully. Please log in.', {
+      // 2. Automatically log them in
+      const loginResult = await login({
+        identifier: data.email.trim(),
+        password: data.password,
+      }).unwrap();
+
+      // 3. Update Redux store with auth info so Navbar renders Profile Icon
+      dispatch(
+        setCredentials({
+          user: loginResult.user,
+          token: loginResult.token,
+          roles: loginResult.roles || [],
+          permissions: loginResult.permissions || [],
+        })
+      );
+      localStorage.setItem('token', loginResult.token);
+
+      toast.success('Account created successfully!', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
-        duration: 5000,
+        duration: 3000,
       });
 
+      // 4. Navigate back to Home
       setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+        navigate('/');
+      }, 1000);
     } catch (err) {
       const message = getErrorMessage(err, 'Failed to register account.');
       setServerError(message);
       toast.error(message);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn">
