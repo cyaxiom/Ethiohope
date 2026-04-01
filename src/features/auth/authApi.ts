@@ -18,6 +18,8 @@ export interface AuthResponse {
   message?: string;
   token: string;
   user: UserResponse;
+  roles: string[];
+  permissions: string[];
   redirectTo?: string;
 }
 
@@ -35,17 +37,21 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body: credentials,
       }),
+      // Automatically unwrap the standard backend format { success, message, data }
+      transformResponse: (response: { data: AuthResponse }) => response.data,
     }),
     logout: builder.mutation<GenericResponse, void>({
       query: () => ({
         url: 'auth/logout',
         method: 'POST',
       }),
+      transformResponse: (response: any) => response.data,
     }),
     refresh: builder.query<AuthResponse, void>({
       query: () => ({
         url: 'auth/refresh',
       }),
+      transformResponse: (response: { data: AuthResponse }) => response.data,
     }),
     forgotPassword: builder.mutation<GenericResponse, { email: string }>({
       query: (data) => ({
@@ -53,6 +59,7 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: any) => response.data,
     }),
     resetPassword: builder.mutation<GenericResponse, { password: string; token: string }>({
       query: (data) => ({
@@ -60,6 +67,7 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: any) => response.data,
     }),
     verifyEmail: builder.mutation<GenericResponse, { email: string }>({
       query: (data) => ({
@@ -67,6 +75,7 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: any) => response.data,
     }),
     confirmVerification: builder.mutation<GenericResponse, { token: string }>({
       query: (data) => ({
@@ -74,6 +83,7 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: any) => response.data,
     }),
     signup: builder.mutation<AuthResponse, any>({
       query: (data) => ({
@@ -81,6 +91,7 @@ export const authApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      transformResponse: (response: { data: AuthResponse }) => response.data,
     }),
   }),
   overrideExisting: false,
