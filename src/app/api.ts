@@ -17,5 +17,6 @@ export const api = createApi({
       return headers;
     },
   }),
+  tagTypes: ['Roles', 'Permissions'],
   endpoints: () => ({}), // Initialize with an empty endpoints object; features will inject theirs later
 });

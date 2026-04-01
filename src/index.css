@@ -248,6 +248,14 @@
     animation: fadeInDown 0.6s ease-out;
   }
 
+  .animate-slideUp {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -277,6 +285,43 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Custom scrollbar for modal permission lists */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 20px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
   }
 
   /* Smooth scrolling */
