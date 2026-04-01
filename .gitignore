@@ -23,3 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 .prettierrc
+
+
+# add .env files
+.env*
+.env.development
+.env.production
+.env.test
+.env.example
+
+*.txt
