@@ -80,6 +80,12 @@ const CourseDetail = React.lazy(
   () => import('@pages/Aademy/KidsProgramming/components/CourseDetail'),
 );
 
+// Admin routes
+const AdminDashboardLayout = React.lazy(() => import('@components/layout/DashboardLayout'));
+const AdminDashboardPage = React.lazy(() => import('@pages/admin/AdminDashboard'));
+const AdminRoles = React.lazy(() => import('@pages/admin/RoleManagement'));
+const AdminUsers = React.lazy(() => import('@pages/admin/Users'));
+
 export const routes = [
   { path: '/', exact: true, name: 'Home', element: <Home /> },
   //dashboard routes
@@ -236,6 +242,30 @@ export const routes = [
     path: '/services/programming-service',
     name: 'ProgrammingService',
     element: <ProgrammingService />,
+  },
+  
+  // Admin Routes
+  {
+    path: '/admin',
+    name: 'AdminDashboardLayout',
+    element: <AdminDashboardLayout />,
+    routes: [
+      {
+        path: '/admin/dashboard',
+        name: 'AdminDashboardPage',
+        element: <AdminDashboardPage />,
+      },
+      {
+        path: '/admin/roles',
+        name: 'AdminRoles',
+        element: <AdminRoles />,
+      },
+      {
+        path: '/admin/users',
+        name: 'AdminUsers',
+        element: <AdminUsers />,
+      },
+    ],
   },
 
   // 404 route - must be last
