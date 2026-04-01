@@ -13,6 +13,11 @@ const Teams = React.lazy(() => import('@pages/About/Teams'));
 // Auth routes
 const Login = React.lazy(() => import('@pages/Auth/Login'));
 const Register = React.lazy(() => import('@pages/Auth/Register'));
+const ForgotPassword = React.lazy(() => import('@pages/Auth/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('@pages/Auth/ResetPassword'));
+
+// Status pages
+const PendingApproval = React.lazy(() => import('@pages/PendingApproval'));
 
 // Community routes
 const Events = React.lazy(() => import('@pages/Community/Events'));
@@ -133,6 +138,9 @@ export const routes = [
   // Auth routes
   { path: '/login', name: 'Login', element: <Login /> },
   { path: '/register', name: 'Register', element: <Register /> },
+  { path: '/forgot-password', name: 'ForgotPassword', element: <ForgotPassword /> },
+  { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
+  { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
   // Academy routes
   {
     path: '/academy/web3-development',
