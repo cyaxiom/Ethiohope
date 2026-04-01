@@ -1,16 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../features/auth/authSlice';
-import { authApi } from '../features/auth/authApi';
-import { roleApi } from '../features/role/roleApi';
+import authReducer from '../services/auth/authSlice';
+import { api } from './api';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    [authApi.reducerPath]: authApi.reducer,
-    [roleApi.reducerPath]: roleApi.reducer,
+    // Add the generated reducer from the central API slice
+    [api.reducerPath]: api.reducer,
   },
+  // Adding the api middleware enables caching, invalidation, polling,
+  // and other useful features of `rtk-query`.
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware, roleApi.middleware),
+    getDefaultMiddleware().concat(api.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
