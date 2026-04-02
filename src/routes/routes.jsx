@@ -86,6 +86,11 @@ const AdminDashboardPage = React.lazy(() => import('@pages/admin/AdminDashboard'
 const AdminRoles = React.lazy(() => import('@pages/admin/RoleManagement'));
 const AdminUsers = React.lazy(() => import('@pages/admin/Users'));
 
+// Role-based dashboards
+const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboard'));
+const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard'));
+const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
+
 export const routes = [
   { path: '/', exact: true, name: 'Home', element: <Home /> },
   //dashboard routes
@@ -264,6 +269,44 @@ export const routes = [
         path: '/admin/users',
         name: 'AdminUsers',
         element: <AdminUsers />,
+      },
+    ],
+  },
+
+  // Role-based Dashboard Routes
+  {
+    path: '/teacher',
+    name: 'TeacherPortal',
+    element: <AdminDashboardLayout />,
+    routes: [
+      {
+        path: '/teacher/dashboard',
+        name: 'Teacher Dashboard',
+        element: <TeacherDashboard />,
+      },
+    ],
+  },
+  {
+    path: '/parent',
+    name: 'ParentPortal',
+    element: <AdminDashboardLayout />,
+    routes: [
+      {
+        path: '/parent/dashboard',
+        name: 'Parent Dashboard',
+        element: <ParentDashboard />,
+      },
+    ],
+  },
+  {
+    path: '/student',
+    name: 'StudentPortal',
+    element: <AdminDashboardLayout />,
+    routes: [
+      {
+        path: '/student/dashboard',
+        name: 'Student Dashboard',
+        element: <StudentDashboard />,
       },
     ],
   },

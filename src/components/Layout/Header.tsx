@@ -12,16 +12,15 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
 
   // Simple title mapping based on route
   const getPageTitle = () => {
-    switch (location.pathname) {
-      case '/admin/dashboard':
-        return 'Dashboard';
-      case '/admin/roles':
-        return 'Role Management';
-      case '/admin/users':
-        return 'Users';
-      default:
-        return 'Admin Portal';
-    }
+    const path = location.pathname;
+    if (path.includes('/admin/dashboard')) return 'Admin Dashboard';
+    if (path.includes('/admin/roles')) return 'Role Management';
+    if (path.includes('/admin/users')) return 'User Management';
+    if (path.includes('/teacher/dashboard')) return 'Teacher Dashboard';
+    if (path.includes('/parent/dashboard')) return 'Parent Portal';
+    if (path.includes('/student/dashboard')) return 'Student Dashboard';
+    
+    return 'SSM Quiz Portal';
   };
 
   return (
