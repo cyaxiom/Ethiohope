@@ -26,9 +26,9 @@ export default function Partner() {
     <div className="py-8 bg-muted/30 dark:bg-muted/60 rounded-2xl shadow-xl border border-border">
       <div className="text-center max-w-7xl mx-auto px-4">
         <p className="text-sm uppercase font-medium text-muted-foreground tracking-widest mb-8">
-          POWERING TOOLS AND INTEGRATIONS FROM COMPANIES ALL AROUND THE WORLD
+          TRUSTED BY LEADING TECH & EDUCATIONAL INSTITUTIONS
         </p>
-        <div className="flex flex-nowrap justify-center items-center gap-x-12 gap-y-8 mt-4">
+        <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 mt-4">
           {companies.map((company) => (
             <div
               key={company}

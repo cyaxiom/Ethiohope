@@ -1,59 +1,61 @@
 import React from 'react';
-import { DS } from '@/constants/designSystem';
 import { SectionContainer } from '@/components/ui/Container';
 import { Heading, Text } from '@/components/ui/Typography';
+import { UserPlus, UserCircle, LayoutGrid, Rocket } from 'lucide-react';
 
 export default function Stats() {
-  const stats = [
-    { 
-      value: "11.5M+", 
-      label: "Active Accounts",
-      gradient: "from-purple-400 to-cyan-300" 
+  const steps = [
+    {
+      title: "1. Create Account",
+      description: "Sign up for your free personal account in seconds.",
+      icon: <UserPlus className="w-5 h-5" />,
+      color: "bg-blue-100 text-blue-600"
     },
-    { 
-      value: "21.9M", 
-      label: "NFTs Minted",
-      gradient: "from-blue-500 to-cyan-400" 
+    {
+      title: "2. Add Child",
+      description: "Set up a profile with their age and interests.",
+      icon: <UserCircle className="w-5 h-5" />,
+      color: "bg-purple-100 text-purple-600"
     },
-    { 
-      value: "$0.00025", 
-      label: "Avg. Cost Per Transaction",
-      gradient: "from-teal-400 to-fuchsia-400" 
+    {
+      title: "3. Select Program",
+      description: "Choose the best learning path for your child.",
+      icon: <LayoutGrid className="w-5 h-5" />,
+      color: "bg-cyan-100 text-cyan-600"
     },
+    {
+      title: "4. Play & Learn",
+      description: "Let your child dive into the world of creative learning.",
+      icon: <Rocket className="w-5 h-5 text-white" />,
+      color: "bg-primary text-white scale-110 shadow-lg shadow-primary/30"
+    }
   ];
-  
+
   return (
-    <section className="relative text-foreground overflow-hidden bg-muted/30 dark:bg-muted/60 rounded-2xl shadow-xl border border-border">
-      <SectionContainer sectionSpacing="xl" containerSize="xl">
-        <div className={`${DS.grids.twoColumn} ${DS.spacing.gap.xl} items-center`}>
-          {/* Left Side: Heading */}
-          <div className="text-center lg:text-left">
-            <Heading variant="h1" className="leading-tight">
-              Join a <span className="text-primary">community</span>
-            </Heading>
-            <Heading variant="h1" className="mt-2">
-              of millions.
-            </Heading>
-            <Text size="lg" className="mt-4 max-w-md mx-auto lg:mx-0 line-clamp-3">
-              Powering the next generation of digital experiences with low costs and high scalability.
-            </Text>
-          </div>
-          
-          {/* Right Side: Stats */}
-          <div className="flex flex-col gap-12">
-            {stats.map((s, i) => (
-              <div
-                key={i} 
-                className="group text-center lg:text-left transition-transform duration-300 hover:-translate-y-1"
-              >
-                <p 
-                  className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent transition-transform duration-300 group-hover:scale-105`}
-                >
-                  {s.value}
+    <section className="relative py-16 md:py-24 bg-white dark:bg-muted/30">
+      <SectionContainer containerSize="xl">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <Heading variant="h2" className="text-foreground">
+            Simple Steps to Get Started
+          </Heading>
+        </div>
+
+        <div className="relative">
+          {/* Connecting Line */}
+          <div className="hidden md:block absolute top-[28px] left-[10%] right-[10%] h-[2px] bg-border z-0"></div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+            {steps.map((step, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center group">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-6 transition-transform duration-300 group-hover:-translate-y-1 ${step.color} outline outline-4 outline-white dark:outline-background`}>
+                  {step.icon}
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed px-4">
+                  {step.description}
                 </p>
-                <Text size="sm" className="mt-2 uppercase tracking-widest font-medium line-clamp-1">
-                  {s.label}
-                </Text>
               </div>
             ))}
           </div>

@@ -1,136 +1,77 @@
 import React from 'react';
- import growthImage from "@images/growthLogo/growth.png"; 
- import logo1 from "@images/growthLogo/claynosaurz.svg"; 
-import logo2 from "@images/growthLogo/monkey.svg"; 
-import logo3 from "@images/growthLogo/fox.svg"; 
-import logo4 from "@images/growthLogo/okay.svg"; 
-
-
-import { Aperture, Gamepad2, Landmark, Wallet, Layers2 } from 'lucide-react';
+import { SectionContainer } from '@/components/ui/Container';
+import { Heading, Text } from '@/components/ui/Typography';
+import { Button } from '@/components/ui/Button';
+import { CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function Growth() {
-  const categories = [
-    { name: 'NFTs', icon: <Aperture className="w-4 h-4" /> },
-    { name: 'DeFi', icon: <Landmark className="w-4 h-4" /> },
-    { name: 'Payments', icon: <Wallet className="w-4 h-4" /> },
-    { name: 'Gaming', icon: <Gamepad2 className="w-4 h-4" /> },
-    { name: 'DAOs', icon: <Layers2 className="w-4 h-4" /> },
+  const benefits = [
+    "Track kid's progress in learning",
+    "Smart dashboard with instructions",
+    "Receive a schedule of updated timelines"
   ];
 
-  
- 
-  const [activeCategory, setActiveCategory] = React.useState('NFTs');
-
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-muted/30 dark:bg-muted/60 rounded-2xl shadow-xl border border-border">
-      
-      {/* Header & Category Buttons  */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-        
-        {/* Title */}
-        <h1 className="text-4xl md:text-5xl font-extrabold text-foreground">
-          Build for growth.
-        </h1>
-        
-        {/* Button Group */}
-        <div className="flex flex-wrap gap-2 md:gap-3">
-          {categories.map((item) => (
-            <button
-              key={item.name}
-              onClick={() => setActiveCategory(item.name)}
-              className={`
-                flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
-                shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50
-                border
-                ${
-                  item.name === activeCategory
-                 
-                    ? 'bg-primary border-primary text-primary-foreground shadow-primary/30 hover:bg-accent'
-                    
-                    : 'bg-secondary border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-                }
-              `}
-            >
-              {item.icon}
-              {item.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-    
-      <div className="flex flex-col lg:flex-row gap-8">
-        
-        {/* Image */}
-        <div className="lg:w-1/2">
-          <img
-            src={growthImage}
-            alt="Anybodies illustration"
-            className="w-full h-auto rounded-xl shadow-2xl border border-border 
-                       hover:shadow-primary/50 transition-shadow duration-500"
-          />
-        </div>
-
-       
-        <div className="lg:w-1/2 bg-card p-8 rounded-xl border border-border shadow-xl 
-            hover:shadow-primary/30 transition-all duration-500">
+    <section className="relative py-16 md:py-24 bg-muted/30 dark:bg-muted/60">
+      <SectionContainer containerSize="xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           
-          <div className="flex items-center mb-4">
-         
-            <div className="w-10 h-10 bg-primary rounded-full mr-3 flex items-center justify-center shadow-md">
-              <span className="text-primary-foreground font-extrabold text-xl">A</span>
+          {/* Left side: Image */}
+          <div className="relative order-2 lg:order-1">
+            <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-[3rem] transform -rotate-3 scale-105 -z-10"></div>
+            <img 
+              src="/parent-child.png" 
+              alt="Parent and child learning together"
+              className="rounded-[3rem] object-cover w-full h-[400px] md:h-[500px] shadow-2xl"
+            />
+            
+            {/* Floating card */}
+            <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white dark:bg-card p-4 rounded-2xl shadow-xl flex items-center gap-4 border border-border">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Progress Updated</p>
+                <p className="text-xs text-muted-foreground">Just now</p>
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-foreground">ANYBODIES</h2>
           </div>
           
-          <p className="mb-6 text-lg text-muted-foreground">
-            It's time to bridge the digital and physical. Anybodies helps
-            established brands like Toys'R'Us connect real-life places and
-            products with NFTs.
-          </p>
+          {/* Right side: Content */}
+          <div className="order-1 lg:order-2 space-y-8">
+            <Heading variant="h2" className="text-left text-foreground">
+              Manage Your Child's Learning Easily
+            </Heading>
+            
+            <Text size="lg" className="text-left text-muted-foreground">
+              Empower yourself with real-time insights into your child's educational journey. Our comprehensive dashboard lets you track progress in a friendly format, allowing you to easily support your kids where they need you most.
+            </Text>
+            
+            <ul className="space-y-5 pt-4">
+              {benefits.map((benefit, idx) => (
+                <li key={idx} className="flex items-center gap-4 text-foreground font-medium text-lg">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                  </div>
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+            
+            <div className="pt-8">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="rounded-full font-semibold border-2 hover:bg-muted text-primary"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
+                Follow a Track (demo directions)
+              </Button>
+            </div>
+          </div>
           
-          <a
-            href="#"
-            className="inline-flex items-center text-primary font-semibold hover:text-accent-foreground hover:underline underline-offset-4 transition-colors duration-200"
-          >
-            Learn more about {activeCategory} on Solana
-          </a>
         </div>
-      </div>
-
-      {/* Footer Card */}
-
-
-
-    <div className="w-full bg-card border border-border shadow-2xl flex justify-between items-center gap-16 py-4 rounded-xl mt-4">
-      {/* Logo 1 */}
-      <img
-        src={logo1}
-        alt="CuriousMaze Logo"
-        className="h-8 md:h-10 object-contain"
-      />
-
-      {/* Logo 2 */}
-      <img
-        src={logo2}
-        alt="Monkey Logo"
-        className="h-8 md:h-10 object-contain"
-      />
-
-      {/* Logo 3 */}
-      <img
-        src={logo3}
-        alt="Fox Logo"
-        className="h-8 md:h-10 object-contain"
-      />
-
-      {/* Logo 4 */}
-      <img
-        src={logo4}
-        alt="Okay Logo"
-        className="h-8 md:h-10 object-contain"
-      />
-    </div>
-    </div>
+      </SectionContainer>
+    </section>
   );
 }

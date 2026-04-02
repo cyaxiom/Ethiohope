@@ -1,140 +1,85 @@
 import React from 'react';
-import { DS } from '@/constants/designSystem';
 import { SectionContainer } from '@/components/ui/Container';
 import { Heading, Text } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { ArrowRight, Code, Terminal, Cpu } from 'lucide-react';
 
 export default function Features() {
-  const features = [
+  const programs = [
     {
-      title: "Fast",
-      description: "Don't keep your users waiting. Solana has block times of 400 milliseconds — and as hardware gets faster, so will the network.",
-      stat: "3,969",
-      label: "Transactions Per Second",
-      color: "accent"
+      title: "Basic Level",
+      subtitle: "Foundational Coding",
+      description: "Perfect starting point for beginners. Learn the basics of logic and programming fundamentals.",
+      price: "$100",
+      icon: <Terminal className="w-6 h-6" />,
+      color: "bg-blue-100 text-blue-600 border-blue-200"
     },
     {
-      title: "Decentralized",
-      description: "The Solana network is validated by thousands of nodes that operate independently, ensuring your data remains secure and censorship resistant.",
-      stat: "1,675",
-      label: "Validator Nodes",
-      color: "warning"
+      title: "Intermediate",
+      subtitle: "Web & Game Development",
+      description: "Step up to building interactive websites and engaging games using standard frameworks.",
+      price: "$150",
+      icon: <Code className="w-6 h-6" />,
+      color: "bg-purple-100 text-purple-600 border-purple-200"
     },
     {
-      title: "Scalable",
-      description: "Get big, quick. Solana is made to handle thousands of transactions per second, while fees remain less than $0.01.",
-      stat: "163,077,581,394",
-      label: "Total Transactions",
-      color: "success"
-    },
-    {
-      title: "Energy Efficient",
-      description: "Solana's proof of stake network minimizes impact on the environment. Each transaction uses about the same energy as a few Google searches.",
-      stat: "0%",
-      label: "Net Carbon Impact",
-      color: "info"
+      title: "Advanced",
+      subtitle: "AI & Data Science",
+      description: "Master complex algorithms, machine learning basics, and advanced data structures.",
+      price: "$200",
+      icon: <Cpu className="w-6 h-6" />,
+      color: "bg-cyan-100 text-cyan-600 border-cyan-200"
     }
   ];
 
   return (
-    <section className="relative bg-muted/30 dark:bg-muted/60 text-foreground overflow-hidden rounded-2xl shadow-xl border border-border">
-      <SectionContainer sectionSpacing="xl" containerSize="xl">
-        <div className="flex flex-col lg:flex-row items-start gap-12">
-          {/* Left Section */}
-          <div className="w-full lg:w-1/3">
-            <Heading variant="h2" className="mb-2">Made for mass adoption.</Heading>
-            <a 
-              href="#"
-              className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 underline underline-offset-4"
-            >
-              • LIVE DATA
-            </a>
+    <section className="relative py-16 md:py-24 bg-white dark:bg-muted/30">
+      <SectionContainer containerSize="xl">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+          <div className="max-w-2xl">
+            <Heading variant="h2" className="mb-4 text-left">
+              Our Specialized Programs
+            </Heading>
+            <Text className="text-left text-muted-foreground text-lg">
+              Curated paths for every skill level, from first steps in logic to advanced artificial intelligence.
+            </Text>
           </div>
-
-          {/* Right Section: Feature Grid */}
-          <div className="w-full lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Fast */}
-          <div className="bg-card border border-border p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <h3 className="text-xl font-semibold mb-3 flex items-center">
-              <span className="w-1 h-6 bg-accent mr-3 rounded-sm"></span>Fast
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Don't keep your users waiting. Solana has block times of 400 milliseconds — and as hardware gets faster, so will the network.
-            </p>
-            <div className="text-2xl font-bold text-accent mb-2">3,969</div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Transactions Per Second
-            </div>
-          </div>
-
-          {/* Decentralized */}
-          <div className="bg-card border border-border p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <h3 className="text-xl font-semibold mb-3 flex items-center">
-              <span className="w-1 h-6 bg-warning mr-3 rounded-sm"></span>Decentralized
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              The Solana network is validated by thousands of nodes that operate independently, ensuring your data remains secure and censorship resistant.
-            </p>
-            <div className="text-2xl font-bold text-warning mb-2">1,675</div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Validator Nodes
-            </div>
-          </div>
-
-          {/* Scalable */}
-          <div className="bg-card border border-border p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <h3 className="text-xl font-semibold mb-3 flex items-center">
-              <span className="w-1 h-6 bg-success mr-3 rounded-sm"></span>Scalable
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Get big, quick. Solana is made to handle thousands of transactions per second, while fees remain less than $0.01.
-            </p>
-            <div className="text-2xl font-bold text-success mb-2">163,077,581,394</div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Total Transactions
-            </div>
-          </div>
-
-          {/* Energy Efficient */}
-          <div className="bg-card border border-border p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-            <h3 className="text-xl font-semibold mb-3 flex items-center">
-              <span className="w-1 h-6 bg-info mr-3 rounded-sm"></span>Energy Efficient
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Solana’s proof of stake network minimizes impact on the{" "}
-              <span className="text-success font-medium">environment</span>. Each transaction uses about the same energy as a few Google searches.
-            </p>
-            <div className="text-2xl font-bold text-info mb-2">0%</div>
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Net Carbon Impact
-            </div>
-          </div>
-            {features.map((feature, idx) => (
-              <Card
-                key={idx}
-                padding="lg"
-                hoverable
-                interactive
-                className="h-full flex flex-col"
-              >
-                <Heading variant="h4" className="mb-3 flex items-center line-clamp-1">
-                  <span className={`w-1 h-6 bg-${feature.color} mr-3 rounded-sm flex-shrink-0`}></span>
-                  {feature.title}
-                </Heading>
-                <Text className="mb-4 flex-grow line-clamp-4">
-                  {feature.description}
-                </Text>
-                <div className={`text-2xl font-bold text-${feature.color} mb-2`}>
-                  {feature.stat}
-                </div>
-                <Text size="xs" className="uppercase tracking-wider font-medium line-clamp-1">
-                  {feature.label}
-                </Text>
-              </Card>
-            ))}
+          <a filter href="#" className="hidden md:flex items-center text-primary font-semibold hover:underline mt-4 md:mt-0">
+            View All Programs <ArrowRight className="w-4 h-4 ml-2" />
+          </a>
         </div>
-      </div>
-    </SectionContainer>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {programs.map((prog, idx) => (
+            <Card
+              key={idx}
+              padding="xl"
+              className="group flex flex-col h-full bg-white dark:bg-card border border-border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 rounded-3xl"
+            >
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm border ${prog.color}`}>
+                {prog.icon}
+              </div>
+              <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
+                {prog.title}
+              </p>
+              <Heading variant="h4" className="mb-4 group-hover:text-primary transition-colors">
+                {prog.subtitle}
+              </Heading>
+              <Text className="text-muted-foreground mb-8 flex-grow">
+                {prog.description}
+              </Text>
+              
+              <div className="flex items-center justify-between mt-auto pt-6 border-t border-border">
+                <span className="text-3xl font-extrabold text-foreground">{prog.price}</span>
+                <Button variant="outline" size="sm" className="rounded-full text-xs font-semibold px-4">
+                  View Program
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </SectionContainer>
     </section>
   );
 }
