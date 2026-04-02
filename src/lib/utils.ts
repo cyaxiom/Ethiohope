@@ -1,25 +1,25 @@
-import { clsx } from 'clsx';
+import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 /**
  * Utility function to merge Tailwind CSS classes
  * Combines clsx and tailwind-merge for proper class merging
  */
-export function cn(...inputs) {
+export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
  * Format number with commas
  */
-export function formatNumber(num) {
+export function formatNumber(num: number): string {
   return new Intl.NumberFormat('en-US').format(num);
 }
 
 /**
  * Truncate text with ellipsis
  */
-export function truncate(str, length = 100) {
+export function truncate(str: string, length: number = 100): string {
   if (!str || str.length <= length) return str;
   return str.slice(0, length) + '...';
 }
@@ -27,7 +27,7 @@ export function truncate(str, length = 100) {
 /**
  * Get initials from name
  */
-export function getInitials(name) {
+export function getInitials(name: string): string {
   if (!name) return '';
   const parts = name.split(' ');
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
@@ -37,9 +37,9 @@ export function getInitials(name) {
 /**
  * Debounce function
  */
-export function debounce(func, wait = 300) {
-  let timeout;
-  return function executedFunction(...args) {
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number = 300) {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  return function executedFunction(...args: Parameters<T>) {
     const later = () => {
       clearTimeout(timeout);
       func(...args);
@@ -52,7 +52,7 @@ export function debounce(func, wait = 300) {
 /**
  * Check if element is in viewport
  */
-export function isInViewport(element) {
+export function isInViewport(element: HTMLElement | null): boolean {
   if (!element) return false;
   const rect = element.getBoundingClientRect();
   return (
@@ -63,4 +63,5 @@ export function isInViewport(element) {
   );
 }
 
-export default { cn, formatNumber, truncate, getInitials, debounce, isInViewport };
+const utils = { cn, formatNumber, truncate, getInitials, debounce, isInViewport };
+export default utils;

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
 
 import { useState, useRef, useEffect } from 'react';
-import { DS } from '@/constants/designSystem.js';
+import { DS } from '@/constants/designSystem';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 // Reusable design-system class helpers
