@@ -61,10 +61,7 @@ const Login: React.FC = () => {
         })
       );
 
-      // Save token in localStorage
-      localStorage.setItem('token', result.token);
-
-      // Show success message
+      // Success message
       toast.success('Login successful! Redirecting...', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
       });

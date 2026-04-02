@@ -63,7 +63,6 @@ const Register: React.FC = () => {
           permissions: loginResult.permissions || [],
         })
       );
-      localStorage.setItem('token', loginResult.token);
 
       toast.success('Account created successfully!', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,

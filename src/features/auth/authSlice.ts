@@ -24,12 +24,17 @@ export interface AuthState {
   loading: boolean;
 }
 
+const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
+const token = localStorage.getItem('token') || null;
+const roles = localStorage.getItem('roles') ? JSON.parse(localStorage.getItem('roles')!) : [];
+const permissions = localStorage.getItem('permissions') ? JSON.parse(localStorage.getItem('permissions')!) : [];
+
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  roles: [],
-  permissions: [],
-  isAuthenticated: false,
+  user,
+  token,
+  roles,
+  permissions,
+  isAuthenticated: !!token,
   loading: false,
 };
 
@@ -41,11 +46,18 @@ const authSlice = createSlice({
       state,
       action: PayloadAction<{ user: User; token: string; roles?: string[]; permissions?: string[] }>
     ) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      state.roles = action.payload.roles ?? [];
-      state.permissions = action.payload.permissions ?? [];
+      const { user, token, roles, permissions } = action.payload;
+      state.user = user;
+      state.token = token;
+      state.roles = roles ?? [];
+      state.permissions = permissions ?? [];
       state.isAuthenticated = true;
+
+      // Persist to localStorage
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
+      localStorage.setItem('roles', JSON.stringify(roles ?? []));
+      localStorage.setItem('permissions', JSON.stringify(permissions ?? []));
     },
     logout: (state) => {
       state.user = null;
@@ -53,6 +65,12 @@ const authSlice = createSlice({
       state.roles = [];
       state.permissions = [];
       state.isAuthenticated = false;
+
+      // Clear from localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('roles');
+      localStorage.removeItem('permissions');
     },
   },
 });

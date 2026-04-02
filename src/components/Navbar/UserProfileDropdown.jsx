@@ -64,7 +64,6 @@ const UserProfileDropdown = ({ links, isOpen, onClose }) => {
 
   const handleLogout = () => {
     dispatch(logout());
-    localStorage.removeItem('token');
     onClose();
     navigate('/');
   };
