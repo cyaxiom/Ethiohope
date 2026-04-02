@@ -252,7 +252,6 @@ export default function Navbar() {
                 </div>
 
                 <UserProfileDropdown
-                  links={[...dashboardLinks]}
                   isOpen={isProfileDropdownOpen}
                   onClose={handleProfileDropdownClose}
                 />
