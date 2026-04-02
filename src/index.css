@@ -208,6 +208,9 @@
   .border-border {
     border-color: var(--border);
   }
+  .bg-border {
+    background-color: var(--border);
+  }
 
   /* Line clamp utilities */
   .line-clamp-2 {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { kidsCoursesData } from "../../../../data/kidsCoursesData";
+import { kidsCoursesData } from "../../../data/kidsCoursesData";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ArrowLeft, ArrowRight } from "lucide-react";
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import { SectionContainer } from '@/components/ui/Container';
-import { Heading, Text } from '@/components/ui/Typography';
-import { Button } from '@/components/ui/Button';
+import { SectionContainer } from '../../components/ui/Container';
+import { Heading, Text } from '../../components/ui/Typography';
+import { Button } from '../../components/ui/Button';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function Growth() {
@@ -12,13 +12,13 @@ export default function Growth() {
   ];
 
   return (
-    <section className="relative py-16 md:py-24 bg-muted/30 dark:bg-muted/60">
+    <section className="relative py-16 md:py-24 bg-muted/30">
       <SectionContainer containerSize="xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           
           {/* Left side: Image */}
           <div className="relative order-2 lg:order-1">
-            <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-[3rem] transform -rotate-3 scale-105 -z-10"></div>
+            <div className="absolute inset-0 bg-blue-100 rounded-[3rem] transform -rotate-3 scale-105 -z-10"></div>
             <img 
               src="/parent-child.png" 
               alt="Parent and child learning together"
@@ -26,7 +26,7 @@ export default function Growth() {
             />
             
             {/* Floating card */}
-            <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white dark:bg-card p-4 rounded-2xl shadow-xl flex items-center gap-4 border border-border">
+            <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 border border-border">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-6 h-6 text-green-600" />
               </div>
@@ -43,7 +43,7 @@ export default function Growth() {
               Manage Your Child's Learning Easily
             </Heading>
             
-            <Text size="lg" className="text-left text-muted-foreground">
+            <Text className="text-left text-muted-foreground text-lg">
               Empower yourself with real-time insights into your child's educational journey. Our comprehensive dashboard lets you track progress in a friendly format, allowing you to easily support your kids where they need you most.
             </Text>
             
@@ -61,8 +61,7 @@ export default function Growth() {
             <div className="pt-8">
               <Button 
                 variant="outline" 
-                size="lg" 
-                className="rounded-full font-semibold border-2 hover:bg-muted text-primary"
+                className="rounded-full font-semibold border-2 hover:bg-muted text-primary px-8 py-3 h-auto"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
                 Follow a Track (demo directions)

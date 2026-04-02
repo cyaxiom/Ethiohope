@@ -2,17 +2,17 @@ import React from "react";
 import { motion } from "framer-motion";
 
 const HeroSection = () => {
-  // Standard background for the section - using the EXACT same class as SpecialitiesSection
-  const sectionBgClass = 'bg-muted/30 dark:bg-muted/60';
+  // Standard background for the section
+  const sectionBgClass = 'bg-muted/30';
   
   return (
     <section className={`relative pt-20 pb-20 px-4 md:px-12 overflow-hidden ${sectionBgClass}`}>
-      {/* Decorative gradients - similar to SpecialitiesSection */}
+      {/* Decorative gradients */}
       <div className="absolute top-0 left-0 w-1/2 h-1/2 pointer-events-none z-0">
-        <div className="w-72 h-72 rounded-full blur-3xl opacity-30 bg-blue-300 dark:bg-blue-700"></div>
+        <div className="w-72 h-72 rounded-full blur-3xl opacity-30 bg-blue-300"></div>
       </div>
       <div className="absolute bottom-0 right-0 w-1/2 h-1/2 pointer-events-none z-0">
-        <div className="w-72 h-72 rounded-full blur-3xl opacity-30 bg-purple-300 dark:bg-purple-700"></div>
+        <div className="w-72 h-72 rounded-full blur-3xl opacity-30 bg-purple-300"></div>
       </div>
       
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-10">

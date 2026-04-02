@@ -6,9 +6,9 @@ const NotFound = React.lazy(() => import('@pages/NotFound/NotFound'));
 
 // About routes
 const About = React.lazy(() => import('@pages/About/About'));
-const Company = React.lazy(() => import('@pages/Company/Company'));
 const Contact = React.lazy(() => import('@pages/About/Contact'));
 const Teams = React.lazy(() => import('@pages/About/Teams'));
+const HowItWorks = React.lazy(() => import('@pages/HowItWorks/HowItWorks'));
 
 // Auth routes
 const Login = React.lazy(() => import('@pages/Auth/Login'));
@@ -19,10 +19,7 @@ const ResetPassword = React.lazy(() => import('@pages/Auth/ResetPassword'));
 // Status pages
 const PendingApproval = React.lazy(() => import('@pages/PendingApproval'));
 
-// Community routes
-const Events = React.lazy(() => import('@pages/Community/Events'));
-const Forum = React.lazy(() => import('@pages/Community/Forum'));
-const Mentors = React.lazy(() => import('@pages/Community/Mentors'));
+// Community routes removed
 //Forum routes
 const ForumRegister = React.lazy(() => import('@components/Forum/Register'));
 const ForumLogin = React.lazy(() => import('@components/Forum/Login'));
@@ -44,23 +41,7 @@ const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
 const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
 const Profile = React.lazy(() => import('@pages/Dashboard/Profile'));
 const Settings = React.lazy(() => import('@pages/Dashboard/settings/Settings'));
-// Academy routes
-const KidsProgramming = React.lazy(
-  () => import('@pages/Aademy/KidsProgramming/KidsProgramming'),
-);
-
-const KidsTutorial = React.lazy(
-  () => import('@pages/Aademy/KidsTutorial/KidsTutorial'),
-);
-const AllKidsCourses = React.lazy(
-  () => import('@pages/Aademy/KidsProgramming/components/AllCourses'),
-);
-const Web3Development = React.lazy(
-  () => import('@pages/Aademy/Web3Development/Web3Development'),
-);
-const FullStackDev = React.lazy(
-  () => import('@pages/Aademy/FullStackDev/FullStackDev'),
-);
+// Academy routes removed
 // Services routes
 const EthiohopeServices = React.lazy(
   () => import('@pages/Services/EthiohopeService/EthiohopeService'),
@@ -76,9 +57,7 @@ const KidsTutoring = React.lazy(
 //   import('@pages/Services/ProjectServices/ProjectServices')
 // );
 
-const CourseDetail = React.lazy(
-  () => import('@pages/Aademy/KidsProgramming/components/CourseDetail'),
-);
+// CourseDetail removed
 
 // Admin routes
 const AdminDashboardLayout = React.lazy(() => import('@components/layout/DashboardLayout'));
@@ -122,106 +101,17 @@ export const routes = [
   },
   // About routes
   { path: '/about', name: 'About', element: <About /> },
-  { path: '/company', name: 'Company', element: <Company /> },
+  { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
   { path: '/about/contact', name: 'Contact', element: <Contact /> },
   { path: '/about/teams', name: 'Teams', element: <Teams /> },
-  // Academy routes
-  {
-    path: '/academy/kids-programming',
-    name: 'KidsProgramming',
-    element: <KidsProgramming />,
-  },
-  {
-    path: '/academy/kids-tutorial',
-    name: 'KidsTutorial',
-    element: <KidsTutorial />,
-  },
-  {
-    path: '/academy/web3-development',
-    name: 'Web3Development',
-    element: <Web3Development />,
-  },
-  {
-    path: '/academy/full-stack-dev',
-    name: 'FullStackDev',
-    element: <FullStackDev />,
-  },
+  // Academy routes removed
   // Auth routes
   { path: '/login', name: 'Login', element: <Login /> },
   { path: '/register', name: 'Register', element: <Register /> },
   { path: '/forgot-password', name: 'ForgotPassword', element: <ForgotPassword /> },
   { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
   { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
-  // Academy routes
-  {
-    path: '/academy/web3-development',
-    name: 'Web3Development',
-    element: <Web3Development />,
-  },
-  // Community routes
-  { path: '/community/events', name: 'Events', element: <Events /> },
-  { path: '/community/forum', name: 'Forum', element: <Forum /> },
-  { path: '/community/mentors', name: 'Mentors', element: <Mentors /> },
-  // Forum sub-routes
-  {
-    path: '/community/forum/register',
-    name: 'ForumRegister',
-    element: <ForumRegister />,
-  },
-  {
-    path: '/community/forum/login',
-    name: 'ForumLogin',
-    element: <ForumLogin />,
-  },
-  // Forum nested routes
-  {
-    path: '/community/forum',
-    name: 'ForumMain',
-    element: <Forum />,
-    routes: [
-      {
-        path: '/community/forum/tags',
-        name: 'ForumTags',
-        element: <Tags />,
-      },
-      {
-        path: '/community/forum/ranking',
-        name: 'ForumRanking',
-        element: <Ranking />,
-      },
-      {
-        path: '/community/forum',
-        name: 'ForumQuestions',
-        element: <Questions />,
-      },
-      //question details route with id param
-      {
-        path: '/community/forum/questions/:id',
-        name: 'ForumQuestionDetails',
-        element: <QuestionDetails />,
-      },
-      {
-        path: '/community/forum/my-questions',
-        name: 'ForumMyQuestions',
-        element: <MyQuestions />,
-      },
-      {
-        path: '/community/forum/my-answers',
-        name: 'ForumMyAnswers',
-        element: <MyAnswers />,
-      },
-      {
-        path: '/community/forum/likes',
-        name: 'ForumLikes',
-        element: <Likes />,
-      },
-      {
-        path: '/community/forum/profile',
-        name: 'ForumProfile',
-        element: <ForumProfile />,
-      },
-    ],
-  },
+  // Community and Forum routes removed
   // Services routes
   {
     path: '/services/ethiohope-service',
@@ -232,16 +122,6 @@ export const routes = [
     path: '/services/kids-tutoring',
     name: 'KidsTutoring',
     element: <KidsTutoring />,
-  },
-  {
-    path: '/academy/kids-programming/all_kids_course',
-    name: 'AllKidsCourses',
-    element: <AllKidsCourses />,
-  },
-  {
-    path: '/academy/kids-programming/course/:id',
-    name: 'CourseDetail',
-    element: <CourseDetail />,
   },
   {
     path: '/services/programming-service',

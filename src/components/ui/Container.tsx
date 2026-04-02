@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { DS } from '@/constants/designSystem';
 import { cn } from '@/lib/utils';
 
 /**
  * Container Component - Consistent max-width containers
- * 
- * @param {string} size - xs | sm | md | lg | xl | full
- * @param {boolean} padded - Include horizontal padding
  */
-export const Container = ({
+
+interface ContainerProps {
+  children: ReactNode;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  padded?: boolean;
+  className?: string;
+  [key: string]: any;
+}
+
+export const Container: React.FC<ContainerProps> = ({
   children,
   size = 'lg',
   padded = true,
@@ -16,8 +22,8 @@ export const Container = ({
   ...props
 }) => {
   const containerClass = padded 
-    ? DS.containers[`${size}Padded`] || DS.containers.lgPadded
-    : DS.containers[size] || DS.containers.lg;
+    ? (DS.containers as any)[`${size}Padded`] || (DS.containers as any).lgPadded
+    : (DS.containers as any)[size] || (DS.containers as any).lg;
 
   return (
     <div className={cn(containerClass, className)} {...props}>
@@ -28,16 +34,22 @@ export const Container = ({
 
 /**
  * Section Component - Consistent section spacing
- * 
- * @param {string} spacing - xs | sm | md | lg | xl
  */
-export const Section = ({
+
+interface SectionProps {
+  children: ReactNode;
+  spacing?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  [key: string]: any;
+}
+
+export const Section: React.FC<SectionProps> = ({
   children,
   spacing = 'md',
   className = '',
   ...props
 }) => {
-  const spacingClass = DS.spacing.section[spacing];
+  const spacingClass = (DS.spacing.section as any)[spacing] || (DS.spacing.section as any).md;
 
   return (
     <section className={cn(spacingClass, className)} {...props}>
@@ -49,7 +61,13 @@ export const Section = ({
 /**
  * Combined Section with Container
  */
-export const SectionContainer = ({
+
+interface SectionContainerProps extends SectionProps {
+  containerSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  sectionSpacing?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+}
+
+export const SectionContainer: React.FC<SectionContainerProps> = ({
   children,
   sectionSpacing = 'md',
   containerSize = 'lg',

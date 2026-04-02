@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
-import { kidsCoursesData } from "../../../../data/kidsCoursesData";
+import { kidsCoursesData } from "../../../data/kidsCoursesData";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 

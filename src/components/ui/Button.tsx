@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { ReactNode, ButtonHTMLAttributes } from 'react';
 import { DS } from '@/constants/designSystem';
 import { cn } from '@/lib/utils';
 
 /**
  * Button Component - Consistent button styles across the application
- * 
- * @param {string} variant - primary | secondary | outline | ghost | danger | success
- * @param {string} size - xs | sm | md | lg | xl
- * @param {boolean} loading - Show loading state
- * @param {boolean} disabled - Disable button
- * @param {ReactNode} leftIcon - Icon before text
- * @param {ReactNode} rightIcon - Icon after text
  */
-export const Button = ({
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  loading?: boolean;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+}
+
+export const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
   size = 'md',
@@ -24,8 +26,8 @@ export const Button = ({
   ...props
 }) => {
   const baseClasses = DS.buttons.base;
-  const sizeClasses = DS.buttons.sizes[size];
-  const variantClasses = DS.buttons.variants[variant];
+  const sizeClasses = DS.buttons.sizes[size] || DS.buttons.sizes.md;
+  const variantClasses = DS.buttons.variants[variant] || DS.buttons.variants.primary;
 
   return (
     <button

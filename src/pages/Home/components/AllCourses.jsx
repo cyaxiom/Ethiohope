@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import kidsCoursesData from "../../../../data/kidsCoursesData";
+import kidsCoursesData from "../../../data/kidsCoursesData";
 React;
 const AllCourses = () => {
   const navigate = useNavigate();

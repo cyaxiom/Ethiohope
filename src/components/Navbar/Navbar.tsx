@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { User, ChevronDown, LogIn } from 'lucide-react';
+import { User, LogIn } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { dashboardLinks, navLinks } from '@common/navLinks';
-import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
-import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
+import { dashboardLinks, navLinks } from '../../common/navLinks';
+import UserProfileDropdown from './UserProfileDropdown';
 
 import {
   auth_btn_border,
@@ -14,23 +13,19 @@ import {
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [openSections, setOpenSections] = useState({});
+  const [openSections, setOpenSections] = useState<Record<any, boolean>>({});
   const [drawerTop, setDrawerTop] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef(0);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   
   // Real implementation of authentication state using Redux
-  const authState = useSelector((state) => state.auth);
+  const authState = useSelector((state: any) => state.auth);
   const isLoggedIn = !!authState?.token && !!authState?.user;
 
-  const [activeMegaNav, setActiveMegaNav] = useState(null);
-  const [megaNavTimeout, setMegaNavTimeout] = useState(null);
   const navRef = useRef(null);
-  const megaNavRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,16 +36,6 @@ export default function Navbar() {
       } else {
         setIsScrolled(false);
       }
-
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-        setIsProfileDropdownOpen(false);
-        setActiveMegaNav(null);
-      } else {
-        setIsVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
     };
 
     let ticking = false;
@@ -66,77 +51,11 @@ export default function Navbar() {
 
     window.addEventListener('scroll', throttledHandleScroll, { passive: true });
     return () => window.removeEventListener('scroll', throttledHandleScroll);
-  }, [lastScrollY]);
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!navRef.current || !megaNavRef.current) return;
-
-      const isOverNav = navRef.current.contains(e.target);
-      const isOverMegaNav = megaNavRef.current.contains(e.target);
-
-      if (!isOverNav && !isOverMegaNav && activeMegaNav) {
-        handleDropdownLeave();
-      }
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, [activeMegaNav]);
-
-  const handleDropdownEnter = (index) => {
-    setIsProfileDropdownOpen(false);
-
-    // Clear any existing timeout
-    if (megaNavTimeout) {
-      clearTimeout(megaNavTimeout);
-      setMegaNavTimeout(null);
-    }
-
-    // Set the active mega nav with a slight delay for better UX
-    const timeout = setTimeout(() => {
-      if (navLinks[index].dropdown) {
-        setActiveMegaNav(navLinks[index]);
-      }
-    }, 150);
-
-    setMegaNavTimeout(timeout);
-  };
-
-  const handleDropdownLeave = () => {
-    // Set a timeout to close the mega nav after a short delay
-    if (megaNavTimeout) {
-      clearTimeout(megaNavTimeout);
-    }
-
-    const timeout = setTimeout(() => {
-      setActiveMegaNav(null);
-    }, 300);
-
-    setMegaNavTimeout(timeout);
-  };
-
-  const handleMegaNavEnter = () => {
-    // Clear the timeout when entering the mega nav to keep it open
-    if (megaNavTimeout) {
-      clearTimeout(megaNavTimeout);
-      setMegaNavTimeout(null);
-    }
-  };
-
-  const handleMegaNavLeave = () => {
-    // Set a timeout to close the mega nav after leaving it
-    const timeout = setTimeout(() => {
-      setActiveMegaNav(null);
-    }, 300);
-
-    setMegaNavTimeout(timeout);
-  };
+  }, []);
 
   const handleProfileClick = () => {
     if (isLoggedIn) {
       setIsProfileDropdownOpen(!isProfileDropdownOpen);
-      setActiveMegaNav(null);
     }
   };
 
@@ -144,12 +63,12 @@ export default function Navbar() {
     setIsProfileDropdownOpen(false);
   };
 
-  const toggleSection = (idx) => {
-    setOpenSections((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  const toggleSection = (idx: any) => {
+    setOpenSections((prev: any) => ({ ...prev, [idx]: !prev[idx] }));
   };
 
   useEffect(() => {
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: any) => {
       if (!isDragging) return;
       const newTop = e.clientY - dragStartRef.current;
       setDrawerTop(Math.max(0, Math.min(newTop, window.innerHeight - 120)));
@@ -177,7 +96,7 @@ export default function Navbar() {
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 shadow-lg transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} bg-white dark:bg-[#181A20] text-black dark:text-white'`}
+        className={`fixed top-0 left-0 right-0 z-50 shadow-md bg-white text-black`}
         style={{
           backgroundColor: 'var(--header-bg, #fff)',
           color: '#181A20',
@@ -189,14 +108,14 @@ export default function Navbar() {
             <button
               aria-label="Open menu"
               onClick={() => setIsDrawerOpen(true)}
-              className="p-2 rounded-md bg-white/80 dark:bg-card hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden border border-border shadow"
+              className="p-2 rounded-md bg-white/80 hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden border border-border shadow"
             >
-              <svg className="w-6 h-6 text-black dark:text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm text-black dark:text-white">C</span>
+              <span className="text-primary-foreground font-bold text-sm text-black">C</span>
             </div>
             <span className="text-foreground font-bold text-xl tracking-tight" style={{ color: '#181A20', fontWeight: 700 }}>
               Ethiohope
@@ -205,12 +124,10 @@ export default function Navbar() {
 
           {/* Navigation: only visible on md+ */}
           <ul className="hidden md:flex space-x-6 text-foreground font-medium" style={{ color: '#181A20' }}>
-            {navLinks.map((link, index) => (
+            {navLinks.map((link: any, index: number) => (
               <li
                 key={index}
                 className="relative"
-                onMouseEnter={() => handleDropdownEnter(index)}
-                onMouseLeave={handleDropdownLeave}
               >
                 {link.path ? (
                   <Link
@@ -219,13 +136,11 @@ export default function Navbar() {
                     >
                       <span className="flex items-center">
                         <span>{link.name}</span>
-                        {link.name === 'Company' && <ChevronDown className="ml-2 w-4 h-4" />}
                       </span>
                     </Link>
                 ) : (
                   <div className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
                     {link.name}
-                    {link.dropdown && <ChevronDown className="ml-1 w-4 h-4" />}
                   </div>
                 )}
               </li>
@@ -254,7 +169,7 @@ export default function Navbar() {
             ) : (
               <Link 
                 to="/login"
-                className="px-4 py-2 text-sm font-semibold flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-black dark:text-white"
+                className="px-4 py-2 text-sm font-semibold flex items-center gap-2 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors text-black"
               >
                 <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">Sign In</span>
@@ -274,15 +189,15 @@ export default function Navbar() {
 
         {/* drawer panel */}
         <aside
-          className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-[#0f1720] z-60 transform transition-transform duration-300 ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`fixed top-0 left-0 h-full w-72 bg-white z-60 transform transition-transform duration-300 ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
           aria-hidden={!isDrawerOpen}
         >
-          <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+          <div className="p-4 flex items-center justify-between border-b border-gray-200">
             <div className="flex items-center space-x-3">
               <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm text-black dark:text-white">C</span>
+                <span className="text-primary-foreground font-bold text-sm text-black">C</span>
               </div>
-              <span className="font-bold text-gray-900 dark:text-white">Ethiohope</span>
+              <span className="font-bold text-gray-900">Ethiohope</span>
             </div>
             <button onClick={() => setIsDrawerOpen(false)} aria-label="Close menu" className="p-2 rounded-md hover:bg-muted/50">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -293,31 +208,31 @@ export default function Navbar() {
 
           <nav className="p-4 overflow-y-auto max-h-[calc(100vh-64px)]">
             <ul className="space-y-3">
-              {navLinks.map((link, idx) => (
+              {navLinks.map((link: any, idx: number) => (
                 <li key={idx}>
                   <div className="flex items-center justify-between">
                     {link.path && !link.dropdown ? (
-                      <Link to={link.path} onClick={() => setIsDrawerOpen(false)} className="py-3 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-100 font-medium w-full text-left">
+                      <Link to={link.path} onClick={() => setIsDrawerOpen(false)} className="py-3 px-3 rounded-md hover:bg-gray-50 text-gray-800 font-medium w-full text-left">
                         {link.name}
                       </Link>
                     ) : (
                       <button
                         onClick={() => toggleSection(idx)}
-                        className="w-full text-left py-3 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-100 font-medium"
+                        className="w-full text-left py-3 px-3 rounded-md hover:bg-gray-50 text-gray-800 font-medium"
                       >
                         <span>{link.name}</span>
                       </button>
                     )}
                   </div>
 
-                  {link.dropdown && (
-                    <div className={`mt-2 pl-4 space-y-1 ${openSections[idx] ? 'block' : 'hidden'}`}>
-                      {link.dropdown.map((sub, sidx) => (
+                      {link.dropdown && (
+                        <div className={`mt-2 pl-4 space-y-1 ${openSections[idx] ? 'block' : 'hidden'}`}>
+                          {link.dropdown.map((sub: any, sidx: number) => (
                         <Link
                           key={sidx}
                           to={sub.path}
                           onClick={() => setIsDrawerOpen(false)}
-                          className="block py-2 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 text-sm text-gray-800 dark:text-gray-100"
+                          className="block py-2 px-3 rounded-md hover:bg-gray-50 text-sm text-gray-800"
                         >
                           {sub.name}
                         </Link>
@@ -334,25 +249,6 @@ export default function Navbar() {
 
 
 
-      {/* Mega Navigation */}
-      {activeMegaNav && (
-        <div
-          ref={megaNavRef}
-          onMouseEnter={handleMegaNavEnter}
-          onMouseLeave={handleMegaNavLeave}
-          className="fixed top-16 left-0 right-0 z-40 transition-opacity duration-300"
-          style={{
-            pointerEvents: activeMegaNav ? 'auto' : 'none',
-            opacity: activeMegaNav ? 1 : 0,
-          }}
-        >
-          <MegaNavbar
-            activeNavItem={activeMegaNav}
-            navData={navLinks.find((link) => link.name === activeMegaNav.name)}
-            onClose={() => setActiveMegaNav(null)}
-          />
-        </div>
-      )}
     </>
   );
 }
