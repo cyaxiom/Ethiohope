@@ -11,45 +11,16 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  // Initialize with null to prevent flash of incorrect theme
-  const [theme, setTheme] = useState(null);
-
   useEffect(() => {
-    // Check for saved theme preference, ignore system preference
-    const savedTheme = localStorage.getItem('theme');
-
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      setTheme('light'); // Always default to light mode
-    }
+    // Ensure we are always in light mode. Remove any existing dark mode applied over time.
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
   }, []);
 
-  useEffect(() => {
-    if (!theme) return; // Don't do anything until theme is initialized
-
-    // Apply theme to document
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
-
-  // Don't render until theme is loaded to prevent flash
-  if (!theme) {
-    return <div className="hidden">Loading theme...</div>;
-  }
-
   const value = {
-    theme,
-    toggleTheme,
-    isDark: theme === 'dark',
+    theme: 'light',
+    toggleTheme: () => {}, // empty op
+    isDark: false,
   };
 
   return (

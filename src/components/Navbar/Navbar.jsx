@@ -5,8 +5,6 @@ import { useSelector } from 'react-redux';
 import { dashboardLinks, navLinks } from '@common/navLinks';
 import MegaNavbar from '@components/Navbar/MegaNavbar/MegaNavbar';
 import UserProfileDropdown from '@components/Navbar/UserProfileDropdown';
-import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
-
 
 import {
   auth_btn_border,
@@ -236,9 +234,6 @@ export default function Navbar() {
 
           {/* Right Side: always visible, profile icon always shown */}
           <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
-            <ThemeToggle />
-
             {/* Profile icon or Login Link conditionally rendered */}
             {isLoggedIn ? (
               <div className="relative cursor-pointer" onClick={handleProfileClick}>
@@ -333,10 +328,7 @@ export default function Navbar() {
               ))}
             </ul>
 
-            <div className="mt-6 border-t pt-4 border-gray-100 dark:border-gray-800">
-              <ThemeToggle />
-            </div>
-          </nav>
+            </nav>
         </aside>
       </div>
 
