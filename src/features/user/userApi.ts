@@ -32,6 +32,14 @@ export interface GetUsersResponse {
   };
 }
 
+export interface CompleteProfilePayload {
+  parentType: 'mother' | 'father' | 'guardian' | 'other';
+  phone: string;
+  country: string;
+  state: string;
+  city: string;
+}
+
 export const userApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query<GetUsersResponse, { page?: number; limit?: number; search?: string; role?: string; status?: string }>({
@@ -70,6 +78,15 @@ export const userApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Users'],
     }),
+    completeProfile: builder.mutation<any, CompleteProfilePayload>({
+      query: (data) => ({
+        url: '/users/complete-profile',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: { data: any }) => response.data,
+      invalidatesTags: ['Users'],
+    }),
   }),
 });
 
@@ -78,4 +95,6 @@ export const {
   useCreateUserMutation,
   useUpdateUserRolesMutation,
   useUpdateUserStatusMutation,
+  useCompleteProfileMutation,
 } = userApi;
+

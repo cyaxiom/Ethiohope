@@ -59,6 +59,20 @@ const authSlice = createSlice({
       localStorage.setItem('roles', JSON.stringify(roles ?? []));
       localStorage.setItem('permissions', JSON.stringify(permissions ?? []));
     },
+    updateUser: (
+      state,
+      action: PayloadAction<{ user?: Partial<User>; roles?: string[] }>
+    ) => {
+      const { user, roles } = action.payload;
+      if (user && state.user) {
+        state.user = { ...state.user, ...user };
+        localStorage.setItem('user', JSON.stringify(state.user));
+      }
+      if (roles) {
+        state.roles = roles;
+        localStorage.setItem('roles', JSON.stringify(roles));
+      }
+    },
     logout: (state) => {
       state.user = null;
       state.token = null;
@@ -75,6 +89,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, updateUser, logout } = authSlice.actions;
 
 export default authSlice.reducer;
