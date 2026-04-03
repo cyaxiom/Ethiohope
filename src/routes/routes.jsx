@@ -60,7 +60,7 @@ const KidsTutoring = React.lazy(
 // CourseDetail removed
 
 // Admin routes
-const AdminDashboardLayout = React.lazy(() => import('@components/layout/DashboardLayout'));
+const AdminDashboardLayout = React.lazy(() => import('@components/Layout/DashboardLayout'));
 const AdminDashboardPage = React.lazy(() => import('@pages/admin/AdminDashboard'));
 const AdminRoles = React.lazy(() => import('@pages/admin/RoleManagement'));
 const AdminUsers = React.lazy(() => import('@pages/admin/Users'));
