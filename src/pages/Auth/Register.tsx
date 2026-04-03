@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -13,6 +13,7 @@ interface RegisterFormInputs {
   firstname: string;
   lastname: string;
   email: string;
+  phone: string;
   password: string;
   confirmPassword: string;
 }
@@ -40,6 +41,7 @@ const Register: React.FC = () => {
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
         email: data.email.trim(),
+        phone: data.phone.trim(),
         password: data.password,
       }).unwrap();
 
@@ -258,6 +260,21 @@ const Register: React.FC = () => {
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: 'Invalid email address',
+                }
+              })}
+            />
+
+            <FormInput
+              id="phone"
+              label="Phone Number"
+              placeholder="+251 911 123 456"
+              icon={<Phone size={18} />}
+              error={errors.phone?.message}
+              {...register('phone', { 
+                required: 'Phone number is required',
+                pattern: {
+                  value: /^\+?[\d\s\-\(\)]{10,20}$/,
+                  message: 'Invalid phone number format',
                 }
               })}
             />
