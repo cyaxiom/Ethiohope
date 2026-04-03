@@ -125,23 +125,22 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
               
               {/* Role badges */}
               <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
-                {roles.length > 0 ? roles.map((role) => (
-                  <span
-                    key={role}
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
-                      ${role === 'user' 
-                        ? 'bg-gray-100 text-gray-500' 
-                        : 'bg-blue-100 text-blue-600'
-                      }
-                    `}
-                  >
-                    {role}
-                  </span>
-                )) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500">
-                    user
-                  </span>
-                )}
+                {(() => {
+                  const displayRoles = roles.length > 1 ? roles.filter(r => r !== 'user') : (roles.length > 0 ? roles : ['user']);
+                  return displayRoles.map((role) => (
+                    <span
+                      key={role}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                        ${role === 'user' 
+                          ? 'bg-gray-100 text-gray-500' 
+                          : 'bg-blue-100 text-blue-600'
+                        }
+                      `}
+                    >
+                      {role}
+                    </span>
+                  ));
+                })()}
               </div>
 
               {!isVerified && user?.email && (
