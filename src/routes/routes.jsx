@@ -15,6 +15,7 @@ const Login = React.lazy(() => import('@pages/Auth/Login'));
 const Register = React.lazy(() => import('@pages/Auth/Register'));
 const ForgotPassword = React.lazy(() => import('@pages/Auth/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('@pages/Auth/ResetPassword'));
+const VerifyEmail = React.lazy(() => import('@pages/Auth/VerifyEmail'));
 
 // Status pages
 const PendingApproval = React.lazy(() => import('@pages/PendingApproval'));
@@ -110,6 +111,7 @@ export const routes = [
   { path: '/register', name: 'Register', element: <Register /> },
   { path: '/forgot-password', name: 'ForgotPassword', element: <ForgotPassword /> },
   { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
+  { path: '/auth/verify-email', name: 'VerifyEmail', element: <VerifyEmail /> },
   { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
   // Community and Forum routes removed
   // Services routes

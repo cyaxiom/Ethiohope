@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-import { useLoginMutation } from '../../features/auth/authApi';
+import { useLoginMutation, useVerifyEmailMutation } from '../../features/auth/authApi';
 import { setCredentials } from '../../features/auth/authSlice';
 import FormInput from '../../components/ui/FormInput';
 import { getErrorMessage } from '../../lib/error-handler';
@@ -20,7 +20,10 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+  const [verifyEmail, { isLoading: isResending }] = useVerifyEmailMutation();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showResend, setShowResend] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const {
     register,
@@ -35,14 +38,14 @@ const Login: React.FC = () => {
   });
 
   const emailOrUsername = watch('emailOrUsername');
-  // Simple check for child user vs adult: 
-  // If it's an email format, we assume email/password, otherwise username/PIN
   const isEmail = emailOrUsername.includes('@');
 
   const onSubmit = async (data: LoginFormInputs) => {
     setServerError(null);
+    setShowResend(false);
+    setResendSuccess(false);
+
     try {
-      // Backend expects { identifier, password }
       const credentials = {
         identifier: data.emailOrUsername.trim(),
         password: data.passwordOrPin.trim(),
@@ -50,8 +53,6 @@ const Login: React.FC = () => {
 
       const result = await login(credentials).unwrap();
       
-      // Success logic:
-      // Dispatch setCredentials with token and user (roles/permissions included in userResponse)
       dispatch(
         setCredentials({
           token: result.token,
@@ -61,12 +62,10 @@ const Login: React.FC = () => {
         })
       );
 
-      // Success message
       toast.success('Login successful! Redirecting...', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
       });
 
-      // Then redirect using: navigate(redirectTo)
       setTimeout(() => {
         navigate(result.redirectTo || '/dashboard');
       }, 1000);
@@ -74,6 +73,28 @@ const Login: React.FC = () => {
     } catch (err: any) {
       const message = getErrorMessage(err, 'Failed to login. Please check your credentials.');
       setServerError(message);
+      toast.error(message);
+
+      // Show resend option if the error is about email verification
+      if (message.toLowerCase().includes('verify your email') || message.toLowerCase().includes('email not verified')) {
+        setShowResend(true);
+      }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const email = emailOrUsername.trim();
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address above to resend verification.');
+      return;
+    }
+    setResendSuccess(false);
+    try {
+      await verifyEmail({ email }).unwrap();
+      setResendSuccess(true);
+      toast.success('Verification email resent! Check your inbox.');
+    } catch (err) {
+      const message = getErrorMessage(err, 'Failed to resend verification email.');
       toast.error(message);
     }
   };
@@ -126,6 +147,60 @@ const Login: React.FC = () => {
             )}
           </AnimatePresence>
 
+          {/* Resend Verification Section - shown when login fails due to unverified email */}
+          <AnimatePresence>
+            {showResend && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6 overflow-hidden"
+              >
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-3">
+                  <p className="text-sm text-amber-600 font-medium flex items-center gap-2">
+                    <Mail size={16} />
+                    Your email is not verified yet
+                  </p>
+                  
+                  {resendSuccess ? (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-sm text-green-600 font-medium"
+                    >
+                      ✅ Verification email sent! Check your inbox and spam folder.
+                    </motion.p>
+                  ) : (
+                    <button
+                      onClick={handleResendVerification}
+                      disabled={isResending}
+                      className={`
+                        w-full py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-300
+                        flex items-center justify-center gap-2
+                        ${isResending
+                          ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70'
+                          : 'bg-amber-500 text-white hover:bg-amber-600 hover:scale-[1.01] active:scale-[0.99]'
+                        }
+                      `}
+                    >
+                      {isResending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4" />
+                          <span>Resend Verification Email</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
             <FormInput
               id="emailOrUsername"
@@ -141,7 +216,7 @@ const Login: React.FC = () => {
             <FormInput
               id="passwordOrPin"
               label={isEmail ? "Password" : "PIN code"}
-              type={isEmail ? "password" : "password"} // Keep password type for security hide
+              type="password"
               placeholder={isEmail ? "••••••••" : "••••"}
               icon={<Lock size={18} />}
               error={errors.passwordOrPin?.message}

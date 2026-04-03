@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
-import { useSignupMutation, useLoginMutation } from '../../features/auth/authApi';
-import { setCredentials } from '../../features/auth/authSlice';
+import { useSignupMutation, useVerifyEmailMutation } from '../../features/auth/authApi';
 import FormInput from '../../components/ui/FormInput';
 import { getErrorMessage } from '../../lib/error-handler';
 
@@ -20,13 +18,11 @@ interface RegisterFormInputs {
 }
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
   const [signup, { isLoading: isSigningUp }] = useSignupMutation();
-  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [verifyEmail, { isLoading: isResending }] = useVerifyEmailMutation();
   const [serverError, setServerError] = useState<string | null>(null);
-
-  const isLoading = isSigningUp || isLoggingIn;
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const {
     register,
@@ -40,7 +36,6 @@ const Register: React.FC = () => {
   const onSubmit = async (data: RegisterFormInputs) => {
     setServerError(null);
     try {
-      // 1. Sign up the user
       await signup({
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
@@ -48,31 +43,13 @@ const Register: React.FC = () => {
         password: data.password,
       }).unwrap();
 
-      // 2. Automatically log them in
-      const loginResult = await login({
-        identifier: data.email.trim(),
-        password: data.password,
-      }).unwrap();
+      // Show the "check your email" screen
+      setRegisteredEmail(data.email.trim());
 
-      // 3. Update Redux store with auth info so Navbar renders Profile Icon
-      dispatch(
-        setCredentials({
-          user: loginResult.user,
-          token: loginResult.token,
-          roles: loginResult.roles || [],
-          permissions: loginResult.permissions || [],
-        })
-      );
-
-      toast.success('Account created successfully!', {
+      toast.success('Account created! Check your email to verify.', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
-        duration: 3000,
+        duration: 5000,
       });
-
-      // 4. Navigate back to Home
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
     } catch (err) {
       const message = getErrorMessage(err, 'Failed to register account.');
       setServerError(message);
@@ -80,7 +57,130 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleResendEmail = async () => {
+    if (!registeredEmail) return;
+    setResendSuccess(false);
+    try {
+      await verifyEmail({ email: registeredEmail }).unwrap();
+      setResendSuccess(true);
+      toast.success('Verification email resent!');
+    } catch (err) {
+      const message = getErrorMessage(err, 'Failed to resend verification email.');
+      toast.error(message);
+    }
+  };
 
+  // ─── SUCCESS: "Check Your Email" Screen ────────────────────────────
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="card shadow-2xl backdrop-blur-sm bg-card/90 text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-6"
+            >
+              <Mail size={40} />
+            </motion.div>
+
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight mb-2">
+              Check Your Email
+            </h1>
+            <p className="text-muted-foreground mb-2">
+              We've sent a verification link to:
+            </p>
+            <p className="text-primary font-bold text-lg mb-6">
+              {registeredEmail}
+            </p>
+
+            <div className="bg-secondary/50 rounded-xl p-4 mb-6 text-left space-y-2">
+              <p className="text-sm text-muted-foreground font-medium flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                Open the email and click the verification link
+              </p>
+              <p className="text-sm text-muted-foreground font-medium flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                Once verified, you can log in to your account
+              </p>
+              <p className="text-sm text-muted-foreground font-medium flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                Check your spam folder if you don't see it
+              </p>
+            </div>
+
+            {/* Resend button */}
+            <AnimatePresence>
+              {resendSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-green-500/10 border border-green-500/20 text-green-600 px-4 py-3 rounded-xl text-sm font-medium mb-4"
+                >
+                  ✅ Verification email resent successfully!
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={handleResendEmail}
+              disabled={isResending}
+              className={`
+                w-full py-3 px-4 rounded-xl font-bold transition-all duration-300
+                flex items-center justify-center gap-2 mb-4
+                ${isResending 
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' 
+                  : 'bg-secondary text-foreground hover:bg-secondary/80 hover:scale-[1.02] active:scale-[0.98]'
+                }
+              `}
+            >
+              {isResending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Resending...</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Resend Verification Email</span>
+                </>
+              )}
+            </button>
+
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-xl font-bold
+                bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]
+                shadow-lg shadow-primary/20 transition-all duration-300"
+            >
+              <span>Go to Login</span>
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <div className="mt-6 pt-4 border-t border-border/50">
+              <p className="text-muted-foreground text-xs">
+                Didn't receive the email? Check your spam folder or try a different email address.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ─── REGISTRATION FORM ─────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn">
       {/* Background decoration elements */}
@@ -190,17 +290,17 @@ const Register: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSigningUp}
               className={`
                 w-full mt-6 py-3.5 px-4 rounded-xl font-bold transition-all duration-300
                 flex items-center justify-center gap-2
-                ${isLoading 
+                ${isSigningUp
                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' 
                   : 'bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20'
                 }
               `}
             >
-              {isLoading ? (
+              {isSigningUp ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   <span>Creating Account...</span>
