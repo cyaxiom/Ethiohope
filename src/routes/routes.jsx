@@ -3,6 +3,7 @@ import React from 'react';
 // Lazy load components
 const Home = React.lazy(() => import('@pages/Home/Home'));
 const NotFound = React.lazy(() => import('@pages/NotFound/NotFound'));
+const Forbidden = React.lazy(() => import('@pages/NotFound/Forbidden'));
 
 // About routes
 const About = React.lazy(() => import('@pages/About/About'));
@@ -72,6 +73,16 @@ const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboar
 const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard'));
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
 
+import { ProtectedRoute, PermissionRoute } from './Guard';
+
+// Helper for protecting sub-routes
+const wrapInAuth = (element) => <ProtectedRoute>{element}</ProtectedRoute>;
+const wrapInPermission = (element, allowedRoles = [], requiredPermissions = []) => (
+  <PermissionRoute allowedRoles={allowedRoles} requiredPermissions={requiredPermissions}>
+    {element}
+  </PermissionRoute>
+);
+
 export const routes = [
   // Public Routes (with Navbar and Footer)
   {
@@ -100,6 +111,7 @@ export const routes = [
         name: 'ProgrammingService',
         element: <ProgrammingService />,
       },
+      { path: '/forbidden', name: 'Forbidden', element: <Forbidden /> },
       // 404 route inside PublicLayout so it has header/footer
       { path: '*', name: 'NotFound', element: <NotFound /> },
     ],
@@ -113,39 +125,39 @@ export const routes = [
   { path: '/auth/verify-email', name: 'VerifyEmail', element: <VerifyEmail /> },
   { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
 
-  // dashboard routes (No Footer)
-  { path: '/dashboard/chats', name: 'Chats', element: <Chats /> },
+  // dashboard routes (No Footer) - ALL PROTECTED
+  { path: '/dashboard/chats', name: 'Chats', element: wrapInAuth(<Chats />) },
   {
     path: '/dashboard/chats/video-call',
     name: 'VideoCall',
-    element: <VideoCall />,
+    element: wrapInAuth(<VideoCall />),
   },
   {
     path: '/dashboard/achievements',
     name: 'Achievements',
-    element: <Achievements />,
+    element: wrapInAuth(<Achievements />),
   },
   {
     path: '/dashboard/profile',
     name: 'Profile',
-    element: <Profile />,
+    element: wrapInAuth(<Profile />),
   },
   {
     path: '/dashboard/settings',
     name: 'Settings',
-    element: <Settings />,
+    element: wrapInAuth(<Settings />),
   },
   {
     path: '/dashboard/chats/voice-call',
     name: 'VoiceCall',
-    element: <VoiceCall />,
+    element: wrapInAuth(<VoiceCall />),
   },
   
-  // Admin Routes
+  // Admin Routes - PROTECTED BY AUTH & PERMISSION
   {
     path: '/admin',
     name: 'AdminDashboardLayout',
-    element: <DashboardLayout />,
+    element: wrapInPermission(<DashboardLayout />, ['admin', 'super_admin'], ['dashboard.admin']),
     routes: [
       {
         path: '/admin/dashboard',
@@ -162,44 +174,66 @@ export const routes = [
         name: 'AdminUsers',
         element: <AdminUsers />,
       },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
     ],
   },
 
-  // Role-based Dashboard Routes
+  // Role-based Dashboard Routes - ALL PROTECTED
   {
     path: '/teacher',
     name: 'TeacherPortal',
-    element: <DashboardLayout />,
+    element: wrapInPermission(<DashboardLayout />, ['instructor', 'admin', 'super_admin'], ['dashboard.instructor']),
     routes: [
       {
         path: '/teacher/dashboard',
         name: 'Teacher Dashboard',
         element: <TeacherDashboard />,
       },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
     ],
   },
   {
     path: '/parent',
     name: 'ParentPortal',
-    element: <DashboardLayout />,
+    element: wrapInPermission(<DashboardLayout />, ['parent', 'admin', 'super_admin'], ['dashboard.parent']),
     routes: [
       {
         path: '/parent/dashboard',
         name: 'Parent Dashboard',
         element: <ParentDashboard />,
       },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
     ],
   },
   {
     path: '/student',
     name: 'StudentPortal',
-    element: <DashboardLayout />,
+    element: wrapInPermission(<DashboardLayout />, ['student', 'admin', 'super_admin'], ['dashboard.student']),
     routes: [
       {
         path: '/student/dashboard',
         name: 'Student Dashboard',
         element: <StudentDashboard />,
       },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
     ],
   },
+  // Global 404 Route
+  { path: '*', name: 'NotFound', element: <NotFound /> },
 ];
