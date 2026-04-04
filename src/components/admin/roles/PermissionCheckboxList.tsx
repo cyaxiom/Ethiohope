@@ -237,11 +237,8 @@ const PermissionCheckboxList: React.FC<PermissionCheckboxListProps> = ({
                           className="sr-only"
                         />
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <code className="text-xs font-mono text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
-                            {perm.key}
-                          </code>
-                          <span className="text-xs text-gray-400 capitalize hidden sm:inline">
-                            {perm.action}
+                          <span className="text-sm font-medium text-gray-700 capitalize">
+                            {perm.action || perm.key.split('.').pop()}
                           </span>
                         </div>
                       </label>
