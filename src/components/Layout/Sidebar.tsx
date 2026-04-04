@@ -27,7 +27,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   // Define navigation items based on role
   const getNavItems = () => {
-    if (roles.includes('admin')) {
+    // Admin and Super Admin should see the same core management items
+    if (roles.includes('admin') || roles.includes('super_admin')) {
       return [
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
@@ -41,6 +42,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/teacher/classes', icon: BookOpen, label: 'Classes' },
         { path: '/teacher/students', icon: Users, label: 'Students' },
         { path: '/teacher/assignments', icon: FileText, label: 'Assignments' },
+        { path: '/training', icon: BookOpen, label: 'Training' },
+        { path: '/exams', icon: FileText, label: 'Exams' },
+        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
       ];
     }
 
@@ -49,10 +53,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/children', icon: Users, label: 'Children' },
         { path: '/parent/messages', icon: FileText, label: 'Messages' },
+        { path: '/training', icon: BookOpen, label: 'Training' },
+        { path: '/exams', icon: FileText, label: 'Exams' },
+        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
       ];
     }
 
-    // Default for student or fallback
+    if (roles.includes('instructor')) {
+      return [
+        { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { path: '/training', icon: BookOpen, label: 'Training' },
+        { path: '/exams', icon: FileText, label: 'Exams' },
+        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
+      ];
+    }
+
+    // Default for students
     return [
       { path: '/', icon: Home, label: 'Home Page' },
       { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
