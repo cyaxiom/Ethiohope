@@ -86,7 +86,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     <aside 
       className={twMerge(
         "fixed inset-y-0 left-0 bg-white shadow-[4px_0_12px_rgba(0,0,0,0.03)] border-r border-gray-100 z-50 flex flex-col transition-all duration-300 ease-in-out font-sans",
-        isOpen ? "w-64" : "w-20"
+        // Desktop widths
+        isOpen ? "lg:w-64" : "lg:w-20",
+        // Mobile behavior: slide in/out
+        isOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full lg:translate-x-0 lg:w-20"
       )}
     >
       <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100">
