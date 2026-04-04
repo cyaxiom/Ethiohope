@@ -13,7 +13,6 @@ interface RegisterFormInputs {
   firstname: string;
   lastname: string;
   email: string;
-  phone: string;
   password: string;
   confirmPassword: string;
 }
@@ -41,7 +40,6 @@ const Register: React.FC = () => {
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
         email: data.email.trim(),
-        phone: data.phone.trim(),
         password: data.password,
       }).unwrap();
 
@@ -264,20 +262,7 @@ const Register: React.FC = () => {
               })}
             />
 
-            <FormInput
-              id="phone"
-              label="Phone Number"
-              placeholder="+251 911 123 456"
-              icon={<Phone size={18} />}
-              error={errors.phone?.message}
-              {...register('phone', { 
-                required: 'Phone number is required',
-                pattern: {
-                  value: /^\+?[\d\s\-\(\)]{10,20}$/,
-                  message: 'Invalid phone number format',
-                }
-              })}
-            />
+
 
             <FormInput
               id="password"

@@ -92,20 +92,6 @@ export const authApi = api.injectEndpoints({
       }),
       transformResponse: (response: { data: AuthResponse }) => response.data,
     }),
-    sendOtp: builder.mutation<GenericResponse, { phone: string }>({
-      query: (data) => ({
-        url: 'auth/send-otp',
-        method: 'POST',
-        body: data,
-      }),
-    }),
-    verifyOtp: builder.mutation<GenericResponse, { phone: string; otp: string }>({
-      query: (data) => ({
-        url: 'auth/verify-otp',
-        method: 'POST',
-        body: data,
-      }),
-    }),
   }),
   overrideExisting: false,
 });
@@ -120,6 +106,4 @@ export const {
   useVerifyEmailMutation,
   useConfirmVerificationMutation,
   useSignupMutation,
-  useSendOtpMutation,
-  useVerifyOtpMutation,
 } = authApi;

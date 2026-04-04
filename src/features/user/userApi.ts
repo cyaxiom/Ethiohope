@@ -80,7 +80,7 @@ export const userApi = api.injectEndpoints({
     }),
     completeProfile: builder.mutation<any, CompleteProfilePayload>({
       query: (data) => ({
-        url: '/users/complete-profile',
+        url: '/parent/complete-profile',
         method: 'POST',
         body: data,
       }),
