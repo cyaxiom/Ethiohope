@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Lock, Loader2, ArrowRight, Save } from 'lucide-react';
+import { Lock, Loader2, ArrowRight, Save, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -61,7 +61,14 @@ const ResetPassword: React.FC = () => {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background relative">
+        <Link 
+          to="/" 
+          className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 group z-50 bg-card/50 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 shadow-sm"
+        >
+          <Home size={18} className="group-hover:-translate-x-0.5 transition-transform" />
+          <span className="text-sm font-semibold tracking-tight">Back to Home</span>
+        </Link>
         <div className="card shadow-2xl p-8 text-center max-w-md w-full">
           <h2 className="text-2xl font-bold text-error mb-4">Invalid Link</h2>
           <p className="text-muted-foreground mb-6">
@@ -79,7 +86,14 @@ const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn relative">
+      <Link 
+        to="/" 
+        className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 group z-50 bg-card/50 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 shadow-sm"
+      >
+        <Home size={18} className="group-hover:-translate-x-0.5 transition-transform" />
+        <span className="text-sm font-semibold tracking-tight">Back to Home</span>
+      </Link>
       {/* Background decoration elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, Loader2, Mail, ArrowRight, RefreshCw } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, Mail, ArrowRight, RefreshCw, Home } from 'lucide-react';
 
 import { useConfirmVerificationMutation, useVerifyEmailMutation } from '../../features/auth/authApi';
 
@@ -75,7 +75,14 @@ const VerifyEmail: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn relative">
+      <Link 
+        to="/" 
+        className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 group z-50 bg-card/50 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 shadow-sm"
+      >
+        <Home size={18} className="group-hover:-translate-x-0.5 transition-transform" />
+        <span className="text-sm font-semibold tracking-tight">Back to Home</span>
+      </Link>
       {/* Background decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
