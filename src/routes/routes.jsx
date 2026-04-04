@@ -61,7 +61,8 @@ const KidsTutoring = React.lazy(
 // CourseDetail removed
 
 // Admin routes
-const AdminDashboardLayout = React.lazy(() => import('@components/Layout/DashboardLayout'));
+const DashboardLayout = React.lazy(() => import('@components/Layout/DashboardLayout'));
+const PublicLayout = React.lazy(() => import('@components/Layout/PublicLayout'));
 const AdminDashboardPage = React.lazy(() => import('@pages/admin/AdminDashboard'));
 const AdminRoles = React.lazy(() => import('@pages/admin/RoleManagement'));
 const AdminUsers = React.lazy(() => import('@pages/admin/Users'));
@@ -72,8 +73,47 @@ const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard')
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
 
 export const routes = [
-  { path: '/', exact: true, name: 'Home', element: <Home /> },
-  //dashboard routes
+  // Public Routes (with Navbar and Footer)
+  {
+    path: '/',
+    element: <PublicLayout />,
+    routes: [
+      { path: '/', exact: true, name: 'Home', element: <Home /> },
+      // About routes
+      { path: '/about', name: 'About', element: <About /> },
+      { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
+      { path: '/about/contact', name: 'Contact', element: <Contact /> },
+      { path: '/about/teams', name: 'Teams', element: <Teams /> },
+      // Services routes
+      {
+        path: '/services/ethiohope-service',
+        name: 'EthiohopeServices',
+        element: <EthiohopeServices />,
+      },
+      {
+        path: '/services/kids-tutoring',
+        name: 'KidsTutoring',
+        element: <KidsTutoring />,
+      },
+      {
+        path: '/services/programming-service',
+        name: 'ProgrammingService',
+        element: <ProgrammingService />,
+      },
+      // 404 route inside PublicLayout so it has header/footer
+      { path: '*', name: 'NotFound', element: <NotFound /> },
+    ],
+  },
+
+  // Auth routes (No Navbar/Footer)
+  { path: '/login', name: 'Login', element: <Login /> },
+  { path: '/register', name: 'Register', element: <Register /> },
+  { path: '/forgot-password', name: 'ForgotPassword', element: <ForgotPassword /> },
+  { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
+  { path: '/auth/verify-email', name: 'VerifyEmail', element: <VerifyEmail /> },
+  { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
+
+  // dashboard routes (No Footer)
   { path: '/dashboard/chats', name: 'Chats', element: <Chats /> },
   {
     path: '/dashboard/chats/video-call',
@@ -100,42 +140,12 @@ export const routes = [
     name: 'VoiceCall',
     element: <VoiceCall />,
   },
-  // About routes
-  { path: '/about', name: 'About', element: <About /> },
-  { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
-  { path: '/about/contact', name: 'Contact', element: <Contact /> },
-  { path: '/about/teams', name: 'Teams', element: <Teams /> },
-  // Academy routes removed
-  // Auth routes
-  { path: '/login', name: 'Login', element: <Login /> },
-  { path: '/register', name: 'Register', element: <Register /> },
-  { path: '/forgot-password', name: 'ForgotPassword', element: <ForgotPassword /> },
-  { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
-  { path: '/auth/verify-email', name: 'VerifyEmail', element: <VerifyEmail /> },
-  { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
-  // Community and Forum routes removed
-  // Services routes
-  {
-    path: '/services/ethiohope-service',
-    name: 'EthiohopeServices',
-    element: <EthiohopeServices />,
-  },
-  {
-    path: '/services/kids-tutoring',
-    name: 'KidsTutoring',
-    element: <KidsTutoring />,
-  },
-  {
-    path: '/services/programming-service',
-    name: 'ProgrammingService',
-    element: <ProgrammingService />,
-  },
   
   // Admin Routes
   {
     path: '/admin',
     name: 'AdminDashboardLayout',
-    element: <AdminDashboardLayout />,
+    element: <DashboardLayout />,
     routes: [
       {
         path: '/admin/dashboard',
@@ -159,7 +169,7 @@ export const routes = [
   {
     path: '/teacher',
     name: 'TeacherPortal',
-    element: <AdminDashboardLayout />,
+    element: <DashboardLayout />,
     routes: [
       {
         path: '/teacher/dashboard',
@@ -171,7 +181,7 @@ export const routes = [
   {
     path: '/parent',
     name: 'ParentPortal',
-    element: <AdminDashboardLayout />,
+    element: <DashboardLayout />,
     routes: [
       {
         path: '/parent/dashboard',
@@ -183,7 +193,7 @@ export const routes = [
   {
     path: '/student',
     name: 'StudentPortal',
-    element: <AdminDashboardLayout />,
+    element: <DashboardLayout />,
     routes: [
       {
         path: '/student/dashboard',
@@ -192,7 +202,4 @@ export const routes = [
       },
     ],
   },
-
-  // 404 route - must be last
-  { path: '*', name: 'NotFound', element: <NotFound /> },
 ];
