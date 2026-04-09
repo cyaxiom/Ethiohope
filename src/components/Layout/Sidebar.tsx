@@ -34,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
         { path: '/admin/users', icon: Users, label: 'Users' },
         { path: '/admin/programs', icon: Library, label: 'Programs' },
+        { path: '/admin/batches', icon: Users, label: 'Batches' },
       ];
     }
     
