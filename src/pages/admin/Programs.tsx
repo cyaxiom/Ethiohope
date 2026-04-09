@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Library, Search, Plus, Edit2, 
   ShieldAlert, Activity, CheckCircle2,
-  ChevronLeft, ChevronRight, X, Layers
+  ChevronLeft, ChevronRight, X, Layers, Trash2
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -12,7 +12,9 @@ import {
 } from '../../features/programs/programApi';
 import { 
   useGetPhasesByProgramQuery, 
-  useCreatePhaseMutation 
+  useCreatePhaseMutation,
+  useUpdatePhaseMutation,
+  useDeletePhaseMutation
 } from '../../features/programs/phaseApi';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
@@ -346,25 +348,70 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
 const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({ program, onClose }) => {
   const { data: phasesData, isLoading: isLoadingPhases } = useGetPhasesByProgramQuery(program._id);
   const [createPhase, { isLoading: isCreating }] = useCreatePhaseMutation();
-  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [updatePhase, { isLoading: isUpdating }] = useUpdatePhaseMutation();
+  const [deletePhase, { isLoading: isDeleting }] = useDeletePhaseMutation();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [editingPhase, setEditingPhase] = useState<any>(null);
+
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+
+  // Handle setting values when editing
+  useEffect(() => {
+    if (editingPhase) {
+      setValue('title', editingPhase.title);
+      setValue('description', editingPhase.description);
+      setValue('price', editingPhase.price);
+      setValue('durationWeeks', editingPhase.durationWeeks);
+      setValue('orderIndex', editingPhase.orderIndex);
+      setIsAddFormOpen(true);
+    } else {
+      reset();
+    }
+  }, [editingPhase, setValue, reset]);
 
   const onSubmit = async (data: any) => {
     try {
-      await createPhase({
-        program: program._id,
-        title: data.title,
-        description: data.description,
-        price: Number(data.price),
-        durationWeeks: Number(data.durationWeeks),
-        orderIndex: Number(data.orderIndex)
-      }).unwrap();
-      sonnerToast.success('Phase created successfully');
+      if (editingPhase) {
+        await updatePhase({
+          id: editingPhase._id,
+          programId: program._id,
+          data: {
+            title: data.title,
+            description: data.description,
+            price: Number(data.price),
+            durationWeeks: Number(data.durationWeeks),
+            orderIndex: Number(data.orderIndex)
+          }
+        }).unwrap();
+        sonnerToast.success('Phase updated successfully');
+      } else {
+        await createPhase({
+          program: program._id,
+          title: data.title,
+          description: data.description,
+          price: Number(data.price),
+          durationWeeks: Number(data.durationWeeks),
+          orderIndex: Number(data.orderIndex)
+        }).unwrap();
+        sonnerToast.success('Phase created successfully');
+      }
       setIsAddFormOpen(false);
+      setEditingPhase(null);
       reset();
     } catch (err: any) {
-      sonnerToast.error(err?.data?.message || 'Failed to create phase');
+      sonnerToast.error(err?.data?.message || 'Failed to save phase');
+    }
+  };
+
+  const handleDelete = async (phaseId: string) => {
+    if (window.confirm('Are you sure you want to delete this phase?')) {
+      try {
+        await deletePhase({ id: phaseId, programId: program._id }).unwrap();
+        sonnerToast.success('Phase deleted successfully');
+      } catch (err: any) {
+        sonnerToast.error(err?.data?.message || 'Failed to delete phase');
+      }
     }
   };
 
@@ -389,7 +436,14 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Current Phases</h4>
               <button 
-                onClick={() => setIsAddFormOpen(!isAddFormOpen)}
+                onClick={() => {
+                  if (isAddFormOpen) {
+                    setIsAddFormOpen(false);
+                    setEditingPhase(null);
+                  } else {
+                    setIsAddFormOpen(true);
+                  }
+                }}
                 className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
                 {isAddFormOpen ? 'Cancel' : (
@@ -401,6 +455,9 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
             {isAddFormOpen && (
               <form onSubmit={handleSubmit(onSubmit)} className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
                 <div className="sm:col-span-2">
+                  <h5 className="text-sm font-bold text-blue-800 mb-2">
+                    {editingPhase ? 'Edit Phase' : 'New Phase'}
+                  </h5>
                   <label className="block text-xs font-bold text-gray-600 mb-1">Phase Title</label>
                   <input {...register('title', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Phase name..." />
                 </div>
@@ -423,10 +480,10 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
                 <div className="flex items-end">
                   <button 
                     type="submit" 
-                    disabled={isCreating}
+                    disabled={isCreating || isUpdating}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    {isCreating ? 'Adding...' : 'Add Phase'}
+                    {isCreating || isUpdating ? 'Saving...' : (editingPhase ? 'Update Phase' : 'Add Phase')}
                   </button>
                 </div>
               </form>
@@ -443,19 +500,33 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
                 </div>
               ) : (
                 phases.map((phase: any) => (
-                  <div key={phase._id} className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                  <div key={phase._id} className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
                     <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
                       {phase.orderIndex}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <h5 className="font-bold text-gray-800 truncate">{phase.title}</h5>
-                        <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                           <span>{phase.durationWeeks} Weeks</span>
-                           <span>${phase.price}</span>
+                        <div className="flex gap-2">
+                           <button 
+                             onClick={() => setEditingPhase(phase)}
+                             className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                           >
+                              <Edit2 className="w-3.5 h-3.5" />
+                           </button>
+                           <button 
+                             onClick={() => handleDelete(phase._id)}
+                             className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                           >
+                              <Trash2 className="w-3.5 h-3.5" />
+                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">{phase.description}</p>
+                      <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+                           <span>{phase.durationWeeks} Weeks</span>
+                           <span>${phase.price}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 line-clamp-2">{phase.description}</p>
                     </div>
                   </div>
                 ))

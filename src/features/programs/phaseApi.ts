@@ -44,10 +44,27 @@ export const phaseApi = api.injectEndpoints({
       }),
       invalidatesTags: (result, error, { program }) => [{ type: 'Phases', id: `LIST_${program}` }],
     }),
+    updatePhase: builder.mutation<any, { id: string, data: Partial<CreatePhasePayload>, programId: string }>({
+      query: ({ id, data }) => ({
+        url: `/admin/phases/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { programId }) => [{ type: 'Phases', id: `LIST_${programId}` }],
+    }),
+    deletePhase: builder.mutation<any, { id: string, programId: string }>({
+      query: ({ id }) => ({
+        url: `/admin/phases/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { programId }) => [{ type: 'Phases', id: `LIST_${programId}` }],
+    }),
   }),
 });
 
 export const {
   useGetPhasesByProgramQuery,
   useCreatePhaseMutation,
+  useUpdatePhaseMutation,
+  useDeletePhaseMutation,
 } = phaseApi;
