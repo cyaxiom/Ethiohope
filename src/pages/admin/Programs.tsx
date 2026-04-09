@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Library, Search, Plus, Edit2, 
   ShieldAlert, Activity, CheckCircle2,
-  ChevronLeft, ChevronRight, X, Layers, Trash2
+  ChevronLeft, ChevronRight, X, Layers, Trash2, AlertTriangle
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -353,6 +353,7 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
 
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [editingPhase, setEditingPhase] = useState<any>(null);
+  const [phaseToDelete, setPhaseToDelete] = useState<any>(null);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
@@ -404,14 +405,14 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
     }
   };
 
-  const handleDelete = async (phaseId: string) => {
-    if (window.confirm('Are you sure you want to delete this phase?')) {
-      try {
-        await deletePhase({ id: phaseId, programId: program._id }).unwrap();
-        sonnerToast.success('Phase deleted successfully');
-      } catch (err: any) {
-        sonnerToast.error(err?.data?.message || 'Failed to delete phase');
-      }
+  const handleDelete = async () => {
+    if (!phaseToDelete) return;
+    try {
+      await deletePhase({ id: phaseToDelete._id, programId: program._id }).unwrap();
+      sonnerToast.success('Phase deleted successfully');
+      setPhaseToDelete(null);
+    } catch (err: any) {
+      sonnerToast.error(err?.data?.message || 'Failed to delete phase');
     }
   };
 
@@ -419,7 +420,38 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative">
+        
+        {/* Delete Confirmation Overlay */}
+        {phaseToDelete && (
+          <div className="absolute inset-0 z-[60] bg-white/95 flex items-center justify-center p-6 animate-in fade-in duration-200">
+            <div className="text-center max-w-sm">
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8" />
+              </div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h4>
+              <p className="text-gray-500 mb-6">
+                You are about to delete <span className="font-bold text-gray-800">"{phaseToDelete.title}"</span>. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setPhaseToDelete(null)}
+                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-100 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div>
             <h3 className="text-lg font-bold text-gray-800">Manage Phases</h3>
@@ -515,7 +547,7 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
                               <Edit2 className="w-3.5 h-3.5" />
                            </button>
                            <button 
-                             onClick={() => handleDelete(phase._id)}
+                             onClick={() => setPhaseToDelete(phase)}
                              className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
                            >
                               <Trash2 className="w-3.5 h-3.5" />
