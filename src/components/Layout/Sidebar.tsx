@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, PanelLeftClose, PanelLeft, Bot, 
   Home, BookOpen, FileText, CreditCard, Activity, Settings, User as UserIcon, LogOut, 
-  GraduationCap, Library
+  GraduationCap, Library, Calendar
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clsx } from 'clsx';
@@ -35,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/users', icon: Users, label: 'Users' },
         { path: '/admin/programs', icon: Library, label: 'Programs' },
         { path: '/admin/batches', icon: Users, label: 'Batches' },
+        { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
       ];
     }
     
