@@ -1,0 +1,68 @@
+import { api } from '../../app/api';
+
+export interface Program {
+  _id: string;
+  title: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProgramPayload {
+  title: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateProgramPayload extends Partial<CreateProgramPayload> {
+  id: string;
+}
+
+export interface GetProgramsResponse {
+  success: boolean;
+  message: string;
+  data: Program[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export const programApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getPrograms: builder.query<GetProgramsResponse, { page?: number; limit?: number; search?: string }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.search) queryParams.append('search', params.search);
+        return `/admin/programs?${queryParams.toString()}`;
+      },
+      providesTags: ['Programs'],
+    }),
+    createProgram: builder.mutation<any, CreateProgramPayload>({
+      query: (programData) => ({
+        url: '/admin/programs',
+        method: 'POST',
+        body: programData,
+      }),
+      invalidatesTags: ['Programs'],
+    }),
+    updateProgram: builder.mutation<any, UpdateProgramPayload>({
+      query: ({ id, ...body }) => ({
+        url: `/admin/programs/${id}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Programs'],
+    }),
+  }),
+});
+
+export const {
+  useGetProgramsQuery,
+  useCreateProgramMutation,
+  useUpdateProgramMutation,
+} = programApi;
