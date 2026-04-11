@@ -56,16 +56,37 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
+    const textRegex = /[a-zA-Z]/; // Must contain at least one letter
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else if (!/^\+?[\d\s\-\(\)]{10,20}$/.test(formData.phone.trim())) {
-      newErrors.phone = 'Please enter a valid international phone number (e.g., +251...)';
+      newErrors.phone = 'Please enter a valid phone number (e.g., +251...)';
     }
 
-    if (!formData.country.trim()) newErrors.country = 'Country is required';
-    if (!formData.state.trim()) newErrors.state = 'State is required';
-    if (!formData.city.trim()) newErrors.city = 'City is required';
+    if (!formData.country.trim()) {
+      newErrors.country = 'Country is required';
+    } else if (!textRegex.test(formData.country)) {
+      newErrors.country = 'Country name must contain letters';
+    } else if (formData.country.length < 2) {
+      newErrors.country = 'Country name is too short';
+    }
+
+    if (!formData.state.trim()) {
+      newErrors.state = 'State is required';
+    } else if (!textRegex.test(formData.state)) {
+      newErrors.state = 'State name must contain letters';
+    } else if (formData.state.length < 2) {
+      newErrors.state = 'State name is too short';
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+    } else if (!textRegex.test(formData.city)) {
+      newErrors.city = 'City name must contain letters';
+    } else if (formData.city.length < 2) {
+      newErrors.city = 'City name is too short';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
