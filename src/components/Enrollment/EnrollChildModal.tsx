@@ -436,9 +436,6 @@ const CustomCountryDropdown: React.FC<{
                       className="w-5 h-3.5 object-cover rounded-sm border border-gray-100"
                     />
                     <span className="font-bold text-sm">{c.name}</span>
-                    {(['ET', 'US', 'CA'].includes(c.isoCode)) && (
-                      <span className="ml-auto text-[8px] font-black bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full uppercase">Priority</span>
-                    )}
                   </button>
                 ))
               )}
