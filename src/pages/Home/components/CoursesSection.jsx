@@ -101,11 +101,6 @@ const CoursesSection = () => {
                        <span className="text-white text-4xl font-black">{program.title.charAt(0)}</span>
                     </div>
                   )}
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-white/90 backdrop-blur-sm text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-                      {program.ageRange || 'All ages'}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Card Content */}
@@ -116,8 +111,16 @@ const CoursesSection = () => {
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
                     {program.description || 'Join our expert-led program to master new skills through hands-on projects and interactive learning.'}
                   </p>
-                  <div className="mt-auto pt-4 border-t border-gray-100">
-                    <span className="text-primary font-bold text-sm">Learn More →</span>
+                  
+                  <div className="mt-auto mb-5">
+                    <span className="inline-block bg-gradient-to-r from-orange-400 to-pink-500 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-wide shadow-md transform hover:-translate-y-0.5 transition-all">
+                      Age: {program.ageRange || 'All ages'}
+                    </span>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between group-hover:text-blue-600 transition-colors">
+                    <span className="text-primary font-bold text-sm">See Details</span>
+                    <span className="text-primary font-bold transition-transform group-hover:translate-x-1">→</span>
                   </div>
                 </div>
               </div>
