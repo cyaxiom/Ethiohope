@@ -298,6 +298,9 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
   const onSubmit = async (data: any) => {
     const payload = { ...data };
     
+    // Remove empty strings for optional IDs to avoid validation errors
+    if (!payload.instructor) delete payload.instructor;
+
     // Ensure capacity is sent as a number
     if (payload.capacity) {
       payload.capacity = Number(payload.capacity);

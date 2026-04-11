@@ -9,6 +9,8 @@ import { getImageUrl } from "../../../lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { useLazyGetRegisterChildInitQuery, useCompleteProfileMutation } from "../../../features/user/userApi";
 import { updateUser, logout } from "../../../features/auth/authSlice";
+import { toast } from "sonner";
+import EnrollChildModal from "../../../components/Enrollment/EnrollChildModal";
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -31,6 +33,9 @@ const CourseDetail = () => {
     city: "",
   });
   const [errors, setErrors] = useState({});
+
+  const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
+  const [selectedPhaseForEnrollment, setSelectedPhaseForEnrollment] = useState(null);
 
   const validateForm = () => {
     const newErrors = {};
@@ -84,6 +89,30 @@ const CourseDetail = () => {
       }
     } catch (err) {
       console.error("Failed to check profile", err);
+    }
+  };
+
+  const handleEnrollClick = async (phase) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await checkProfileInit().unwrap();
+      if (!response.profileCompleted) {
+        setIsProfileModalOpen(true);
+      } else {
+        setSelectedPhaseForEnrollment(phase);
+        setIsEnrollModalOpen(true);
+      }
+    } catch (err) {
+      if (err.status === 401) {
+        navigate('/login');
+      } else {
+        toast.error("Please complete your profile first.");
+        setIsProfileModalOpen(true);
+      }
     }
   };
 
@@ -279,7 +308,10 @@ const CourseDetail = () => {
                     </div>
 
                     {isActive ? (
-                      <button className="mt-auto w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md font-bold transition-colors">
+                      <button 
+                        onClick={() => handleEnrollClick(phase)}
+                        className="mt-auto w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md font-bold transition-colors"
+                      >
                         Enroll Your Child
                       </button>
                     ) : (
@@ -518,6 +550,22 @@ const CourseDetail = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Bottom Spacing */}
+        <div className="h-20"></div>
+
+        {/* Enrollment Modal */}
+        {selectedPhaseForEnrollment && (
+          <EnrollChildModal 
+            isOpen={isEnrollModalOpen}
+            onClose={() => {
+              setIsEnrollModalOpen(false);
+              setSelectedPhaseForEnrollment(null);
+            }}
+            program={program}
+            phase={selectedPhaseForEnrollment}
+          />
+        )}
       </motion.section>
     </AnimatePresence>
   );
