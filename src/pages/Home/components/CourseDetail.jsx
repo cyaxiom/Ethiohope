@@ -252,8 +252,6 @@ const CourseDetail = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {phases.map((phase) => {
                 const isActive = phase.isActive !== false;
-                const isEnrollable = isActive && phase.orderIndex === 1;
-                const isLocked = isActive && phase.orderIndex !== 1;
 
                 return (
                   <div 
@@ -267,7 +265,7 @@ const CourseDetail = () => {
                       <div className="w-12 h-12 bg-primary/20 text-primary rounded-xl flex items-center justify-center font-black text-xl shadow-sm">
                         {phase.orderIndex}
                       </div>
-                      {isLocked && <Lock className="text-muted-foreground w-6 h-6" />}
+                      {!isActive && <Lock className="text-muted-foreground w-6 h-6" />}
                     </div>
                     
                     <h3 className="text-xl font-bold text-foreground mb-3">{phase.title}</h3>
@@ -280,18 +278,12 @@ const CourseDetail = () => {
                       <span className="flex items-center gap-1.5"><Tag className="w-4 h-4 text-green-500"/> ${phase.price}</span>
                     </div>
 
-                    {isEnrollable && (
+                    {isActive ? (
                       <button className="mt-auto w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md font-bold transition-colors">
                         Enroll Your Child
                       </button>
-                    )}
-                    {isLocked && (
-                      <div className="mt-auto w-full py-3 bg-muted text-muted-foreground text-center rounded-lg shadow-inner font-medium flex justify-center items-center gap-2">
-                        <Lock className="w-4 h-4" /> Locked
-                      </div>
-                    )}
-                    {!isActive && (
-                      <div className="mt-auto w-full py-3 bg-red-50 text-red-500 text-center rounded-lg shadow-inner font-medium">
+                    ) : (
+                      <div className="mt-auto w-full py-3 bg-muted text-muted-foreground text-center rounded-lg shadow-inner font-medium">
                         Currently Closed
                       </div>
                     )}

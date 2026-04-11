@@ -590,116 +590,166 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {/* Phases List */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Current Phases</h4>
-              <button 
-                onClick={() => {
-                  if (isAddFormOpen) {
-                    setIsAddFormOpen(false);
-                    setEditingPhase(null);
-                  } else {
-                    setIsAddFormOpen(true);
-                  }
-                }}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                {isAddFormOpen ? 'Cancel' : (
-                  <><Plus className="w-3 h-3" /> Add New Phase</>
-                )}
-              </button>
-            </div>
-
-            {isAddFormOpen && (
-              <form onSubmit={handleSubmit(onSubmit)} className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
-                <div className="sm:col-span-2">
-                  <h5 className="text-sm font-bold text-blue-800 mb-2">
-                    {editingPhase ? 'Edit Phase' : 'New Phase'}
-                  </h5>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Phase Title</label>
-                  <input {...register('title', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Phase name..." />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Description (Optional)</label>
-                  <textarea {...register('description')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" rows={2} placeholder="What this phase covers..." />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Price ($)</label>
-                  <input type="number" {...register('price')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Duration (Weeks)</label>
-                  <input type="number" {...register('durationWeeks')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Order Index (Unique)</label>
-                  <input type="number" {...register('orderIndex', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div className="flex items-center gap-2 pt-6">
-                  <input type="checkbox" id="phaseIsActive" {...register('isActive')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                  <label htmlFor="phaseIsActive" className="text-xs font-bold text-gray-700 cursor-pointer">
-                    Phase is Active (Open)
-                  </label>
-                </div>
-                <div className="flex items-end">
+            {/* Phases List - Hide when editing */}
+            {!editingPhase && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Current Phases</h4>
                   <button 
-                    type="submit" 
-                    disabled={isCreating || isUpdating}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
+                    onClick={() => {
+                      if (isAddFormOpen) {
+                        setIsAddFormOpen(false);
+                        setEditingPhase(null);
+                      } else {
+                        setIsAddFormOpen(true);
+                      }
+                    }}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
                   >
-                    {isCreating || isUpdating ? 'Saving...' : (editingPhase ? 'Update Phase' : 'Add Phase')}
+                    {isAddFormOpen ? 'Cancel' : (
+                      <><Plus className="w-3 h-3" /> Add New Phase</>
+                    )}
                   </button>
                 </div>
-              </form>
-            )}
 
-            <div className="space-y-3">
-              {isLoadingPhases ? (
-                <div className="flex items-center justify-center py-12">
-                  <Activity className="w-6 h-6 animate-spin text-blue-600" />
-                </div>
-              ) : phases.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                  <p className="text-sm text-gray-400">No phases defined for this program yet.</p>
-                </div>
-              ) : (
-                phases.map((phase: any) => (
-                  <div key={phase._id} className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                      {phase.orderIndex}
+                {isAddFormOpen && (
+                  <form onSubmit={handleSubmit(onSubmit)} className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
+                    <div className="sm:col-span-2">
+                      <h5 className="text-sm font-bold text-blue-800 mb-2">
+                        {editingPhase ? 'Edit Phase' : 'New Phase'}
+                      </h5>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Phase Title</label>
+                      <input {...register('title', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Phase name..." />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-2 truncate">
-                           <h5 className="font-bold text-gray-800 truncate">{phase.title}</h5>
-                           <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest ${phase.isActive !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                             {phase.isActive !== false ? 'Open' : 'Closed'}
-                           </span>
-                         </div>
-                        <div className="flex gap-2">
-                           <button 
-                             onClick={() => setEditingPhase(phase)}
-                             className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors opacity-0 group-hover:opacity-100"
-                           >
-                              <Edit2 className="w-3.5 h-3.5" />
-                           </button>
-                           <button 
-                             onClick={() => setPhaseToDelete(phase)}
-                             className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
-                           >
-                              <Trash2 className="w-3.5 h-3.5" />
-                           </button>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Description (Optional)</label>
+                      <textarea {...register('description')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" rows={2} placeholder="What this phase covers..." />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Price ($)</label>
+                      <input type="number" {...register('price')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Duration (Weeks)</label>
+                      <input type="number" {...register('durationWeeks')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Order Index (Unique)</label>
+                      <input type="number" {...register('orderIndex', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                    </div>
+                    <div className="flex items-center gap-2 pt-6">
+                      <input type="checkbox" id="phaseIsActive" {...register('isActive')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                      <label htmlFor="phaseIsActive" className="text-xs font-bold text-gray-700 cursor-pointer">
+                        Phase is Active (Open)
+                      </label>
+                    </div>
+                    <div className="flex items-end">
+                      <button 
+                        type="submit" 
+                        disabled={isCreating || isUpdating}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {isCreating || isUpdating ? 'Saving...' : (editingPhase ? 'Update Phase' : 'Add Phase')}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="space-y-3">
+                  {isLoadingPhases ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Activity className="w-6 h-6 animate-spin text-blue-600" />
+                    </div>
+                  ) : phases.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                      <p className="text-sm text-gray-400">No phases defined for this program yet.</p>
+                    </div>
+                  ) : (
+                    phases.map((phase: any) => (
+                      <div key={phase._id} className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
+                        <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {phase.orderIndex}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-2 truncate">
+                               <h5 className="font-bold text-gray-800 truncate">{phase.title}</h5>
+                               <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest ${phase.isActive !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                 {phase.isActive !== false ? 'Open' : 'Closed'}
+                               </span>
+                             </div>
+                            <div className="flex gap-2">
+                               <button 
+                                 onClick={() => setEditingPhase(phase)}
+                                 className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                               >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                               </button>
+                               <button 
+                                 onClick={() => setPhaseToDelete(phase)}
+                                 className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                               >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                               </button>
+                            </div>
+                          </div>
+                          <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+                               <span>{phase.durationWeeks} Weeks</span>
+                               <span>${phase.price}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2">{phase.description}</p>
                         </div>
                       </div>
-                      <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
-                           <span>{phase.durationWeeks} Weeks</span>
-                           <span>${phase.price}</span>
-                      </div>
-                      <p className="text-xs text-gray-500 line-clamp-2">{phase.description}</p>
-                    </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* If editing, show the form outside the list */}
+            {editingPhase && (
+               <form onSubmit={handleSubmit(onSubmit)} className="bg-blue-50/50 border border-blue-100 rounded-xl p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
+                  <div className="sm:col-span-2 flex justify-between items-center mb-2">
+                    <h5 className="text-lg font-bold text-blue-800">Editing Phase: {editingPhase.title}</h5>
+                    <button type="button" onClick={() => setEditingPhase(null)} className="text-xs font-bold text-gray-500 hover:text-gray-700">Cancel Edit</button>
                   </div>
-                ))
-              )}
-            </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Phase Title</label>
+                    <input {...register('title', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Phase name..." />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Description (Optional)</label>
+                    <textarea {...register('description')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" rows={3} placeholder="What this phase covers..." />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Price ($)</label>
+                    <input type="number" {...register('price')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Duration (Weeks)</label>
+                    <input type="number" {...register('durationWeeks')} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">Order Index (Unique)</label>
+                    <input type="number" {...register('orderIndex', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div className="flex items-center gap-2 pt-6">
+                    <input type="checkbox" id="editPhaseIsActive" {...register('isActive')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                    <label htmlFor="editPhaseIsActive" className="text-xs font-bold text-gray-700 cursor-pointer">
+                      Phase is Active (Open)
+                    </label>
+                  </div>
+                  <div className="sm:col-span-2 mt-4">
+                    <button 
+                      type="submit" 
+                      disabled={isUpdating}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-100 active:scale-[0.98] disabled:opacity-50"
+                    >
+                      {isUpdating ? 'Updating...' : 'Save Phase Changes'}
+                    </button>
+                  </div>
+               </form>
+            )}
           </div>
         </div>
         
