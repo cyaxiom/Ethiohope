@@ -4,6 +4,8 @@ export interface Program {
   _id: string;
   title: string;
   description?: string;
+  image?: string;
+  ageRange?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -12,6 +14,8 @@ export interface Program {
 export interface CreateProgramPayload {
   title: string;
   description?: string;
+  image?: string;
+  ageRange?: string;
   isActive?: boolean;
 }
 

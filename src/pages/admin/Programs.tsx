@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Library, Search, Plus, Edit2, 
   ShieldAlert, Activity, CheckCircle2,
-  ChevronLeft, ChevronRight, X, Layers, Trash2, AlertTriangle
+  ChevronLeft, ChevronRight, X, Layers, Trash2, AlertTriangle,
+  Upload, Link as LinkIcon
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -20,6 +21,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast as sonnerToast } from 'sonner';
+import { useUploadFileMutation } from '../../features/upload/uploadApi';
+import { getImageUrl } from '../../lib/utils';
 
 const Programs: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -118,6 +121,7 @@ const Programs: React.FC = () => {
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm">
               <tr>
                 <th className="px-6 py-4 font-medium">Program Title</th>
+                <th className="px-6 py-4 font-medium">Age Range</th>
                 <th className="px-6 py-4 font-medium">Description</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium">Created</th>
@@ -143,11 +147,20 @@ const Programs: React.FC = () => {
                   <tr key={program._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                          <Library className="w-5 h-5" />
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-blue-100 text-blue-600 flex items-center justify-center border border-gray-100 flex-shrink-0">
+                          {program.image ? (
+                            <img src={getImageUrl(program.image)} alt={program.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <Library className="w-5 h-5" />
+                          )}
                         </div>
                         <p className="font-medium text-gray-800">{program.title}</p>
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                        {program.ageRange || 'All ages'}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-500 max-w-xs truncate" title={program.description}>
@@ -256,26 +269,61 @@ const Programs: React.FC = () => {
 
 const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClose, program }) => {
   const isEdit = !!program;
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const [imageTab, setImageTab] = useState<'upload' | 'url'>(program?.image?.startsWith('http') ? 'url' : 'upload');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>(program?.image ? getImageUrl(program.image) : '');
+  
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       title: program?.title || '',
       description: program?.description || '',
+      image: program?.image || '',
+      ageRange: program?.ageRange || 'All ages',
       isActive: program?.isActive ?? true
     }
   });
 
   const [createProgram, { isLoading: isCreating }] = useCreateProgramMutation();
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
 
-  const isLoading = isCreating || isUpdating;
+  const isLoading = isCreating || isUpdating || isUploading;
+  const currentImageUrl = watch('image');
+
+  // Update preview when URL changes manually
+  useEffect(() => {
+    if (imageTab === 'url' && currentImageUrl) {
+      setPreviewUrl(currentImageUrl);
+    }
+  }, [currentImageUrl, imageTab]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  };
 
   const onSubmit = async (data: any) => {
     try {
+      let finalImageUrl = data.image;
+
+      // If there's a selected file, upload it first
+      if (imageTab === 'upload' && selectedFile) {
+        const uploadResult = await uploadFile({ file: selectedFile, category: 'programs' }).unwrap();
+        finalImageUrl = uploadResult.data.url;
+      }
+
+      const programData = { ...data, image: finalImageUrl };
+
       if (isEdit) {
-        await updateProgram({ id: program._id, ...data }).unwrap();
+        await updateProgram({ id: program._id, ...programData }).unwrap();
         sonnerToast.success('Program updated successfully');
       } else {
-        await createProgram(data).unwrap();
+        await createProgram(programData).unwrap();
         sonnerToast.success('Program created successfully');
       }
       onClose();
@@ -286,55 +334,129 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
           <h3 className="text-lg font-bold text-gray-800">{isEdit ? 'Edit Program' : 'Create New Program'}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={onClose} type="button" className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Program Title</label>
-            <input 
-              {...register('title', { required: 'Title is required', minLength: { value: 3, message: 'Minimum 3 characters' } })} 
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                errors.title ? 'border-red-500 bg-red-50/50' : 'border-gray-300'
-              }`}
-              placeholder="e.g., Coding Essentials"
-            />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message as string}</p>}
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-            <textarea 
-              {...register('description')} 
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-              placeholder="Brief description of the program..."
-            />
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+          <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Program Title</label>
+              <input 
+                {...register('title', { required: 'Title is required', minLength: { value: 3, message: 'Minimum 3 characters' } })} 
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                  errors.title ? 'border-red-500 bg-red-50/50' : 'border-gray-300'
+                }`}
+                placeholder="e.g., Coding Essentials"
+              />
+              {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message as string}</p>}
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+              <textarea 
+                {...register('description')} 
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+                placeholder="Brief description of the program..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Program Image</label>
+              <div className="space-y-3">
+                {/* Image Preview */}
+                <div className="w-full h-32 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                  {previewUrl ? (
+                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <Library className="w-8 h-8 text-gray-300 mx-auto" />
+                      <p className="text-xs text-gray-400 mt-1">No image selected</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tabs */}
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                  <button 
+                    type="button"
+                    onClick={() => setImageTab('upload')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      imageTab === 'upload' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload local
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setImageTab('url')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      imageTab === 'url' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    URL Link
+                  </button>
+                </div>
+
+                {/* Input Based on Tab */}
+                {imageTab === 'upload' ? (
+                  <div className="relative">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors">
+                      <Upload className="w-4 h-4" />
+                      {selectedFile ? selectedFile.name : 'Choose image file...'}
+                    </div>
+                  </div>
+                ) : (
+                  <input 
+                    {...register('image')} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                )}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
+              <input 
+                {...register('ageRange')} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                placeholder="e.g., 15-20 or All ages"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <input 
+                type="checkbox" 
+                id="isActive"
+                {...register('isActive')}
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              />
+              <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer">
+                Mark as Active
+              </label>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <input 
-              type="checkbox" 
-              id="isActive"
-              {...register('isActive')}
-              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer">
-              Mark as Active
-            </label>
-          </div>
-
-          <div className="pt-4 flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50 flex-shrink-0">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors">
               Cancel
             </button>
             <button type="submit" disabled={isLoading} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 min-w-[100px]">
-              {isLoading ? 'Saving...' : (isEdit ? 'Update Program' : 'Create Program')}
+              {isUploading ? 'Uploading...' : (isLoading ? 'Saving...' : (isEdit ? 'Update Program' : 'Create Program'))}
             </button>
           </div>
         </form>

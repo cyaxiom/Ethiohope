@@ -63,5 +63,18 @@ export function isInViewport(element: HTMLElement | null): boolean {
   );
 }
 
-const utils = { cn, formatNumber, truncate, getInitials, debounce, isInViewport };
+/**
+ * Get full image URL
+ * Handles both relative local paths and absolute external URLs
+ */
+export function getImageUrl(path: string | undefined): string {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707';
+  // If baseUrl ends with /api/v1, strip it to get the server root
+  const serverRoot = baseUrl.split('/api/v1')[0];
+  return `${serverRoot}${path}`;
+}
+
+const utils = { cn, formatNumber, truncate, getInitials, debounce, isInViewport, getImageUrl };
 export default utils;

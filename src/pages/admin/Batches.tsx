@@ -297,7 +297,11 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
 
   const onSubmit = async (data: any) => {
     const payload = { ...data };
-    if (!payload.instructor) delete payload.instructor;
+    
+    // Ensure capacity is sent as a number
+    if (payload.capacity) {
+      payload.capacity = Number(payload.capacity);
+    }
 
     try {
       if (isEdit) {
