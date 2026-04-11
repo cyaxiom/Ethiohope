@@ -487,6 +487,7 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
       setValue('price', editingPhase.price);
       setValue('durationWeeks', editingPhase.durationWeeks);
       setValue('orderIndex', editingPhase.orderIndex);
+      setValue('isActive', editingPhase.isActive ?? true);
       setIsAddFormOpen(true);
     } else {
       reset();
@@ -504,7 +505,8 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
             description: data.description,
             price: Number(data.price),
             durationWeeks: Number(data.durationWeeks),
-            orderIndex: Number(data.orderIndex)
+            orderIndex: Number(data.orderIndex),
+            isActive: Boolean(data.isActive)
           }
         }).unwrap();
         sonnerToast.success('Phase updated successfully');
@@ -515,7 +517,8 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
           description: data.description,
           price: Number(data.price),
           durationWeeks: Number(data.durationWeeks),
-          orderIndex: Number(data.orderIndex)
+          orderIndex: Number(data.orderIndex),
+          isActive: data.isActive === undefined ? true : Boolean(data.isActive)
         }).unwrap();
         sonnerToast.success('Phase created successfully');
       }
@@ -631,6 +634,12 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
                   <label className="block text-xs font-bold text-gray-600 mb-1">Order Index (Unique)</label>
                   <input type="number" {...register('orderIndex', { required: true })} className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
                 </div>
+                <div className="flex items-center gap-2 pt-6">
+                  <input type="checkbox" id="phaseIsActive" {...register('isActive')} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                  <label htmlFor="phaseIsActive" className="text-xs font-bold text-gray-700 cursor-pointer">
+                    Phase is Active (Open)
+                  </label>
+                </div>
                 <div className="flex items-end">
                   <button 
                     type="submit" 
@@ -660,7 +669,12 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h5 className="font-bold text-gray-800 truncate">{phase.title}</h5>
+                         <div className="flex items-center gap-2 truncate">
+                           <h5 className="font-bold text-gray-800 truncate">{phase.title}</h5>
+                           <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest ${phase.isActive !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                             {phase.isActive !== false ? 'Open' : 'Closed'}
+                           </span>
+                         </div>
                         <div className="flex gap-2">
                            <button 
                              onClick={() => setEditingPhase(phase)}

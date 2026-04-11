@@ -8,6 +8,7 @@ export interface Phase {
   price?: number;
   durationWeeks?: number;
   orderIndex: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +20,7 @@ export interface CreatePhasePayload {
   price?: number;
   durationWeeks?: number;
   orderIndex: number;
+  isActive?: boolean;
 }
 
 export interface GetPhasesResponse {

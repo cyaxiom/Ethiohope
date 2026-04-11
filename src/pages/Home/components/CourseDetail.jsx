@@ -179,7 +179,7 @@ const CourseDetail = () => {
               className="px-8 py-4 bg-primary text-primary-foreground rounded-lg shadow-lg font-semibold hover:bg-accent self-start flex items-center gap-2"
             >
               {isCheckingProfile ? <Activity className="w-5 h-5 animate-spin" /> : null}
-              Register Your Child
+              Enroll Your Child
             </motion.button>
           </div>
 
