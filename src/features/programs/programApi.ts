@@ -72,12 +72,17 @@ export const programApi = api.injectEndpoints({
       },
       providesTags: ['Programs'],
     }),
+    getPublicProgramById: builder.query<{ success: boolean; data: Program }, string>({
+      query: (id) => `/programs/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Programs' as const, id }],
+    }),
   }),
 });
 
 export const {
   useGetProgramsQuery,
   useGetPublicProgramsQuery,
+  useGetPublicProgramByIdQuery,
   useCreateProgramMutation,
   useUpdateProgramMutation,
 } = programApi;

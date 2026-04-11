@@ -36,6 +36,13 @@ export const phaseApi = api.injectEndpoints({
           ? [...result.data.map(({ _id }) => ({ type: 'Phases' as const, id: _id })), { type: 'Phases', id: `LIST_${programId}` }]
           : [{ type: 'Phases', id: `LIST_${programId}` }],
     }),
+    getPublicPhasesByProgram: builder.query<GetPhasesResponse, string>({
+      query: (programId) => `/programs/${programId}/phases`,
+      providesTags: (result, error, programId) => 
+        result 
+          ? [...result.data.map(({ _id }) => ({ type: 'Phases' as const, id: _id })), { type: 'Phases', id: `LIST_${programId}` }]
+          : [{ type: 'Phases', id: `LIST_${programId}` }],
+    }),
     createPhase: builder.mutation<any, CreatePhasePayload>({
       query: (phaseData) => ({
         url: '/admin/phases',
@@ -64,6 +71,7 @@ export const phaseApi = api.injectEndpoints({
 
 export const {
   useGetPhasesByProgramQuery,
+  useGetPublicPhasesByProgramQuery,
   useCreatePhaseMutation,
   useUpdatePhaseMutation,
   useDeletePhaseMutation,

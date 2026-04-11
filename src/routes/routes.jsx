@@ -59,7 +59,9 @@ const KidsTutoring = React.lazy(
 //   import('@pages/Services/ProjectServices/ProjectServices')
 // );
 
-// CourseDetail removed
+// CourseDetail & AllCourses
+const CourseDetail = React.lazy(() => import('@pages/Home/components/CourseDetail'));
+const AllCourses = React.lazy(() => import('@pages/Home/components/AllCourses'));
 
 // Admin routes
 const DashboardLayout = React.lazy(() => import('@components/Layout/DashboardLayout'));
@@ -113,6 +115,16 @@ export const routes = [
         path: '/services/programming-service',
         name: 'ProgrammingService',
         element: <ProgrammingService />,
+      },
+      {
+        path: '/academy/kids-programming/course/:id',
+        name: 'CourseDetail',
+        element: <CourseDetail />,
+      },
+      {
+        path: '/academy/kids-programming/all_kids_course',
+        name: 'AllCourses',
+        element: <AllCourses />,
       },
       { path: '/forbidden', name: 'Forbidden', element: <Forbidden /> },
       // 404 route inside PublicLayout so it has header/footer
