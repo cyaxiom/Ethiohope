@@ -1,10 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import kidsCoursesData from "../../../data/kidsCoursesData";
-React;
+import { useGetPublicProgramsQuery } from "../../../features/programs/programApi";
+import { getImageUrl } from "../../../lib/utils";
+import { Activity } from "lucide-react";
+
 const AllCourses = () => {
   const navigate = useNavigate();
+  const { data: programsData, isLoading } = useGetPublicProgramsQuery({ limit: 100 });
+  const programs = (programsData?.data || []).filter(p => p.isActive);
 
   const pageVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -69,10 +73,12 @@ const AllCourses = () => {
 
       {/* COURSES GRID */}
       <div className="flex flex-col gap-12">
-        {kidsCoursesData.map((course, i) =>
-          (course.modules || []).map((module, idx) => (
+        {isLoading ? (
+          <div className="text-center py-20 text-muted-foreground text-xl">Loading programs...</div>
+        ) : programs && programs.length > 0 ? (
+          programs.map((program, i) => (
             <motion.div
-              key={`${course.id}-${module.level}-${idx}`}
+              key={program._id}
               initial="offscreen"
               whileInView="onscreen"
               viewport={{ once: true, amount: 0.3 }}
@@ -81,61 +87,57 @@ const AllCourses = () => {
               w-full md:w-2/3 ${i % 2 === 0 ? "md:ml-0" : "md:ml-auto"}`}
             >
               {/* LEFT IMAGE + TITLE + AGE + DURATION */}
-              <div className="md:w-1/2 flex flex-col bg-card">
+              <div className="md:w-1/2 flex flex-col bg-card w-full h-full">
                 <div className="h-60 w-full overflow-hidden">
-                  <img
-                    src={module.image}
-                    alt={course.name}
-                    className="w-full h-full object-cover"
-                  />
+                  {program.image ? (
+                    <img
+                      src={getImageUrl(program.image)}
+                      alt={program.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                       <span className="text-white text-6xl font-black">{program.title.charAt(0)}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-4 flex flex-col gap-1">
-                  <h3 className="text-primary text-xl font-bold">
-                    {course.name}
+                  <h3 className="text-primary text-xl font-bold line-clamp-1">
+                    {program.title}
                   </h3>
                   <span className="text-muted-foreground">
-                    Age: {module.ageGroup}
-                  </span>
-                  <span className="text-muted-foreground">
-                    Duration: {module.duration}
+                    Age Group: {program.ageRange || 'All ages'}
                   </span>
                 </div>
                 <button
-  onClick={() =>
-    navigate(`/academy/kids-programming/course/${course.id}`)
-  }
-  className="mt-4 mx-auto bg-green-600 hover:bg-green-700 text-white text-sm py-1.5 px-4 rounded-md font-medium shadow transition-all duration-300"
->
-  View Details
-</button>
-
+                  onClick={() =>
+                    navigate(`/academy/kids-programming/course/${program._id}`)
+                  }
+                  className="mt-auto mb-4 mx-auto w-[80%] bg-green-600 hover:bg-green-700 text-white py-2 rounded-md font-medium shadow transition-all duration-300"
+                >
+                  View Details
+                </button>
               </div>
 
-              {/* RIGHT DESCRIPTION + SKILLS + BUTTONS */}
-              <div className="md:w-1/2 p-6 flex flex-col justify-between">
+              {/* RIGHT DESCRIPTION + STATS + BUTTONS */}
+              <div className="md:w-1/2 p-6 flex flex-col justify-between h-full">
                 <p className="text-muted-foreground mb-4 line-clamp-6">
-                  {module.description}
+                  {program.description || 'Gain valuable skills through hands-on lessons tailored to your age and level.'}
                 </p>
 
-                <div className="mb-6">
-                  <p className="text-muted-foreground font-medium mb-2">
-                    <span className="font-semibold">Skills you will gain:</span>
-                  </p>
-                  <p className="text-muted-foreground">{module.skills}</p>
-                </div>
-
-                <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-auto">
                   <button className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold shadow-md transition-all duration-300">
                     Enroll Now
                   </button>
                   <button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground py-2 px-4 rounded-lg font-semibold shadow-md transition-all duration-300">
                     Book Free Class
                   </button>
-                 
                 </div>
               </div>
             </motion.div>
           ))
+        ) : (
+          <div className="text-center py-20 text-muted-foreground text-xl">No programs found at the moment.</div>
         )}
       </div>
 

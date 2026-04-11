@@ -62,11 +62,22 @@ export const programApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Programs'],
     }),
+    getPublicPrograms: builder.query<GetProgramsResponse, { page?: number; limit?: number; search?: string }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        if (params.search) queryParams.append('search', params.search);
+        return `/programs?${queryParams.toString()}`;
+      },
+      providesTags: ['Programs'],
+    }),
   }),
 });
 
 export const {
   useGetProgramsQuery,
+  useGetPublicProgramsQuery,
   useCreateProgramMutation,
   useUpdateProgramMutation,
 } = programApi;
