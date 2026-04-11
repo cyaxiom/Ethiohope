@@ -80,7 +80,7 @@ const CourseDetail = () => {
               whileTap={{ scale: 0.95 }}
               className="px-8 py-4 bg-primary text-primary-foreground rounded-lg shadow-lg font-semibold hover:bg-accent self-start"
             >
-              Book a Free Trial Session
+              Register Your Child
             </motion.button>
           </div>
 
@@ -255,36 +255,6 @@ const CourseDetail = () => {
                   </div>
           </div>
         )}
-
-        {/* ---------------- YOUR KID WILL BE ---------------- */}
-        <div className="max-w-4xl mx-auto text-center px-6 py-20">
-          <h2 className="text-3xl font-bold mb-6">Your Kid Will Be...</h2>
-          <p className="text-muted-foreground text-lg mb-12">
-            Able to create games, animations, and solve real-world problems with
-            code. No wasting time—EthioHope makes the journey simple, fun, and
-            effective.
-          </p>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {["Artist", "Animator", "Game Developer", "Coder"].map(
-              (role, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center bg-card border border-border rounded-xl p-6 shadow-lg"
-                >
-                  <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mb-4">
-                    <Star className="text-primary-foreground w-10 h-10" />
-                  </div>
-                  <h4 className="font-semibold text-lg mb-2">{role}</h4>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Kids will learn the skills to become a {role.toLowerCase()} and
-                    express creativity through technology.
-                  </p>
-                </div>
-              )
-            )}
-          </div>
-        </div>
 
         {/* ---------------- BACK BUTTON ---------------- */}
         <div className="text-center py-12">
