@@ -18,12 +18,7 @@ const PaymentSuccess = () => {
           The payment is done, you will get the notification through email message.
         </p>
         
-        {sessionId && (
-          <div className="text-left bg-gray-50 rounded-xl p-4 mb-8 border border-gray-200">
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Session ID reference</p>
-            <p className="text-sm font-mono text-gray-800 truncate">{sessionId}</p>
-          </div>
-        )}
+
 
         <button
           onClick={() => navigate('/parent/dashboard')}
