@@ -33,9 +33,17 @@ export const enrollmentApi = api.injectEndpoints({
         body: data,
       }),
     }),
+    getMyPendingEnrollments: builder.query<{ success: boolean; data: any[] }, void>({
+      query: () => ({
+        url: '/parent/enrollments/pending',
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
 export const {
   usePrepareEnrollmentMutation,
+  useGetMyPendingEnrollmentsQuery,
 } = enrollmentApi;
+

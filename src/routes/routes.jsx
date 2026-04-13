@@ -20,6 +20,10 @@ const VerifyEmail = React.lazy(() => import('@pages/Auth/VerifyEmail'));
 
 // Status pages
 const PendingApproval = React.lazy(() => import('@pages/PendingApproval'));
+const Checkout = React.lazy(() => import('@pages/parent/Checkout'));
+const PaymentSuccess = React.lazy(() => import('@pages/parent/PaymentSuccess'));
+const PaymentCancel = React.lazy(() => import('@pages/parent/PaymentCancel'));
+
 
 // Community routes removed
 //Forum routes
@@ -139,6 +143,9 @@ export const routes = [
   { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
   { path: '/auth/verify-email', name: 'VerifyEmail', element: <VerifyEmail /> },
   { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
+  { path: '/checkout', name: 'Checkout', element: wrapInAuth(<Checkout />) },
+  { path: '/payment/success', name: 'PaymentSuccess', element: wrapInAuth(<PaymentSuccess />) },
+  { path: '/payment/cancel', name: 'PaymentCancel', element: wrapInAuth(<PaymentCancel />) },
 
   // dashboard routes (No Footer) - ALL PROTECTED
   { path: '/dashboard/chats', name: 'Chats', element: wrapInAuth(<Chats />) },

@@ -295,7 +295,10 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                    </div>
                 </div>
                 <button 
-                  onClick={onClose}
+                  onClick={() => {
+                    onClose();
+                    window.location.href = '/checkout';
+                  }}
                   className="w-full max-w-sm py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl shadow-lg shadow-green-100 transition-all active:scale-[0.98]"
                 >
                   Proceed to Payment
