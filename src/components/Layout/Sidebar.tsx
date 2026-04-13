@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, PanelLeftClose, PanelLeft, Bot, 
   Home, BookOpen, FileText, CreditCard, Activity, Settings, User as UserIcon, LogOut, 
-  GraduationCap, Library, Calendar
+  GraduationCap, Library, Calendar, ChevronDown, ChevronUp, MessageCircle
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+
+type SubItem = { path: string; label: string };
+type NavItem = { path?: string; icon: any; label: string; subItems?: SubItem[] };
 import { logout } from '../../features/auth/authSlice';
 
 interface SidebarProps {
@@ -25,8 +28,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     navigate('/login');
   };
 
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+
+  const toggleMenu = (label: string) => {
+    setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
   // Define navigation items based on role
-  const getNavItems = () => {
+  const getNavItems = (): NavItem[] => {
     // Admin and Super Admin should see the same core management items
     if (roles.includes('admin') || roles.includes('super_admin')) {
       return [
@@ -39,26 +48,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       ];
     }
     
-    if (roles.includes('teacher')) {
-      return [
-        { path: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/teacher/classes', icon: BookOpen, label: 'Classes' },
-        { path: '/teacher/students', icon: Users, label: 'Students' },
-        { path: '/teacher/assignments', icon: FileText, label: 'Assignments' },
-        { path: '/training', icon: BookOpen, label: 'Training' },
-        { path: '/exams', icon: FileText, label: 'Exams' },
-        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
-      ];
-    }
-
     if (roles.includes('parent')) {
       return [
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/children', icon: Users, label: 'Children' },
-        { path: '/parent/messages', icon: FileText, label: 'Messages' },
-        { path: '/training', icon: BookOpen, label: 'Training' },
-        { path: '/exams', icon: FileText, label: 'Exams' },
-        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
+        { path: '/parent/payments', icon: CreditCard, label: 'Payments' },
       ];
     }
 
@@ -73,13 +67,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
     // Default for students
     return [
-      { path: '/', icon: Home, label: 'Home Page' },
-      { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { path: '/training', icon: BookOpen, label: 'Training' },
-      { path: '/exams', icon: FileText, label: 'Exams' },
-      { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
-      { path: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
-      { path: '/my-progress', icon: Activity, label: 'My progress' },
+      {
+        icon: BookOpen, 
+        label: 'Course',
+        subItems: [
+          { path: '/student/my-course', label: 'My Course' },
+          { path: '/student/all-courses', label: 'All Courses' }
+        ]
+      },
+      { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
+      { path: '/student/active-session', icon: Activity, label: 'Active Session' },
     ];
   };
 
@@ -118,26 +115,70 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       </div>
 
       <nav className="flex-1 py-1 px-3 space-y-1 overflow-y-auto mt-4">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              clsx(
-                "group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm",
-                "hover:bg-blue-50/50 text-gray-500 hover:text-blue-600",
-                isActive ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-100/50" : ""
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon className={clsx("flex-shrink-0 w-5 h-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500")} />
-                {isOpen && <span className="whitespace-nowrap">{item.label}</span>}
-              </>
-            )}
-          </NavLink>
-        ))}
+        {navItems.map((item) => {
+          if (item.subItems) {
+            const isMenuOpen = openMenus[item.label];
+            return (
+              <div key={item.label} className="space-y-1">
+                <button
+                  onClick={() => toggleMenu(item.label)}
+                  className={clsx(
+                    "w-full group flex items-center justify-between px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm",
+                    "hover:bg-blue-50/50 text-gray-500 hover:text-blue-600"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="flex-shrink-0 w-5 h-5 transition-transform duration-300 group-hover:scale-110 text-gray-400 group-hover:text-blue-500" />
+                    {isOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                  </div>
+                  {isOpen && (
+                    isMenuOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />
+                  )}
+                </button>
+                {isMenuOpen && isOpen && (
+                  <div className="pl-11 pr-3 py-1 space-y-1">
+                    {item.subItems.map(subItem => (
+                      <NavLink
+                        key={subItem.path}
+                        to={subItem.path}
+                        className={({ isActive }) =>
+                          clsx(
+                            "flex items-center px-3 py-2 rounded-xl transition-all duration-300 text-xs font-bold",
+                            "hover:bg-blue-50/50 text-gray-500 hover:text-blue-600",
+                            isActive ? "bg-blue-50 text-blue-600" : ""
+                          )
+                        }
+                      >
+                        {subItem.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path!}
+              className={({ isActive }) =>
+                clsx(
+                  "group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm",
+                  "hover:bg-blue-50/50 text-gray-500 hover:text-blue-600",
+                  isActive ? "bg-blue-50 text-blue-600 shadow-sm shadow-blue-100/50" : ""
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={clsx("flex-shrink-0 w-5 h-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500")} />
+                  {isOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
 
         <div className="my-4 px-3">
           <div className="h-px bg-gray-100 w-full" />
