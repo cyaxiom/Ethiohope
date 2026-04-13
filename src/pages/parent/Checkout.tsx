@@ -6,21 +6,36 @@ import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck } from 'luci
 const Checkout = () => {
   const { data: enrollmentsData, isLoading, error } = useGetMyPendingEnrollmentsQuery();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
 
   const enrollments = enrollmentsData?.data || [];
-  const totalPrice = enrollments.reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
+
+  // Initialize selection with all enrollments when data arrives
+  useEffect(() => {
+    if (enrollments.length > 0 && selectedIds.length === 0) {
+      setSelectedIds(enrollments.map((e: any) => e._id));
+    }
+  }, [enrollments]);
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const selectedEnrollments = enrollments.filter((e: any) => selectedIds.includes(e._id));
+  const totalPrice = selectedEnrollments.reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
   
   const handleCheckout = async () => {
-    if (enrollments.length === 0) {
-      setErrorMsg('No pending enrollments to checkout');
+    if (selectedIds.length === 0) {
+      setErrorMsg('Please select at least one enrollment to pay');
       return;
     }
     
     try {
       setErrorMsg('');
-      const enrollmentIds = enrollments.map((e: any) => e._id);
-      const res = await createCheckoutSession({ enrollmentIds }).unwrap();
+      const res = await createCheckoutSession({ enrollmentIds: selectedIds }).unwrap();
       
       if (res.url) {
         window.location.href = res.url;
@@ -64,27 +79,50 @@ const Checkout = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {enrollments.map((enrollment: any) => (
-                  <div key={enrollment._id} className="flex flex-col sm:flex-row justify-between p-5 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 transition-colors">
-                    <div className="mb-4 sm:mb-0">
-                      <h3 className="font-bold text-lg text-gray-900">
-                        {enrollment.child?.firstName} {enrollment.child?.lastName}
-                      </h3>
-                      <p className="text-blue-600 font-medium text-sm mt-1">{enrollment.program?.title}</p>
-                      <p className="text-gray-500 text-sm mt-1 flex items-center">
-                        <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold mr-2">Phase</span>
-                        {enrollment.phase?.title}
-                      </p>
+                {enrollments.map((enrollment: any) => {
+                  const isSelected = selectedIds.includes(enrollment._id);
+                  return (
+                    <div 
+                      key={enrollment._id} 
+                      onClick={() => toggleSelection(enrollment._id)}
+                      className={`flex flex-col sm:flex-row items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                        isSelected ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex-shrink-0">
+                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
+                          isSelected ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
+                        }`}>
+                          {isSelected && <span className="text-white text-sm font-bold">✓</span>}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 text-center sm:text-left">
+                        <h3 className="font-bold text-lg text-gray-900">
+                          {enrollment.child?.firstname} {enrollment.child?.lastname}
+                        </h3>
+                        <p className="text-blue-600 font-medium text-sm mt-1">{enrollment.program?.title}</p>
+                        <p className="text-gray-500 text-sm mt-1 flex items-center justify-center sm:justify-start">
+                          <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold mr-2">Phase</span>
+                          {enrollment.phase?.title}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className={`text-2xl font-black ${isSelected ? 'text-blue-700' : 'text-gray-400'}`}>
+                          ${enrollment.amount}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center sm:items-start sm:justify-end">
-                      <span className="text-2xl font-black text-gray-900">${enrollment.amount}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <div className="flex justify-between items-center bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <span className="text-xl font-bold text-gray-800">Total Amount</span>
+                    <div className="text-left">
+                      <span className="text-sm font-bold text-blue-600 uppercase">Selected Items: {selectedIds.length}</span>
+                      <p className="text-xl font-bold text-gray-800">Total Price</p>
+                    </div>
                     <span className="text-3xl font-black text-blue-700">${totalPrice}</span>
                   </div>
                 </div>
@@ -102,8 +140,8 @@ const Checkout = () => {
               <div className="mt-8 flex flex-col items-center">
                 <button
                   onClick={handleCheckout}
-                  disabled={isCreatingSession}
-                  className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                  disabled={isCreatingSession || selectedIds.length === 0}
+                  className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                 >
                   {isCreatingSession ? (
                     <>
@@ -113,7 +151,7 @@ const Checkout = () => {
                   ) : (
                     <>
                       <CreditCard className="w-6 h-6 mr-3" />
-                      Proceed to Secure Payment
+                      Pay for Selected Enrollments
                     </>
                   )}
                 </button>
