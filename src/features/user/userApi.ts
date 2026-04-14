@@ -90,9 +90,19 @@ export const userApi = api.injectEndpoints({
     getRegisterChildInit: builder.query<{ profileCompleted: boolean }, void>({
       query: () => '/parent/register-child/init',
     }),
-    getParentChildren: builder.query<{ success: boolean; data: any[] }, void>({
-      query: () => '/parent/children',
+    getParentChildren: builder.query<{ success: boolean; data: any[] }, { search?: string; progressCategory?: string } | void>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params && 'search' in params && params.search) queryParams.append('search', params.search);
+        if (params && 'progressCategory' in params && params.progressCategory) queryParams.append('progressCategory', params.progressCategory);
+        const queryString = queryParams.toString();
+        return `/parent/children${queryString ? `?${queryString}` : ''}`;
+      },
       providesTags: ['Users'],
+    }),
+    getChildDetails: builder.query<{ success: boolean; data: any }, string>({
+      query: (id) => `/parent/children/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Users', id }],
     }),
   }),
 });
@@ -105,5 +115,6 @@ export const {
   useCompleteProfileMutation,
   useLazyGetRegisterChildInitQuery,
   useGetParentChildrenQuery,
+  useGetChildDetailsQuery,
 } = userApi;
 
