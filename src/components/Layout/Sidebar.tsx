@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, PanelLeftClose, PanelLeft, Bot, 
   Home, BookOpen, FileText, CreditCard, Activity, Settings, User as UserIcon, LogOut, 
@@ -93,8 +93,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       )}
     >
       <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="flex-shrink-0 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-xl p-2 flex items-center justify-center shadow-lg shadow-blue-100">
+        <Link to="/" className="flex items-center gap-3 overflow-hidden group/logo transition-all hover:opacity-80">
+          <div className="flex-shrink-0 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-xl p-2 flex items-center justify-center shadow-lg shadow-blue-100 group-hover/logo:scale-105 transition-transform">
              <Bot className="w-5 h-5 text-white" />
           </div>
           {isOpen && (
@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               SSM Quiz
             </span>
           )}
-        </div>
+        </Link>
         
         {isOpen && (
            <button 

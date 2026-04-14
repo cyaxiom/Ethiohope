@@ -38,15 +38,6 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex relative group">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 group-hover:text-blue-500 transition-colors" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-9 pr-4 py-2 bg-gray-50 border-none rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white w-64 transition-all"
-          />
-        </div>
-        
         <div className="flex items-center gap-3">
           <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-all">
             <Bell className="w-5 h-5" />
