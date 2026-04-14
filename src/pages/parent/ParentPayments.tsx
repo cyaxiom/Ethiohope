@@ -12,17 +12,23 @@ import {
   BookOpen,
   ArrowUpRight,
   Download,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
 import { useGetParentPaymentsQuery } from '../../features/payments/paymentApi';
 import Loading from '../../ui/Loading';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getImageUrl } from '../../lib/utils';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../app/store';
 
 export const ParentPayments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const { user } = useSelector((state: RootState) => state.auth);
 
   // Debounce search
   useEffect(() => {
@@ -38,6 +44,137 @@ export const ParentPayments: React.FC = () => {
   });
 
   const paymentsData = response?.data || [];
+
+  const handleDownloadInvoice = (payment: any) => {
+    const invoiceId = `INV-${payment._id.slice(-8).toUpperCase()}`;
+    const date = new Date(payment.createdAt).toLocaleDateString(undefined, { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    const amount = (payment.amount || payment.phase?.price || 0).toLocaleString();
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Invoice - ${invoiceId}</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+              body { font-family: 'Inter', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              @page { margin: 0; }
+              .invoice-container { max-width: 800px; margin: 40px auto; padding: 40px; border: 1px solid #f3f4f6; }
+            </style>
+          </head>
+          <body class="bg-gray-50">
+            <div class="invoice-container bg-white shadow-2xl rounded-[2rem]">
+              <!-- Header -->
+              <div class="flex justify-between items-start mb-12">
+                <div>
+                  <div class="flex items-center gap-2 mb-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-xl">E</div>
+                    <span class="text-2xl font-black text-blue-900 tracking-tight">EthioHope Academy</span>
+                  </div>
+                  <p class="text-gray-500 text-sm font-medium">Bole Road, Africa Avenue</p>
+                  <p class="text-gray-500 text-sm font-medium">Addis Ababa, Ethiopia</p>
+                  <p class="text-gray-500 text-sm font-medium">contact@ethiohope.com</p>
+                </div>
+                <div class="text-right">
+                  <h1 class="text-4xl font-black text-gray-800 uppercase tracking-tighter mb-2">Invoice</h1>
+                  <p class="text-gray-400 text-xs font-black uppercase tracking-widest">Transaction ID</p>
+                  <p class="text-lg font-bold text-blue-600">${invoiceId}</p>
+                </div>
+              </div>
+
+              <!-- Billing Info -->
+              <div class="grid grid-cols-2 gap-12 mb-12 border-y border-gray-100 py-10">
+                <div>
+                  <p class="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Billed To</p>
+                  <h3 class="text-xl font-black text-gray-800">${user?.firstname} ${user?.lastname}</h3>
+                  <p class="text-gray-500 font-medium">${user?.email}</p>
+                  <p class="text-gray-500 font-medium mt-1">Parent Account</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Payment Details</p>
+                  <p class="text-gray-500 font-medium">Date: <span class="text-gray-800 font-bold">${date}</span></p>
+                  <p class="text-gray-500 font-medium mt-1">Status: <span class="text-green-600 font-black uppercase tracking-wider text-xs">Paid Successfully</span></p>
+                  <p class="text-gray-500 font-medium mt-1">Method: <span class="text-gray-800 font-bold">Stripe Card Payment</span></p>
+                </div>
+              </div>
+
+              <!-- Itemized Table -->
+              <div class="mb-12">
+                <table class="w-full">
+                  <thead>
+                    <tr class="text-left border-b-2 border-gray-100">
+                      <th class="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
+                      <th class="pb-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Student</th>
+                      <th class="pb-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-50">
+                    <tr>
+                      <td class="py-8">
+                        <h4 class="text-lg font-black text-gray-800">${payment.program?.title}</h4>
+                        <p class="text-sm text-gray-500 font-medium mt-1">${payment.phase?.title || `Phase ${payment.phase?.orderIndex}`}</p>
+                      </td>
+                      <td class="py-8 text-center">
+                        <span class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-black text-xs">
+                          ${payment.child?.firstname} ${payment.child?.lastname}
+                        </span>
+                      </td>
+                      <td class="py-8 text-right">
+                        <span class="text-xl font-black text-gray-800">$${amount}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Summary Section -->
+              <div class="flex justify-end">
+                <div class="w-full max-w-xs space-y-4">
+                  <div class="flex justify-between items-center text-gray-500 font-medium">
+                    <span>Subtotal</span>
+                    <span class="text-gray-800 font-bold">$${amount}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-gray-500 font-medium">
+                    <span>Tax (0%)</span>
+                    <span class="text-gray-800 font-bold">$0.00</span>
+                  </div>
+                  <div class="flex justify-between items-center pt-4 border-t-2 border-gray-100">
+                    <span class="text-lg font-black text-gray-800">Total Amount</span>
+                    <span class="text-3xl font-black text-blue-600">$${amount}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bank Style Verification Footer -->
+              <div class="mt-20 pt-10 border-t border-gray-100 text-center">
+                <div class="flex items-center justify-center gap-2 mb-4">
+                  <div class="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <span class="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Digitally Verified Transaction</span>
+                </div>
+                <p class="text-[10px] text-gray-400 font-medium max-w-md mx-auto leading-relaxed">
+                  This is a computer-generated document and does not require a physical signature. 
+                  For any billing inquiries, please contact our support team at support@ethiohope.com with your transaction ID.
+                </p>
+              </div>
+            </div>
+            <script>
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 500);
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
 
   const getStatusStyles = (paymentStatus: string, enrollmentStatus: string) => {
     if (paymentStatus === 'PAID') {
@@ -237,7 +374,10 @@ export const ParentPayments: React.FC = () => {
 
                     <div className="flex gap-2">
                       {payment.paymentStatus === 'PAID' ? (
-                        <button className="p-4 bg-gray-50 hover:bg-blue-600 text-gray-400 hover:text-white rounded-3xl transition-all duration-300 group/btn shadow-sm hover:shadow-lg hover:shadow-blue-200">
+                        <button 
+                          onClick={() => handleDownloadInvoice(payment)}
+                          className="p-4 bg-gray-50 hover:bg-blue-600 text-gray-400 hover:text-white rounded-3xl transition-all duration-300 group/btn shadow-sm hover:shadow-lg hover:shadow-blue-200"
+                        >
                           <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                         </button>
                       ) : payment.status === 'PENDING' ? (
