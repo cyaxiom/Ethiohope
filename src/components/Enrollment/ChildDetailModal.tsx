@@ -3,6 +3,7 @@ import { X, User, BookOpen, Award, Activity, Calendar, MapPin, GraduationCap, Ch
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGetChildDetailsQuery } from '../../features/user/userApi';
 import Loading from '../../ui/Loading';
+import { getImageUrl } from '../../lib/utils';
 
 interface ChildDetailModalProps {
   isOpen: boolean;
@@ -50,14 +51,14 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
         ) : (
           <div className="flex flex-col h-full overflow-hidden">
             {/* Header / Hero Section */}
-            <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-8 md:p-12 text-white overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+            <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-8 md:p-12 text-white overflow-hidden header-gradient">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl no-print"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/20 rounded-full -ml-24 -mb-24 blur-2xl no-print"></div>
               
               <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
                 <div className="w-32 h-32 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl relative group">
                   <User className="w-16 h-16 text-white" />
-                  <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-400 rounded-2xl border-4 border-white flex items-center justify-center shadow-lg">
+                  <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-400 rounded-2xl border-4 border-white flex items-center justify-center shadow-lg no-print">
                     <CheckCircle2 className="w-5 h-5 text-white" />
                   </div>
                 </div>
@@ -86,7 +87,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar bg-gray-50/50">
-              <div className="max-w-3xl mx-auto space-y-10">
+              <div className="max-w-3xl mx-auto space-y-10 pb-8">
                 
                 {/* Academic Status Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -95,7 +96,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                     { label: 'Total Courses', value: child.stats?.totalCourses || 0, icon: BookOpen, color: 'purple' },
                     { label: 'Achievements', value: child.stats?.achievements || 0, icon: Award, color: 'orange' },
                   ].map((stat, idx) => (
-                    <div key={idx} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:border-blue-200 transition-all">
+                    <div key={idx} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:border-blue-200 transition-all card">
                       <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-50 flex items-center justify-center text-${stat.color}-500 mb-3 group-hover:scale-110 transition-transform`}>
                         <stat.icon className="w-6 h-6" />
                       </div>
@@ -117,12 +118,12 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                   {child.enrollments && child.enrollments.length > 0 ? (
                     <div className="space-y-4">
                       {child.enrollments.map((enrollment: any) => (
-                        <div key={enrollment._id} className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                        <div key={enrollment._id} className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all card">
                           <div className="flex flex-col md:flex-row gap-6">
                             {/* Course Image or Placeholder */}
                             <div className="w-full md:w-32 h-32 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                               {enrollment.program?.image ? (
-                                <img src={enrollment.program.image} alt="" className="w-full h-full object-cover" />
+                                <img src={getImageUrl(enrollment.program.image)} alt="" className="w-full h-full object-cover" />
                               ) : (
                                 <BookOpen className="w-12 h-12 text-gray-300" />
                               )}
@@ -189,7 +190,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-white p-12 rounded-[2rem] border-2 border-dashed border-gray-200 text-center flex flex-col items-center justify-center">
+                    <div className="bg-white p-12 rounded-[2rem] border-2 border-dashed border-gray-200 text-center flex flex-col items-center justify-center card">
                        <BookOpen className="w-12 h-12 text-gray-300 mb-4" />
                        <p className="text-gray-500 font-bold">No active courses found for this student.</p>
                     </div>
@@ -197,8 +198,8 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                 </div>
 
                 {/* Quick Info / Personal Details */}
-                <div className="bg-blue-900 text-white rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                <div className="bg-blue-900 text-white rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden header-gradient">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl no-print"></div>
                   <h3 className="text-xl font-black mb-6 flex items-center gap-3 relative z-10">
                     <div className="w-2 h-6 bg-blue-400 rounded-full" />
                     Personal Information
@@ -219,21 +220,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                     ))}
                   </div>
                 </div>
-
               </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-8 border-t border-gray-100 bg-white flex justify-end gap-4">
-               <button 
-                onClick={onClose}
-                className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl font-bold transition-all"
-               >
-                 Close Details
-               </button>
-               <button className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
-                 Print Report
-               </button>
             </div>
           </div>
         )}
