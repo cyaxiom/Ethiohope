@@ -80,6 +80,7 @@ const AdminSchedules = React.lazy(() => import('@pages/admin/Schedules'));
 // Role-based dashboards
 const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboard'));
 const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard'));
+const ParentChildren = React.lazy(() => import('@pages/parent/ParentChildren'));
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
 
 import { ProtectedRoute, PermissionRoute } from './Guard';
@@ -246,6 +247,11 @@ export const routes = [
         path: '/parent/dashboard',
         name: 'Parent Dashboard',
         element: <ParentDashboard />,
+      },
+      {
+        path: '/parent/children',
+        name: 'Parent Children',
+        element: <ParentChildren />,
       },
       {
         path: '*',

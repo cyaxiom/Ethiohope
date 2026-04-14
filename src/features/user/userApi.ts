@@ -90,6 +90,10 @@ export const userApi = api.injectEndpoints({
     getRegisterChildInit: builder.query<{ profileCompleted: boolean }, void>({
       query: () => '/parent/register-child/init',
     }),
+    getParentChildren: builder.query<{ success: boolean; data: any[] }, void>({
+      query: () => '/parent/children',
+      providesTags: ['Users'],
+    }),
   }),
 });
 
@@ -100,5 +104,6 @@ export const {
   useUpdateUserStatusMutation,
   useCompleteProfileMutation,
   useLazyGetRegisterChildInitQuery,
+  useGetParentChildrenQuery,
 } = userApi;
 
