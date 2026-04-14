@@ -98,7 +98,7 @@ export const ParentPayments: React.FC = () => {
                   <p class="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Payment Details</p>
                   <p class="text-gray-500 font-medium">Date: <span class="text-gray-800 font-bold">${date}</span></p>
                   <p class="text-gray-500 font-medium mt-1">Status: <span class="text-green-600 font-black uppercase tracking-wider text-xs">Paid Successfully</span></p>
-                  <p class="text-gray-500 font-medium mt-1">Method: <span class="text-gray-800 font-bold">Stripe Card Payment</span></p>
+                  <p class="text-gray-500 font-medium mt-1">Method: <span class="text-gray-800 font-bold">Credit/Debit Card</span></p>
                 </div>
               </div>
 
