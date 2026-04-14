@@ -95,7 +95,10 @@ export const ParentChildren: React.FC = () => {
                              <Award className="w-4 h-4 text-purple-400" />
                              <div className="flex flex-col">
                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Phase</span>
-                               <span className="text-xs font-bold text-gray-700">{enrollment.phase?.name || 'N/A'}</span>
+                               <span className="text-xs font-bold text-gray-700">
+                                 {enrollment.phase?.orderIndex ? `Phase ${enrollment.phase.orderIndex}` : 'N/A'}
+                                 {enrollment.phase?.title ? ` - ${enrollment.phase.title}` : ''}
+                               </span>
                              </div>
                            </div>
                            <div className="flex items-center gap-2">
