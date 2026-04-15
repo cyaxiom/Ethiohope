@@ -25,6 +25,7 @@ export const DashboardLayout: React.FC = () => {
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
         { path: '/admin/users', icon: Users, label: 'Users' },
+        { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
       ];
     }
     

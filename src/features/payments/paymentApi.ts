@@ -30,7 +30,25 @@ export const paymentApi = api.injectEndpoints({
         const queryString = queryParams.toString();
         return `/payments/parent-history${queryString ? `?${queryString}` : ''}`;
       },
-      providesTags: ['Users'], // Reusing Users tag for simplicity as it relates to parent data
+      providesTags: ['Users'],
+    }),
+    getAllPayments: builder.query<PaymentHistoryResponse, { search?: string; status?: string } | void>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params && 'search' in params && params.search) queryParams.append('search', params.search);
+        if (params && 'status' in params && params.status) queryParams.append('status', params.status);
+        const queryString = queryParams.toString();
+        return `/payments/admin/all${queryString ? `?${queryString}` : ''}`;
+      },
+      providesTags: ['Users'],
+    }),
+    updatePaymentStatus: builder.mutation<any, { enrollmentId: string; status: string }>({
+      query: (data) => ({
+        url: '/payments/admin/update-status',
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Users'],
     }),
   }),
 });
@@ -38,4 +56,6 @@ export const paymentApi = api.injectEndpoints({
 export const {
   useCreateCheckoutSessionMutation,
   useGetParentPaymentsQuery,
+  useGetAllPaymentsQuery,
+  useUpdatePaymentStatusMutation,
 } = paymentApi;
