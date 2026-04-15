@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useGetMyPendingEnrollmentsQuery } from '../../features/enrollments/enrollmentApi';
 import { useCreateCheckoutSessionMutation } from '../../features/payments/paymentApi';
-import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck } from 'lucide-react';
+import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck, Phone, MessageCircle, Wallet } from 'lucide-react';
 
 const Checkout = () => {
   const { data: enrollmentsData, isLoading, error } = useGetMyPendingEnrollmentsQuery();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'zelle'>('stripe');
+  const [showZelleConfirmation, setShowZelleConfirmation] = useState(false);
 
   const enrollments = enrollmentsData?.data || [];
 
@@ -137,28 +139,156 @@ const Checkout = () => {
             )}
 
             {enrollments.length > 0 && (
-              <div className="mt-8 flex flex-col items-center">
-                <button
-                  onClick={handleCheckout}
-                  disabled={isCreatingSession || selectedIds.length === 0}
-                  className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-                >
-                  {isCreatingSession ? (
-                    <>
-                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-6 h-6 mr-3" />
-                      Pay for Selected Enrollments
-                    </>
-                  )}
-                </button>
-                <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
-                  <ShieldCheck className="w-4 h-4 mr-1 text-green-500" />
-                  Payments are securely processed by Stripe
+              <div className="mt-10 pt-8 border-t border-gray-100">
+                <h3 className="text-xl font-bold text-gray-800 mb-6">Choose Payment Method</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                  <div 
+                    onClick={() => { setPaymentMethod('stripe'); setShowZelleConfirmation(false); }}
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                      paymentMethod === 'stripe' ? 'border-blue-600 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-gray-200'
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      paymentMethod === 'stripe' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">Credit/Debit Card</p>
+                      <p className="text-xs text-gray-500 font-medium">Secure payment via Stripe</p>
+                    </div>
+                    {paymentMethod === 'stripe' && (
+                      <div className="ml-auto w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-[10px]">✓</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div 
+                    onClick={() => { setPaymentMethod('zelle'); setShowZelleConfirmation(false); }}
+                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                      paymentMethod === 'zelle' ? 'border-purple-600 bg-purple-50/50' : 'border-gray-100 bg-white hover:border-gray-200'
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      paymentMethod === 'zelle' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      <Wallet className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">Zelle Transfer</p>
+                      <p className="text-xs text-gray-500 font-medium">Pay directly via Zelle</p>
+                    </div>
+                    {paymentMethod === 'zelle' && (
+                      <div className="ml-auto w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-[10px]">✓</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
+                {paymentMethod === 'stripe' ? (
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={handleCheckout}
+                      disabled={isCreatingSession || selectedIds.length === 0}
+                      className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-lg shadow-blue-100 text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                    >
+                      {isCreatingSession ? (
+                        <>
+                          <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-6 h-6 mr-3" />
+                          Pay with Stripe
+                        </>
+                      )}
+                    </button>
+                    <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
+                      <ShieldCheck className="w-4 h-4 mr-1 text-green-500" />
+                      Payments are securely processed by Stripe
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-purple-50 rounded-2xl border border-purple-100 p-6 sm:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center">
+                      <Wallet className="w-5 h-5 mr-2" />
+                      Zelle Payment Instructions
+                    </h4>
+                    
+                    {!showZelleConfirmation ? (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-purple-100 shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
+                              <Wallet className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-0.5">Zelle Account</p>
+                              <p className="text-base font-bold text-gray-900">ethiohope@example.com</p>
+                              <p className="text-xs text-gray-500">Recipient: Ethio Hope Academy</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-purple-100 shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                              <Phone className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-0.5">Call Us</p>
+                              <p className="text-base font-bold text-gray-900">+1 (555) 123-4567</p>
+                              <p className="text-xs text-gray-500">Available Mon-Fri, 9AM-5PM</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-purple-100 shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
+                              <MessageCircle className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">WhatsApp Receipt</p>
+                              <p className="text-base font-bold text-gray-900">+1 (555) 987-6543</p>
+                              <p className="text-xs text-gray-500">Send us a screenshot of your transfer</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-yellow-800">
+                          <p className="font-bold flex items-center mb-1">
+                            <AlertCircle className="w-4 h-4 mr-2" />
+                            Important Note
+                          </p>
+                          <p>Please include your child's full name in the Zelle memo field. Once you've sent the payment, send the receipt via WhatsApp so we can manually approve your enrollment.</p>
+                        </div>
+
+                        <button
+                          onClick={() => setShowZelleConfirmation(true)}
+                          className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-lg shadow-purple-100 text-lg font-bold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none transition-all active:scale-[0.98]"
+                        >
+                          <CheckCircle className="w-6 h-6 mr-3" />
+                          I've Sent the Payment
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 animate-in zoom-in duration-300">
+                        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-50">
+                          <CheckCircle className="w-10 h-10" />
+                        </div>
+                        <h5 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h5>
+                        <p className="text-gray-600 mb-6">We've received your notice. Please make sure to send the screenshot to our WhatsApp <span className="font-bold text-purple-700">+1 (555) 987-6543</span> if you haven't already.</p>
+                        <button
+                          onClick={() => setShowZelleConfirmation(false)}
+                          className="text-sm font-bold text-purple-600 hover:text-purple-700 underline"
+                        >
+                          View instructions again
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
