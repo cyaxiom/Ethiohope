@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Calendar, Clock, Search, Plus, Edit2, 
   ShieldAlert, Activity, ChevronLeft, ChevronRight, 
-  X, Trash2, AlertTriangle, BookOpen, MessageSquare
+  X, Trash2, AlertTriangle, BookOpen, MessageSquare, Users
 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
@@ -152,11 +152,23 @@ const Schedules: React.FC = () => {
                       </div>
                    </div>
 
-                   <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-gray-600">
-                         <Clock className="w-4 h-4 text-blue-500" />
-                         <span className="text-sm font-bold">{schedule.startTime} - {schedule.endTime}</span>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2 text-gray-600">
+                            <Clock className="w-4 h-4 text-blue-500" />
+                            <span className="text-sm font-bold">{schedule.startTime} - {schedule.endTime}</span>
+                         </div>
+                         <div className="flex items-center gap-2">
+                            <Users className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cap: {schedule.capacity || 20}</span>
+                         </div>
                       </div>
+                      
+                      <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100">
+                         <Activity className="w-3.5 h-3.5 text-blue-500" />
+                         <span className="text-xs font-black text-blue-900 uppercase tracking-widest">{schedule.sessionLabel}</span>
+                      </div>
+
                       <div className="pt-3 border-t border-gray-50 flex items-center gap-3">
                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-500 px-1 text-center">
                             {schedule.batch?.batchName}
@@ -220,14 +232,21 @@ const Schedules: React.FC = () => {
 const ScheduleModal: React.FC<{ onClose: () => void, schedule?: any }> = ({ onClose, schedule }) => {
   const isEdit = !!schedule;
   
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       batch: schedule?.batch?._id || '',
+      sessionLabel: schedule?.sessionLabel || 'Lecture 1',
       type: schedule?.type || 'LECTURE',
-      dayOfWeek: schedule?.dayOfWeek || 'MONDAY',
-      startTime: schedule?.startTime || '09:00',
-      endTime: schedule?.endTime || '11:00'
+      capacity: schedule?.capacity || 20,
+      slots: isEdit 
+        ? [{ dayOfWeek: schedule.dayOfWeek, startTime: schedule.startTime, endTime: schedule.endTime }]
+        : [{ dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '11:00' }]
     }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "slots"
   });
 
   const { data: batchesData } = useGetBatchesQuery({ page: 1, limit: 100 });
@@ -239,11 +258,28 @@ const ScheduleModal: React.FC<{ onClose: () => void, schedule?: any }> = ({ onCl
   const onSubmit = async (data: any) => {
     try {
       if (isEdit) {
-        await updateSchedule({ id: schedule._id, data }).unwrap();
+        const payload = {
+          batch: data.batch,
+          sessionLabel: data.sessionLabel,
+          type: data.type,
+          capacity: data.capacity,
+          ...data.slots[0]
+        };
+        await updateSchedule({ id: schedule._id, data: payload }).unwrap();
         sonnerToast.success('Schedule updated successfully');
       } else {
-        await createSchedule(data).unwrap();
-        sonnerToast.success('Schedule created successfully');
+        const promises = data.slots.map((slot: any) => {
+          const payload = {
+            batch: data.batch,
+            sessionLabel: data.sessionLabel,
+            type: data.type,
+            capacity: data.capacity,
+            ...slot
+          };
+          return createSchedule(payload).unwrap();
+        });
+        await Promise.all(promises);
+        sonnerToast.success(`${data.slots.length} schedule(s) created successfully`);
       }
       onClose();
     } catch (err: any) {
@@ -253,7 +289,7 @@ const ScheduleModal: React.FC<{ onClose: () => void, schedule?: any }> = ({ onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h3 className="text-lg font-bold text-gray-800">{isEdit ? 'Edit Schedule' : 'Create New Schedule'}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -261,7 +297,7 @@ const ScheduleModal: React.FC<{ onClose: () => void, schedule?: any }> = ({ onCl
           </button>
         </div>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Target Batch</label>
             <select 
@@ -280,45 +316,95 @@ const ScheduleModal: React.FC<{ onClose: () => void, schedule?: any }> = ({ onCl
 
           <div className="grid grid-cols-2 gap-4">
              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Session Type</label>
-                <select 
-                  {...register('type', { required: true })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="LECTURE">Lecture</option>
-                  <option value="DISCUSSION">Discussion</option>
-                </select>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Session Group</label>
+                <input 
+                  type="text"
+                  {...register('sessionLabel', { required: 'Group label is required' })}
+                  placeholder="e.g. Lecture 1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+                {errors.sessionLabel && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase italic">Required</p>}
              </div>
              <div>
-                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Day of Week</label>
-                <select 
-                  {...register('dayOfWeek', { required: true })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  {DAYS.map(day => (
-                    <option key={day} value={day}>{day}</option>
-                  ))}
-                </select>
+                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Capacity</label>
+                <input 
+                  type="number"
+                  {...register('capacity', { required: true, min: 1 })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
              </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Start Time</label>
-              <input 
-                type="time"
-                {...register('startTime', { required: true })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+          <div>
+             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Session Type</label>
+             <select 
+               {...register('type', { required: true })}
+               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+             >
+               <option value="LECTURE">Lecture</option>
+               <option value="DISCUSSION">Discussion</option>
+             </select>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Days & Times</label>
+              {!isEdit && (
+                <button 
+                  type="button" 
+                  onClick={() => append({ dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '11:00' })}
+                  className="flex items-center gap-1 text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded"
+                >
+                  <Plus className="w-3 h-3" /> Add Day
+                </button>
+              )}
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">End Time</label>
-              <input 
-                type="time"
-                {...register('endTime', { required: true })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+
+            {fields.map((field, index) => (
+              <div key={field.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3 relative group">
+                {!isEdit && fields.length > 1 && (
+                  <button 
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
+                
+                <div className="grid grid-cols-1 gap-3">
+                   <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Day of Week</label>
+                      <select 
+                        {...register(`slots.${index}.dayOfWeek` as const, { required: true })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      >
+                        {DAYS.map(day => (
+                          <option key={day} value={day}>{day}</option>
+                        ))}
+                      </select>
+                   </div>
+                   <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Start Time</label>
+                        <input 
+                          type="time"
+                          {...register(`slots.${index}.startTime` as const, { required: true })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">End Time</label>
+                        <input 
+                          type="time"
+                          {...register(`slots.${index}.endTime` as const, { required: true })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        />
+                      </div>
+                   </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, GraduationCap, MapPin, Globe, Users, Clock, CheckCircle2, ChevronDown, Search } from 'lucide-react';
+import { X, Calendar, GraduationCap, MapPin, Globe, Users, Clock, CheckCircle2, ChevronDown, Search, AlertTriangle, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useGetPublicBatchesByPhaseQuery } from '../../features/programs/batchApi';
@@ -17,6 +17,8 @@ import { Country, State } from 'country-state-city';
 
 const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, program, phase }) => {
   const [step, setStep] = useState(1);
+  const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
+
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       firstName: '',
@@ -55,6 +57,44 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
   const batches = batchesData?.data || [];
   const selectedBatch = batches.find(b => b._id === selectedBatchId);
 
+  // Group schedules for the selected batch
+  const groupedSchedules = React.useMemo(() => {
+    if (!selectedBatch?.schedules) return {};
+    return (selectedBatch.schedules as any[]).reduce((acc: any, s: any) => {
+      if (!acc[s.sessionLabel]) acc[s.sessionLabel] = [];
+      acc[s.sessionLabel].push(s);
+      return acc;
+    }, {});
+  }, [selectedBatch]);
+
+  const requiredSessionLabels = Object.keys(groupedSchedules);
+  const isAllSchedulesSelected = requiredSessionLabels.every(label => selectedSchedules[label]);
+
+  const handleSlotSelect = (label: string, slotId: string) => {
+    setSelectedSchedules(prev => ({
+      ...prev,
+      [label]: slotId
+    }));
+  };
+
+  const checkConflicts = (label: string, slot: any) => {
+    for (const otherLabel of Object.keys(selectedSchedules)) {
+      if (otherLabel === label) continue;
+      const otherSlotId = selectedSchedules[otherLabel];
+      const otherSlot = (selectedBatch?.schedules as any[])?.find((s: any) => s._id === otherSlotId);
+      
+      if (otherSlot && otherSlot.dayOfWeek === slot.dayOfWeek) {
+        if (
+          (slot.startTime >= otherSlot.startTime && slot.startTime < otherSlot.endTime) ||
+          (otherSlot.startTime >= slot.startTime && otherSlot.startTime < slot.endTime)
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
   useEffect(() => {
     if (isOpen) {
       setStep(1);
@@ -79,7 +119,8 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
         region: stateObj?.name || data.region || data.state,
         programId: program._id,
         phaseId: phase._id,
-        batchId: data.batchId
+        batchId: data.batchId,
+        selectedSchedules: Object.values(selectedSchedules)
       };
 
       const result = await prepareEnrollment(payload).unwrap();
@@ -214,59 +255,125 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
             )}
 
             {step === 2 && (
-              <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex gap-3 text-amber-800">
-                  <Clock className="w-5 h-5 flex-shrink-0" />
-                  <p className="text-sm font-medium">Select a study group (batch) and schedule that works for your child.</p>
+              <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                <div>
+                  <h4 className="text-xl font-black text-gray-900 mb-2">Select Study Batch</h4>
+                  <p className="text-gray-500 text-sm">Choose the batch that best fits your child's learning pace.</p>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-bold text-gray-800">Available Batches</h4>
                   {isLoadingBatches ? (
-                    <div className="py-12 flex justify-center"><Clock className="w-8 h-8 animate-spin text-blue-600" /></div>
+                    <div className="py-12 text-center">
+                      <Activity className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-3" />
+                      <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Fetching available batches...</p>
+                    </div>
                   ) : batches.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                      <p className="text-gray-500 font-medium">No study groups available for this phase yet.</p>
-                      <p className="text-xs text-gray-400 mt-1">Please contact support for more information.</p>
+                    <div className="p-10 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200 text-center">
+                       <p className="text-gray-500 font-bold italic">No active batches available for this phase.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">
-                      {batches.map((batch) => (
-                        <div 
-                          key={batch._id}
-                          onClick={() => setValue('batchId', batch._id)}
-                          className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
-                            selectedBatchId === batch._id ? 'border-blue-600 bg-blue-50/50 shadow-md' : 'border-gray-100 hover:border-gray-200 bg-white'
-                          }`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${
-                                selectedBatchId === batch._id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
-                              }`}>
-                                <Users className="w-5 h-5" />
+                      {batches.map((batch: any) => (
+                        <div key={batch._id} className="space-y-4">
+                          <div 
+                            onClick={() => {
+                              setValue('batchId', batch._id);
+                              setSelectedSchedules({}); // Reset selections when batch changes
+                            }}
+                            className={`p-6 rounded-3xl border-2 transition-all cursor-pointer group ${
+                              selectedBatchId === batch._id 
+                                ? 'bg-blue-50 border-blue-600 shadow-xl shadow-blue-100' 
+                                : 'bg-white border-gray-100 hover:border-blue-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                                  selectedBatchId === batch._id ? 'bg-blue-600 text-white scale-110' : 'bg-gray-100 text-gray-400'
+                                }`}>
+                                  <Users className="w-6 h-6" />
+                                </div>
+                                <div>
+                                  <h5 className="font-black text-gray-900 text-lg tracking-tight">{batch.batchName}</h5>
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Available for enrollment</p>
+                                </div>
                               </div>
-                              <div>
-                                <h5 className="font-bold text-gray-900">{batch.batchName}</h5>
-                                <p className="text-xs text-gray-500">Max Capacity: {batch.capacity || 'Unlimited'}</p>
-                              </div>
+                              {selectedBatchId === batch._id && (
+                                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg animate-in zoom-in">
+                                  <CheckCircle2 className="w-5 h-5" />
+                                </div>
+                              )}
                             </div>
-                            {selectedBatchId === batch._id && <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs">✓</div>}
                           </div>
 
-                          {/* Schedules */}
-                          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {batch.schedules && batch.schedules.length > 0 ? (
-                              batch.schedules.map((sched: any, i: number) => (
-                                <div key={i} className="flex items-center gap-2 text-xs font-semibold text-gray-600">
-                                  <Clock className="w-3.5 h-3.5 text-blue-500" />
-                                  <span>{sched.dayOfWeek} • {sched.startTime} - {sched.endTime}</span>
+                          {/* Session Group Slots (Only for selected batch) */}
+                          <AnimatePresence>
+                            {selectedBatchId === batch._id && Object.keys(groupedSchedules).length > 0 && (
+                              <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="p-6 bg-gray-50/50 rounded-3xl border-2 border-gray-100 space-y-6 mt-2 ml-4 relative">
+                                  <div className="absolute left-[-18px] top-0 bottom-10 w-0.5 bg-blue-100"></div>
+                                  
+                                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-4">Choose your preferred session times:</p>
+                                  
+                                  {Object.keys(groupedSchedules).map((label) => (
+                                    <div key={label} className="space-y-3">
+                                      <h6 className="text-sm font-black text-gray-700 flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                        {label}
+                                      </h6>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {groupedSchedules[label].map((slot: any) => {
+                                          const isSelected = selectedSchedules[label] === slot._id;
+                                          const hasConflict = !isSelected && checkConflicts(label, slot);
+                                          
+                                          return (
+                                            <button
+                                              key={slot._id}
+                                              type="button"
+                                              disabled={hasConflict}
+                                              onClick={() => handleSlotSelect(label, slot._id)}
+                                              className={`p-4 rounded-2xl border-2 transition-all flex flex-col gap-1 text-left relative overflow-hidden ${
+                                                isSelected 
+                                                  ? 'bg-white border-blue-600 shadow-md ring-2 ring-blue-600/10' 
+                                                  : hasConflict
+                                                    ? 'bg-gray-50 border-gray-100 opacity-50 cursor-not-allowed'
+                                                    : 'bg-white border-gray-100 hover:border-blue-400'
+                                              }`}
+                                            >
+                                              <div className="flex items-center justify-between w-full">
+                                                <span className="text-xs font-black uppercase tracking-widest text-gray-800">
+                                                  {slot.dayOfWeek}
+                                                </span>
+                                                {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+                                              </div>
+                                              <div className="flex items-center gap-1.5 text-gray-500">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                <span className="text-xs font-bold tracking-tight">{slot.startTime} - {slot.endTime}</span>
+                                              </div>
+                                              
+                                              {hasConflict && (
+                                                <div className="absolute inset-0 bg-red-50/80 flex items-center justify-center backdrop-blur-[1px]">
+                                                   <span className="text-[9px] font-black text-red-600 uppercase tracking-widest flex items-center gap-1">
+                                                     <AlertTriangle className="w-3 h-3" />
+                                                     Time Conflict
+                                                   </span>
+                                                </div>
+                                              )}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))
-                            ) : (
-                              <p className="text-xs text-gray-400 italic">No schedule timings set yet.</p>
+                              </motion.div>
                             )}
-                          </div>
+                          </AnimatePresence>
                         </div>
                       ))}
                     </div>
@@ -331,7 +438,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
               ) : (
                 <button 
                   type="submit" 
-                  disabled={isSubmitting || !selectedBatchId}
+                  disabled={isSubmitting || !selectedBatchId || !isAllSchedulesSelected}
                   className="px-10 py-3 bg-green-600 hover:bg-green-700 text-white font-black rounded-xl shadow-lg shadow-green-100 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {isSubmitting ? 'Processing...' : 'Complete Registration'}

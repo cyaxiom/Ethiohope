@@ -8,20 +8,24 @@ export interface Schedule {
     program: { title: string };
     phase: { title: string };
   };
+  sessionLabel: string;
   type: 'LECTURE' | 'DISCUSSION';
   dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   startTime: string;
   endTime: string;
+  capacity: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateSchedulePayload {
   batch: string;
+  sessionLabel: string;
   type: 'LECTURE' | 'DISCUSSION';
   dayOfWeek: string;
   startTime: string;
   endTime: string;
+  capacity: number;
 }
 
 export interface GetSchedulesResponse {
