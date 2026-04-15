@@ -100,7 +100,7 @@ const Schedules: React.FC = () => {
                  <option value="">All Batches</option>
                  {batchesData?.data.map((b: any) => (
                    <option key={b._id} value={b._id}>
-                     Batch {b.groupType} - {b.program?.title} ({b.phase?.title})
+                     {b.batchName} - {b.program?.title} ({b.phase?.title})
                    </option>
                  ))}
                </select>
@@ -158,8 +158,8 @@ const Schedules: React.FC = () => {
                          <span className="text-sm font-bold">{schedule.startTime} - {schedule.endTime}</span>
                       </div>
                       <div className="pt-3 border-t border-gray-50 flex items-center gap-3">
-                         <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-500">
-                            {schedule.batch?.groupType}
+                         <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-500 px-1 text-center">
+                            {schedule.batch?.batchName}
                          </div>
                          <div className="min-w-0">
                             <p className="text-[10px] text-gray-400 font-bold uppercase truncate">{schedule.batch?.program?.title}</p>
@@ -183,7 +183,7 @@ const Schedules: React.FC = () => {
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h4>
             <p className="text-gray-500 mb-6 text-sm">
-              Delete <span className="font-bold text-gray-800">{scheduleToDelete.type}</span> on <span className="font-bold text-gray-800">{scheduleToDelete.dayOfWeek}</span> for batch <span className="font-bold text-gray-800">{scheduleToDelete.batch?.groupType}</span>?
+              Delete <span className="font-bold text-gray-800">{scheduleToDelete.type}</span> on <span className="font-bold text-gray-800">{scheduleToDelete.dayOfWeek}</span> for batch <span className="font-bold text-gray-800">{scheduleToDelete.batch?.batchName}</span>?
             </p>
             <div className="flex gap-3">
               <button 
@@ -271,7 +271,7 @@ const ScheduleModal: React.FC<{ onClose: () => void, schedule?: any }> = ({ onCl
               <option value="">Select batch...</option>
               {batchesData?.data.map((b: any) => (
                 <option key={b._id} value={b._id}>
-                  Batch {b.groupType} - {b.program?.title} ({b.phase?.title})
+                  {b.batchName} - {b.program?.title} ({b.phase?.title})
                 </option>
               ))}
             </select>

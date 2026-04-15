@@ -244,10 +244,10 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                               <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${
                                 selectedBatchId === batch._id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
                               }`}>
-                                {batch.groupType || 'A'}
+                                <Users className="w-5 h-5" />
                               </div>
                               <div>
-                                <h5 className="font-bold text-gray-900">Study Group {batch.groupType || 'A'}</h5>
+                                <h5 className="font-bold text-gray-900">{batch.batchName}</h5>
                                 <p className="text-xs text-gray-500">Max Capacity: {batch.capacity || 'Unlimited'}</p>
                               </div>
                             </div>

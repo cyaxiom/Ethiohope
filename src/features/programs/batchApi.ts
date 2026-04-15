@@ -6,7 +6,8 @@ export interface Batch {
   phase: string;
   instructor?: any;
   capacity?: number;
-  groupType?: 'A' | 'B';
+  batchName: string;
+  isActive: boolean;
   schedules?: any[];
 }
 

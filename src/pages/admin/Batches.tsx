@@ -118,6 +118,7 @@ const Batches: React.FC = () => {
                 <th className="px-6 py-4 font-medium">Batch Info</th>
                 <th className="px-6 py-4 font-medium">Program / Phase</th>
                 <th className="px-6 py-4 font-medium">Instructor</th>
+                <th className="px-6 py-4 font-medium text-center">Status</th>
                 <th className="px-6 py-4 font-medium">Capacity</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
@@ -125,14 +126,14 @@ const Batches: React.FC = () => {
             <tbody className="divide-y divide-gray-50">
               {isLoading || isFetching ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                     <Activity className="w-6 h-6 animate-spin mx-auto mb-2" />
                     Loading batches...
                   </td>
                 </tr>
               ) : batches.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                     No batches found.
                   </td>
                 </tr>
@@ -145,7 +146,7 @@ const Batches: React.FC = () => {
                           <Users className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-800">Batch {batch.groupType || 'N/A'}</p>
+                          <p className="font-bold text-gray-800">{batch.batchName || 'N/A'}</p>
                         </div>
                       </div>
                     </td>
@@ -163,6 +164,13 @@ const Batches: React.FC = () => {
                       ) : (
                         <span className="text-xs text-gray-400 italic">Unassigned</span>
                       )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        batch.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {batch.isActive ? 'Active' : 'Inactive'}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -236,7 +244,7 @@ const Batches: React.FC = () => {
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h4>
             <p className="text-gray-500 mb-6 text-sm">
-              You are about to delete batch <span className="font-bold text-gray-800">{batchToDelete.groupType}</span> for <span className="font-bold text-gray-800">{batchToDelete.program?.title}</span>. This action cannot be undone.
+              You are about to delete batch <span className="font-bold text-gray-800">{batchToDelete.batchName}</span> for <span className="font-bold text-gray-800">{batchToDelete.program?.title}</span>. This action cannot be undone.
             </p>
             <div className="flex gap-3">
               <button 
@@ -279,7 +287,8 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
       phase: batch?.phase?._id || '',
       instructor: batch?.instructor?._id || '',
       capacity: batch?.capacity || 20,
-      groupType: batch?.groupType || 'A'
+      batchName: batch?.batchName || '',
+      isActive: batch?.isActive ?? true
     }
   });
 
@@ -379,6 +388,16 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
 
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Batch Name</label>
+              <input 
+                type="text"
+                {...register('batchName', { required: 'Batch name is required' })}
+                placeholder="e.g. Batch12026"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              {errors.batchName && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase italic">Required</p>}
+            </div>
+            <div>
               <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Capacity</label>
               <input 
                 type="number"
@@ -386,16 +405,18 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Group Type</label>
-              <select 
-                {...register('groupType', { required: true })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option value="A">Group A</option>
-                <option value="B">Group B</option>
-              </select>
-            </div>
+          </div>
+
+          <div className="flex items-center gap-2 py-2">
+            <input 
+              type="checkbox" 
+              id="isActive"
+              {...register('isActive')}
+              className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            />
+            <label htmlFor="isActive" className="text-sm font-bold text-gray-700 cursor-pointer select-none">
+              Active (Available for enrollment)
+            </label>
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

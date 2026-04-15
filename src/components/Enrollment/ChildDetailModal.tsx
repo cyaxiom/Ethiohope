@@ -140,7 +140,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                                       {enrollment.phase?.title ? ` - ${enrollment.phase.title}` : ''}
                                     </span>
                                     <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-gray-200">
-                                      Batch {enrollment.batch?.groupType || 'A'}
+                                      {enrollment.batch?.batchName || 'N/A'}
                                     </span>
                                   </div>
                                 </div>

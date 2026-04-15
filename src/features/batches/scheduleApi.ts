@@ -4,7 +4,7 @@ export interface Schedule {
   _id: string;
   batch: { 
     _id: string; 
-    groupType: string;
+    batchName: string;
     program: { title: string };
     phase: { title: string };
   };

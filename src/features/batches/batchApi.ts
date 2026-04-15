@@ -6,7 +6,9 @@ export interface Batch {
   phase: { _id: string; title: string };
   instructor?: { _id: string; firstname: string; lastname: string };
   capacity?: number;
-  groupType?: 'A' | 'B';
+  batchName: string;
+  isActive: boolean;
+  schedules?: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -16,7 +18,8 @@ export interface CreateBatchPayload {
   phase: string;
   instructor?: string;
   capacity?: number;
-  groupType?: 'A' | 'B';
+  batchName: string;
+  isActive: boolean;
 }
 
 export interface GetBatchesResponse {
