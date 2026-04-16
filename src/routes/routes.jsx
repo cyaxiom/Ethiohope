@@ -86,6 +86,7 @@ const ParentChildren = React.lazy(() => import('@pages/parent/ParentChildren'));
 const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
 const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
+const StudentCourseDetail = React.lazy(() => import('@pages/student/CourseDetail'));
 
 import { ProtectedRoute, PermissionRoute } from './Guard';
 
@@ -293,6 +294,11 @@ export const routes = [
         path: '/student/courses',
         name: 'Student Courses',
         element: <StudentCourses />,
+      },
+      {
+        path: '/student/courses/:id',
+        name: 'Student Course Detail',
+        element: <StudentCourseDetail />,
       },
       {
         path: '*',
