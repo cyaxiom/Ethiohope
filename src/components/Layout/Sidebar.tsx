@@ -45,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/programs', icon: Library, label: 'Programs' },
         { path: '/admin/batches', icon: Users, label: 'Batches' },
         { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
+        { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
       ];
     }

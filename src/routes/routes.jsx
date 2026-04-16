@@ -77,6 +77,7 @@ const AdminPrograms = React.lazy(() => import('@pages/admin/Programs'));
 const AdminBatches = React.lazy(() => import('@pages/admin/Batches'));
 const AdminSchedules = React.lazy(() => import('@pages/admin/Schedules'));
 const AdminPayments = React.lazy(() => import('@pages/admin/AdminPayments'));
+const AdminCourses = React.lazy(() => import('@pages/admin/Courses'));
 
 // Role-based dashboards
 const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboard'));
@@ -218,6 +219,11 @@ export const routes = [
         path: '/admin/payments',
         name: 'AdminPayments',
         element: <AdminPayments />,
+      },
+      {
+        path: '/admin/courses',
+        name: 'AdminCourses',
+        element: <AdminCourses />,
       },
       {
         path: '*',
