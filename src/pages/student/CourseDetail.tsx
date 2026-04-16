@@ -15,6 +15,24 @@ import { hasPermission } from '../../lib/rbac';
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
+  // Helper to extract YouTube video ID
+  const getYoutubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // State for exercise answers
+  const [exerciseAnswers, setExerciseAnswers] = useState<Record<string, number>>({});
+
+  const handleSelectOption = (weekIndex: number, exerciseIndex: number, questionIndex: number, optionIndex: number) => {
+    const key = `${weekIndex}-${exerciseIndex}-${questionIndex}`;
+    setExerciseAnswers(prev => ({
+      ...prev,
+      [key]: optionIndex
+    }));
+  };
+  
   // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'course.read') || hasPermission(permissions, 'dashboard.student');
@@ -226,24 +244,45 @@ const CourseDetail: React.FC = () => {
                                             exit={{ height: 0, opacity: 0 }}
                                             className="px-6 pb-6 pt-2 space-y-4"
                                           >
-                                            {lesson.videoUrls?.map((url, idx) => (
-                                              <div key={idx} className="bg-white p-4 rounded-xl border border-blue-50 shadow-sm flex items-center justify-between group/link">
-                                                <div className="flex items-center gap-3">
-                                                   <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center">
-                                                     <Video className="w-4 h-4" />
-                                                   </div>
-                                                   <div className="flex flex-col">
-                                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Video {idx + 1}</span>
-                                                     <a href={url} target="_blank" rel="noreferrer" className="text-xs font-bold text-blue-600 hover:underline line-clamp-1">
-                                                       {url}
-                                                     </a>
-                                                   </div>
+                                            {lesson.videoUrls?.map((url, idx) => {
+                                              const videoId = getYoutubeId(url);
+                                              return (
+                                                <div key={idx} className="space-y-3">
+                                                  <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                                                      <Video className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Video {idx + 1}</span>
+                                                  </div>
+                                                  
+                                                  {videoId ? (
+                                                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-black shadow-lg border border-gray-100">
+                                                      <iframe 
+                                                        src={`https://www.youtube.com/embed/${videoId}`}
+                                                        title={`Lesson Video ${idx + 1}`}
+                                                        className="absolute inset-0 w-full h-full"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                        allowFullScreen
+                                                      />
+                                                    </div>
+                                                  ) : (
+                                                    <div className="bg-white p-4 rounded-xl border border-blue-50 shadow-sm flex items-center justify-between group/link">
+                                                      <div className="flex items-center gap-3">
+                                                         <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center">
+                                                           <Video className="w-4 h-4" />
+                                                         </div>
+                                                         <div className="flex flex-col">
+                                                           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">External Video</span>
+                                                           <a href={url} target="_blank" rel="noreferrer" className="text-xs font-bold text-blue-600 hover:underline line-clamp-1">
+                                                             {url}
+                                                           </a>
+                                                         </div>
+                                                      </div>
+                                                    </div>
+                                                  )}
                                                 </div>
-                                                <a href={url} target="_blank" rel="noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg opacity-0 group-hover/link:opacity-100 transition-opacity">
-                                                  <PlayCircle className="w-4 h-4" />
-                                                </a>
-                                              </div>
-                                            ))}
+                                              );
+                                            })}
                                             {lesson.pdfUrl && (
                                               <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between group/pdf">
                                                 <div className="flex items-center gap-3">
@@ -309,20 +348,39 @@ const CourseDetail: React.FC = () => {
                                           >
                                             <div className="bg-white p-6 rounded-2xl border border-amber-50 shadow-sm space-y-6">
                                               {exercise.questions?.map((q, qIdx) => (
-                                                <div key={qIdx} className="space-y-3">
-                                                   <div className="flex gap-3">
-                                                     <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-black flex-shrink-0">Q{qIdx + 1}</span>
-                                                     <p className="text-sm font-bold text-gray-700">{q.question}</p>
-                                                   </div>
-                                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-9">
-                                                     {q.options?.map((opt, optIdx) => (
-                                                       <div key={optIdx} className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-medium text-gray-500 border border-transparent">
-                                                         {opt}
-                                                       </div>
-                                                     ))}
-                                                   </div>
-                                                </div>
-                                              ))}
+                                                 <div key={qIdx} className="space-y-4">
+                                                    <div className="flex gap-3">
+                                                      <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-black flex-shrink-0">Q{qIdx + 1}</span>
+                                                      <p className="text-sm font-bold text-gray-700">{q.question}</p>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-9">
+                                                      {q.options?.map((opt, optIdx) => {
+                                                        const isSelected = exerciseAnswers[`${weekIndex}-${exerciseIndex}-${qIdx}`] === optIdx;
+                                                        return (
+                                                          <button 
+                                                            key={optIdx} 
+                                                            onClick={() => handleSelectOption(weekIndex, exerciseIndex, qIdx, optIdx)}
+                                                            className={`
+                                                              flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all border-2
+                                                              ${isSelected 
+                                                                ? 'bg-blue-50 border-blue-500 text-blue-700 shadow-sm' 
+                                                                : 'bg-white border-gray-100 text-gray-500 hover:border-blue-200 hover:bg-gray-50'
+                                                              }
+                                                            `}
+                                                          >
+                                                            <div className={`
+                                                              w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all
+                                                              ${isSelected ? 'border-blue-500' : 'border-gray-300'}
+                                                            `}>
+                                                              {isSelected && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                                                            </div>
+                                                            <span className="text-xs font-bold">{opt}</span>
+                                                          </button>
+                                                        );
+                                                      })}
+                                                    </div>
+                                                 </div>
+                                               ))}
                                               <button className="w-full py-3 bg-amber-500 text-white rounded-xl font-black text-xs shadow-lg shadow-amber-100 hover:bg-amber-600 transition-all active:scale-[0.98]">
                                                 Start Exercise
                                               </button>
