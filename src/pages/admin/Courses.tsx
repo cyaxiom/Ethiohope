@@ -5,7 +5,8 @@ import {
   Filter, PlayCircle, Layers, CheckCircle, 
   X, AlertCircle, Image as ImageIcon, Video,
   FileText, PlusCircle, Trash, ChevronDown, ChevronUp,
-  ArrowRight, ArrowLeft
+  ArrowRight, ArrowLeft,
+  AlertTriangle
 } from 'lucide-react';
 import { useForm, useFieldArray, Control, UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -166,7 +167,12 @@ const Courses: React.FC = () => {
                       <Layers className="w-3.5 h-3.5" />
                       <span className="text-[10px] font-bold">{course.weeks?.length || 0} Weeks</span>
                     </div>
-                    <div className={`w-2 h-2 rounded-full ${course.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-2 h-2 rounded-full ${course.isActive ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${course.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                        {course.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="flex items-center gap-1">
@@ -391,6 +397,22 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
                         />
                       </div>
                     </div>
+                    <div className="pt-2">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input 
+                            type="checkbox" 
+                            {...register('isActive')} 
+                            className="sr-only peer"
+                          />
+                          <div className="w-12 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
+                          <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6"></div>
+                        </div>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
+                          Course {watch('isActive') ? 'Active' : 'Inactive'}
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -440,7 +462,7 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
               <button 
                 type="button" 
                 onClick={nextStep}
-                disabled={!watch('title') || !watch('program') || !watch('phase')}
+                disabled={!watch('title') || !watch('description') || !watch('program') || !watch('phase') || !watch('thumbnail')}
                 className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.95] disabled:opacity-50"
               >
                 Next Step <ArrowRight className="w-5 h-5" />
@@ -473,7 +495,11 @@ const WeeksManager: React.FC<{ control: any, register: any, watch: any, setValue
         <h4 className="text-xl font-black text-gray-800">Course Curriculum</h4>
         <button 
           type="button" 
-          onClick={() => append({ title: `Week#${fields.length + 1}`, lessons: [], exercises: [] })}
+          onClick={() => append({ 
+            title: `Week#${fields.length + 1}`, 
+            lessons: [{ title: '', videoUrls: [''], pdfUrl: '' }], 
+            exercises: [] 
+          })}
           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors"
         >
           <PlusCircle className="w-5 h-5" /> Add Week
@@ -506,10 +532,13 @@ const WeekItem: React.FC<{ weekIndex: number, control: any, register: any, remov
           <button type="button" onClick={() => setIsOpen(!isOpen)} className="p-1 hover:bg-gray-100 rounded transition-colors">
             {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
           </button>
-          <input 
-            {...register(`weeks.${weekIndex}.title`)} 
-            className="font-black text-gray-800 bg-transparent border-none focus:ring-0 p-0 w-32"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-blue-600 font-black text-sm">Week #{weekIndex + 1}:</span>
+            <input 
+              {...register(`weeks.${weekIndex}.title`)} 
+              className="font-black text-gray-800 bg-transparent border-none focus:ring-0 p-0 w-32"
+            />
+          </div>
         </div>
         <button type="button" onClick={removeWeek} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
           <Trash className="w-5 h-5" />
@@ -552,7 +581,7 @@ const LessonsManager: React.FC<{ weekIndex: number, control: any, register: any 
           </button>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lesson Title</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lesson #{lessonIndex + 1} Title</label>
               <input {...register(`weeks.${weekIndex}.lessons.${lessonIndex}.title`)} className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-sm" placeholder="e.g. Introduction to Variables" />
             </div>
             <div>
