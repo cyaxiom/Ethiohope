@@ -232,7 +232,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                       <div className="relative group">
                         <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-2">Country</label>
                         <CustomCountryDropdown 
-                          countries={allCountries}
+                          countries={allCountries.filter(c => c.isoCode !== 'US')}
                           selectedCode={selectedCountryCode}
                           onSelect={(code) => { setValue('country', code); setValue('region', ''); }}
                         />
@@ -438,7 +438,13 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                 <button 
                   type="button" 
                   onClick={() => setStep(2)}
-                  disabled={!watch('firstName') || !watch('lastName') || !watch('dob') || !watch('grade')}
+                  disabled={
+                    !watch('firstName') || 
+                    !watch('lastName') || 
+                    !watch('dob') || 
+                    !watch('grade') ||
+                    (isUSA ? !watch('state') : (!watch('country') || (statesOfSelectedCountry.length > 0 && !watch('region'))))
+                  }
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   Continue to Groups
