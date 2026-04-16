@@ -295,7 +295,15 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                                 </div>
                                 <div>
                                   <h5 className="font-black text-gray-900 text-lg tracking-tight">{batch.batchName}</h5>
-                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Available for enrollment</p>
+                                  <div className="flex items-center gap-3 mt-0.5">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Enrollment Open</p>
+                                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                    <p className={`text-[10px] font-black uppercase tracking-widest ${
+                                      ((batch.capacity || 0) - (batch.activeEnrollments || 0)) <= 5 ? 'text-orange-600' : 'text-blue-600'
+                                    }`}>
+                                      {Math.max(0, (batch.capacity || 0) - (batch.activeEnrollments || 0))} Spaces Left
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                               {selectedBatchId === batch._id && (
