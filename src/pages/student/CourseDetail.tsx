@@ -22,11 +22,29 @@ const CourseDetail: React.FC = () => {
   const { data: courseData, isLoading, isError } = useGetStudentCourseByIdQuery(id || '', { skip: !canRead });
 
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({ "0": true });
+  const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
+  const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
 
   const toggleWeek = (index: number) => {
     setExpandedWeeks(prev => ({
       ...prev,
       [index]: !prev[index]
+    }));
+  };
+
+  const toggleLesson = (weekIndex: number, lessonIndex: number) => {
+    const key = `${weekIndex}-${lessonIndex}`;
+    setExpandedLessons(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const toggleExercise = (weekIndex: number, exerciseIndex: number) => {
+    const key = `${weekIndex}-${exerciseIndex}`;
+    setExpandedExercises(prev => ({
+      ...prev,
+      [key]: !prev[key]
     }));
   };
 
@@ -173,27 +191,83 @@ const CourseDetail: React.FC = () => {
                                 <Video className="w-3.5 h-3.5 text-blue-500" /> Lessons
                               </h4>
                               <div className="grid grid-cols-1 gap-3">
-                                {week.lessons.map((lesson, lessonIndex) => (
-                                  <div key={lessonIndex} className="group/item flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-blue-50 transition-colors cursor-pointer">
-                                    <div className="flex items-center gap-4">
-                                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover/item:text-blue-600 transition-colors">
-                                        <PlayCircle className="w-5 h-5" />
-                                      </div>
-                                      <div>
-                                        <h5 className="text-sm font-bold text-gray-700 group-hover/item:text-blue-700 transition-colors">{lesson.title}</h5>
-                                        <div className="flex items-center gap-3 mt-0.5">
-                                           <span className="text-[10px] font-bold text-gray-400 uppercase">Video Lesson</span>
-                                           {lesson.pdfUrl && (
-                                             <span className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1">
-                                               <FileText className="w-3 h-3" /> PDF Included
-                                             </span>
-                                           )}
+                                {week.lessons.map((lesson, lessonIndex) => {
+                                  const isExpanded = expandedLessons[`${weekIndex}-${lessonIndex}`];
+                                  return (
+                                    <div key={lessonIndex} className="bg-gray-50 rounded-2xl overflow-hidden border border-transparent hover:border-blue-100 transition-all">
+                                      <button 
+                                        onClick={() => toggleLesson(weekIndex, lessonIndex)}
+                                        className="w-full flex items-center justify-between p-4 group/item hover:bg-blue-50/50 transition-colors"
+                                      >
+                                        <div className="flex items-center gap-4 text-left">
+                                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all ${isExpanded ? 'bg-blue-600 text-white' : 'bg-white text-gray-400 group-hover/item:text-blue-600'}`}>
+                                            <PlayCircle className="w-5 h-5" />
+                                          </div>
+                                          <div>
+                                            <h5 className="text-sm font-bold text-gray-700 group-hover/item:text-blue-700 transition-colors">{lesson.title}</h5>
+                                            <div className="flex items-center gap-3 mt-0.5">
+                                              <span className="text-[10px] font-bold text-gray-400 uppercase">Video Lesson</span>
+                                              {lesson.pdfUrl && (
+                                                <span className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1">
+                                                  <FileText className="w-3 h-3" /> PDF Included
+                                                </span>
+                                              )}
+                                            </div>
+                                          </div>
                                         </div>
-                                      </div>
+                                        <ChevronDown className={`w-4 h-4 text-gray-300 group-hover/item:text-blue-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                      </button>
+
+                                      <AnimatePresence>
+                                        {isExpanded && (
+                                          <motion.div 
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="px-6 pb-6 pt-2 space-y-4"
+                                          >
+                                            {lesson.videoUrls?.map((url, idx) => (
+                                              <div key={idx} className="bg-white p-4 rounded-xl border border-blue-50 shadow-sm flex items-center justify-between group/link">
+                                                <div className="flex items-center gap-3">
+                                                   <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center">
+                                                     <Video className="w-4 h-4" />
+                                                   </div>
+                                                   <div className="flex flex-col">
+                                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Video {idx + 1}</span>
+                                                     <a href={url} target="_blank" rel="noreferrer" className="text-xs font-bold text-blue-600 hover:underline line-clamp-1">
+                                                       {url}
+                                                     </a>
+                                                   </div>
+                                                </div>
+                                                <a href={url} target="_blank" rel="noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg opacity-0 group-hover/link:opacity-100 transition-opacity">
+                                                  <PlayCircle className="w-4 h-4" />
+                                                </a>
+                                              </div>
+                                            ))}
+                                            {lesson.pdfUrl && (
+                                              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between group/pdf">
+                                                <div className="flex items-center gap-3">
+                                                   <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+                                                     <FileText className="w-4 h-4" />
+                                                   </div>
+                                                   <div className="flex flex-col">
+                                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reading Material</span>
+                                                     <a href={lesson.pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-gray-700 hover:underline line-clamp-1">
+                                                       Download Lesson PDF
+                                                     </a>
+                                                   </div>
+                                                </div>
+                                                <a href={lesson.pdfUrl} target="_blank" rel="noreferrer" className="p-2 bg-gray-50 text-gray-400 rounded-lg opacity-0 group-hover/pdf:opacity-100 transition-opacity">
+                                                  <FileText className="w-4 h-4" />
+                                                </a>
+                                              </div>
+                                            )}
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover/item:text-blue-400 group-hover/item:translate-x-1 transition-all" />
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
@@ -205,20 +279,60 @@ const CourseDetail: React.FC = () => {
                                 <HelpCircle className="w-3.5 h-3.5 text-amber-500" /> Exercises
                               </h4>
                               <div className="grid grid-cols-1 gap-3">
-                                {week.exercises.map((exercise, exerciseIndex) => (
-                                  <div key={exerciseIndex} className="group/item flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-amber-50 transition-colors cursor-pointer">
-                                    <div className="flex items-center gap-4">
-                                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover/item:text-amber-600 transition-colors">
-                                        <Award className="w-5 h-5" />
-                                      </div>
-                                      <div>
-                                        <h5 className="text-sm font-bold text-gray-700 group-hover/item:text-amber-700 transition-colors">{exercise.title}</h5>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase">Interactive Quiz</span>
-                                      </div>
+                                {week.exercises.map((exercise, exerciseIndex) => {
+                                  const isExpanded = expandedExercises[`${weekIndex}-${exerciseIndex}`];
+                                  return (
+                                    <div key={exerciseIndex} className="bg-gray-50 rounded-2xl overflow-hidden border border-transparent hover:border-amber-100 transition-all">
+                                      <button 
+                                        onClick={() => toggleExercise(weekIndex, exerciseIndex)}
+                                        className="w-full flex items-center justify-between p-4 group/item hover:bg-amber-50/50 transition-colors"
+                                      >
+                                        <div className="flex items-center gap-4 text-left">
+                                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all ${isExpanded ? 'bg-amber-500 text-white' : 'bg-white text-gray-400 group-hover/item:text-amber-600'}`}>
+                                            <Award className="w-5 h-5" />
+                                          </div>
+                                          <div>
+                                            <h5 className="text-sm font-bold text-gray-700 group-hover/item:text-amber-700 transition-colors">{exercise.title}</h5>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase">Interactive Quiz • {exercise.questions?.length || 0} Questions</span>
+                                          </div>
+                                        </div>
+                                        <ChevronDown className={`w-4 h-4 text-gray-300 group-hover/item:text-amber-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                      </button>
+
+                                      <AnimatePresence>
+                                        {isExpanded && (
+                                          <motion.div 
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="px-6 pb-6 pt-2 space-y-4"
+                                          >
+                                            <div className="bg-white p-6 rounded-2xl border border-amber-50 shadow-sm space-y-6">
+                                              {exercise.questions?.map((q, qIdx) => (
+                                                <div key={qIdx} className="space-y-3">
+                                                   <div className="flex gap-3">
+                                                     <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-black flex-shrink-0">Q{qIdx + 1}</span>
+                                                     <p className="text-sm font-bold text-gray-700">{q.question}</p>
+                                                   </div>
+                                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-9">
+                                                     {q.options?.map((opt, optIdx) => (
+                                                       <div key={optIdx} className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-medium text-gray-500 border border-transparent">
+                                                         {opt}
+                                                       </div>
+                                                     ))}
+                                                   </div>
+                                                </div>
+                                              ))}
+                                              <button className="w-full py-3 bg-amber-500 text-white rounded-xl font-black text-xs shadow-lg shadow-amber-100 hover:bg-amber-600 transition-all active:scale-[0.98]">
+                                                Start Exercise
+                                              </button>
+                                            </div>
+                                          </motion.div>
+                                        )}
+                                      </AnimatePresence>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover/item:text-amber-400 group-hover/item:translate-x-1 transition-all" />
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
