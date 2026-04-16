@@ -173,11 +173,23 @@ const Batches: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                           <div className="h-full bg-blue-500 rounded-full" style={{ width: '0%' }} />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-gray-800">
+                          {batch.activeEnrollments || 0} / {batch.capacity || 0}
+                        </span>
+                        <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              (batch.activeEnrollments || 0) >= (batch.capacity || 0) 
+                                ? 'bg-red-500' 
+                                : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${Math.min(((batch.activeEnrollments || 0) / (batch.capacity || 1)) * 100, 100)}%` }}
+                          />
                         </div>
-                        <span className="text-xs font-bold text-gray-600">0/{batch.capacity || '∞'}</span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+                          Students
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">

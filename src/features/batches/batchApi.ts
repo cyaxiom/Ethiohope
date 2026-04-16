@@ -6,6 +6,7 @@ export interface Batch {
   phase: { _id: string; title: string };
   instructor?: { _id: string; firstname: string; lastname: string };
   capacity?: number;
+  activeEnrollments?: number;
   batchName: string;
   isActive: boolean;
   schedules?: any[];
