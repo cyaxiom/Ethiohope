@@ -69,14 +69,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
     // Default for students
     return [
-      {
-        icon: BookOpen, 
-        label: 'Course',
-        subItems: [
-          { path: '/student/my-course', label: 'My Course' },
-          { path: '/student/all-courses', label: 'All Courses' }
-        ]
-      },
+      { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/student/courses', icon: BookOpen, label: 'Courses' },
       { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
       { path: '/student/active-session', icon: Activity, label: 'Active Session' },
     ];

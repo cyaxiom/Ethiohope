@@ -85,6 +85,7 @@ const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard')
 const ParentChildren = React.lazy(() => import('@pages/parent/ParentChildren'));
 const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
+const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
 
 import { ProtectedRoute, PermissionRoute } from './Guard';
 
@@ -287,6 +288,11 @@ export const routes = [
         path: '/student/dashboard',
         name: 'Student Dashboard',
         element: <StudentDashboard />,
+      },
+      {
+        path: '/student/courses',
+        name: 'Student Courses',
+        element: <StudentCourses />,
       },
       {
         path: '*',

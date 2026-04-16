@@ -78,6 +78,13 @@ export const courseApi = api.injectEndpoints({
       query: (id) => `/admin/courses/${id}`,
       providesTags: (result, error, id) => [{ type: 'Courses', id }],
     }),
+    getStudentCourses: builder.query<GetCoursesResponse, void>({
+      query: () => '/student/courses',
+      providesTags: (result) => 
+        result 
+          ? [...result.data.map(({ _id }) => ({ type: 'Courses' as const, id: _id })), { type: 'Courses', id: 'LIST' }]
+          : [{ type: 'Courses', id: 'LIST' }],
+    }),
     createCourse: builder.mutation<any, CreateCoursePayload>({
       query: (courseData) => ({
         url: '/admin/courses',
@@ -107,6 +114,7 @@ export const courseApi = api.injectEndpoints({
 export const {
   useGetCoursesQuery,
   useGetCourseByIdQuery,
+  useGetStudentCoursesQuery,
   useCreateCourseMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
