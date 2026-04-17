@@ -154,7 +154,7 @@ const ProgramDetailView: React.FC<{ programId: string; onBack: () => void; onEnr
   const { data: phasesRes, isLoading: isLoadingPhases } = useGetPublicPhasesByProgramQuery(programId);
 
   const program = programRes?.data;
-  const phases = (phasesRes?.data || []).filter((p: any) => p.isActive !== false);
+  const phases = phasesRes?.data || [];
 
   if (isLoadingProg || isLoadingPhases) {
     return (
@@ -233,38 +233,49 @@ const ProgramDetailView: React.FC<{ programId: string; onBack: () => void; onEnr
            <div className="h-1 flex-1 bg-gradient-to-r from-blue-100 to-transparent rounded-full" />
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {phases.map((phase: any) => (
-            <div 
-              key={phase._id} 
-              className="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 p-8 flex flex-col h-full relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50 pointer-events-none"></div>
-              
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-100">
-                  {phase.orderIndex}
-                </div>
-              </div>
-              
-              <h3 className="text-2xl font-black text-gray-800 mb-3">{phase.title}</h3>
-              <p className="text-gray-500 text-sm font-medium leading-relaxed flex-1 mb-8">
-                {phase.description || 'No description available for this phase.'}
-              </p>
-              
-              <div className="pt-6 border-t border-gray-50 flex justify-between items-center text-sm font-bold text-gray-700 mb-8">
-                <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-blue-500"/> {phase.durationWeeks} Weeks</span>
-                <span className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full"><Tag className="w-4 h-4"/> ${phase.price}</span>
-              </div>
-
-              <button 
-                onClick={() => onEnroll(program, phase)}
-                className="mt-auto w-full py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-2xl shadow-lg font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          {phases.map((phase: any) => {
+            const isActive = phase.isActive !== false;
+            return (
+              <div 
+                key={phase._id} 
+                className={`bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-gray-100 p-8 flex flex-col h-full relative overflow-hidden transition-all duration-300 ${!isActive ? 'opacity-60 blur-[1px]' : 'hover:shadow-2xl hover:-translate-y-2'}`}
+                title={!isActive ? 'Currently this phase is closed. We will let you know when we open it.' : ''}
               >
-                Enroll Child
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50 pointer-events-none"></div>
+                
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-blue-100">
+                    {phase.orderIndex}
+                  </div>
+                  {!isActive && <Lock className="text-gray-400 w-6 h-6" />}
+                </div>
+                
+                <h3 className="text-2xl font-black text-gray-800 mb-3">{phase.title}</h3>
+                <p className="text-gray-500 text-sm font-medium leading-relaxed flex-1 mb-8">
+                  {phase.description || 'No description available for this phase.'}
+                </p>
+                
+                <div className="pt-6 border-t border-gray-50 flex justify-between items-center text-sm font-bold text-gray-700 mb-8">
+                  <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-blue-500"/> {phase.durationWeeks} Weeks</span>
+                  <span className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full"><Tag className="w-4 h-4"/> ${phase.price}</span>
+                </div>
+
+                {isActive ? (
+                  <button 
+                    onClick={() => onEnroll(program, phase)}
+                    className="mt-auto w-full py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-2xl shadow-lg font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    Enroll Child
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <div className="mt-auto w-full py-4 bg-gray-100 text-gray-400 text-center rounded-2xl shadow-inner font-black uppercase text-xs tracking-widest">
+                    Currently Closed
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </motion.div>

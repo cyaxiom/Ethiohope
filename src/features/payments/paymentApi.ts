@@ -10,7 +10,10 @@ export interface CheckoutResponse {
 
 export interface PaymentHistoryResponse {
   success: boolean;
-  data: any[];
+  data: {
+    payments: any[];
+    totalSpent: number;
+  };
 }
 
 export const paymentApi = api.injectEndpoints({
@@ -50,6 +53,13 @@ export const paymentApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Users'],
     }),
+    confirmPaymentSession: builder.mutation<{ success: boolean; status: string }, string>({
+      query: (sessionId) => ({
+        url: `/payments/confirm/${sessionId}`,
+        method: 'GET',
+      }),
+      invalidatesTags: ['Users'],
+    }),
   }),
 });
 
@@ -58,4 +68,5 @@ export const {
   useGetParentPaymentsQuery,
   useGetAllPaymentsQuery,
   useUpdatePaymentStatusMutation,
+  useConfirmPaymentSessionMutation,
 } = paymentApi;

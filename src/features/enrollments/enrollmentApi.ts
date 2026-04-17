@@ -1,7 +1,7 @@
 import { api } from '../../app/api';
 
 export interface EnrollmentPayload {
-  childId?: string;
+  childIds?: string[];
   firstName?: string;
   lastName?: string;
   dob?: string;
@@ -19,10 +19,10 @@ export interface EnrollmentResponse {
   success: boolean;
   message: string;
   data: {
-    enrollmentId: string;
-    status: string;
+    enrollmentIds: string[];
+    count: number;
+    totalAmount: number;
     paymentStatus: string;
-    amount: number;
   };
 }
 

@@ -23,11 +23,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getImageUrl } from '../../lib/utils';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
+import { useCreateCheckoutSessionMutation } from '../../features/payments/paymentApi';
+import { toast } from 'sonner';
 
 export const ParentPayments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Debounce search
@@ -43,7 +46,10 @@ export const ParentPayments: React.FC = () => {
     status: statusFilter
   });
 
-  const paymentsData = response?.data || [];
+  const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
+  
+  const paymentsData = response?.data?.payments || [];
+  const totalSpent = response?.data?.totalSpent || 0;
 
   const handleDownloadInvoice = (payment: any) => {
     const invoiceId = `INV-${payment._id.slice(-8).toUpperCase()}`;
@@ -209,6 +215,23 @@ export const ParentPayments: React.FC = () => {
     setStatusFilter('');
   };
 
+  const handlePayNow = async (enrollmentId: string) => {
+    try {
+      setLoadingId(enrollmentId);
+      const res = await createCheckoutSession({ enrollmentIds: [enrollmentId] }).unwrap();
+      if (res.url) {
+        window.location.href = res.url;
+      } else {
+        toast.error('Failed to generate payment link');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.data?.message || 'Failed to initiate payment. Please try again.');
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   if (isLoading && !debouncedSearch && !statusFilter) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px]">
@@ -231,7 +254,7 @@ export const ParentPayments: React.FC = () => {
           <div className="px-6 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col items-center">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Spent</span>
             <span className="text-xl font-black text-blue-600">
-              ${paymentsData.reduce((acc, curr) => acc + (curr.paymentStatus === 'PAID' ? (curr.amount || curr.phase?.price || 0) : 0), 0).toLocaleString()}
+              ${totalSpent.toLocaleString()}
             </span>
           </div>
         </div>
@@ -381,9 +404,19 @@ export const ParentPayments: React.FC = () => {
                           <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                         </button>
                       ) : payment.status === 'PENDING' ? (
-                        <button className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-[1.5rem] font-black text-sm shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center gap-2">
-                          Pay Now
-                          <ArrowUpRight className="w-4 h-4" />
+                        <button 
+                          onClick={() => handlePayNow(payment._id)}
+                          disabled={loadingId === payment._id}
+                          className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-[1.5rem] font-black text-sm shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                        >
+                          {loadingId === payment._id ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              Pay Now
+                              <ArrowUpRight className="w-4 h-4" />
+                            </>
+                          )}
                         </button>
                       ) : null}
                     </div>

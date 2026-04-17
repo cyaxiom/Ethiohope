@@ -23,13 +23,13 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      childId: '',
+      childIds: [] as string[],
       phaseId: initialPhaseId || '',
       batchId: ''
     }
   });
 
-  const selectedChildId = watch('childId');
+  const selectedChildIds = watch('childIds');
   const selectedPhaseId = watch('phaseId');
   const selectedBatchId = watch('batchId');
 
@@ -39,10 +39,20 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   const { data: batchesData, isLoading: isLoadingBatches } = useGetPublicBatchesByProgramQuery(program?._id, { skip: !program?._id });
   const [prepareEnrollment, { isLoading: isSubmitting }] = usePrepareEnrollmentMutation();
 
-  const children = childrenResponse?.data || [];
-  const phases = (phasesResponse?.data || []).filter((p: any) => p.isActive !== false);
+  const allChildren = childrenResponse?.data || [];
+  const phases = (phasesResponse?.data || []);
   const batches = batchesData?.data || [];
   
+  // Filter available children: Exclude those already PAID/ACTIVE for the current phase
+  const children = allChildren.filter((child: any) => {
+    if (!selectedPhaseId) return true;
+    const existingEnrollment = child.enrollments?.find((e: any) => 
+      (e.phase?._id === selectedPhaseId || e.phase === selectedPhaseId) && 
+      (e.paymentStatus === 'PAID' || e.status === 'ACTIVE')
+    );
+    return !existingEnrollment;
+  });
+
   const selectedPhase = phases.find((p: any) => p._id === selectedPhaseId);
   const selectedBatch = batches.find(b => b._id === selectedBatchId);
 
@@ -88,7 +98,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
     if (isOpen) {
       setStep(1);
       setSelectedSchedules({});
-      setValue('childId', '');
+      setValue('childIds', []);
       setValue('phaseId', initialPhaseId || '');
       setValue('batchId', '');
     }
@@ -97,7 +107,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   const onSubmit = async (data: any) => {
     try {
       const payload = {
-        childId: data.childId,
+        childIds: data.childIds,
         programId: program._id,
         phaseId: data.phaseId,
         batchId: data.batchId,
@@ -167,24 +177,33 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {children.map((child: any) => (
-                          <div 
-                            key={child._id}
-                            onClick={() => setValue('childId', child._id)}
-                            className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4 ${
-                              selectedChildId === child._id ? 'bg-blue-50 border-blue-600 shadow-md ring-2 ring-blue-600/10' : 'bg-white border-gray-100 hover:border-blue-200'
-                            }`}
-                          >
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedChildId === child._id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                              <User className="w-5 h-5" />
+                        {children.map((child: any) => {
+                          const isSelected = (selectedChildIds || []).includes(child._id);
+                          return (
+                            <div 
+                              key={child._id}
+                              onClick={() => {
+                                const current = selectedChildIds || [];
+                                const next = isSelected 
+                                  ? current.filter(id => id !== child._id)
+                                  : [...current, child._id];
+                                setValue('childIds', next);
+                              }}
+                              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4 ${
+                                isSelected ? 'bg-blue-50 border-blue-600 shadow-md ring-2 ring-blue-600/10' : 'bg-white border-gray-100 hover:border-blue-200'
+                              }`}
+                            >
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                <User className="w-5 h-5" />
+                              </div>
+                              <div className="flex-1 overflow-hidden text-ellipsis">
+                                <h4 className="font-bold text-gray-800 text-sm whitespace-nowrap">{child.firstname}</h4>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">@{child.username}</p>
+                              </div>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
                             </div>
-                            <div className="flex-1 overflow-hidden text-ellipsis">
-                              <h4 className="font-bold text-gray-800 text-sm whitespace-nowrap">{child.firstname}</h4>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">@{child.username}</p>
-                            </div>
-                            {selectedChildId === child._id && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -213,26 +232,30 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                       ) : phases.length === 0 ? (
                         <p className="text-gray-500 italic p-6 bg-gray-50 rounded-2xl border-2 border-dashed">No phases available.</p>
                       ) : (
-                        phases.map((phase: any) => (
-                          <div 
-                            key={phase._id}
-                            onClick={() => setValue('phaseId', phase._id)}
-                            className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between group ${
-                              selectedPhaseId === phase._id ? 'bg-blue-50 border-blue-600 shadow-md' : 'bg-white border-gray-100 hover:border-blue-200'
-                            }`}
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${selectedPhaseId === phase._id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                {phase.orderIndex}
+                        phases.map((phase: any) => {
+                          const isPhaseActive = phase.isActive !== false;
+                          return (
+                            <div 
+                              key={phase._id}
+                              onClick={() => isPhaseActive && setValue('phaseId', phase._id)}
+                              className={`p-5 rounded-2xl border-2 transition-all flex items-center justify-between group ${
+                                !isPhaseActive ? 'opacity-50 grayscale cursor-not-allowed border-dashed' :
+                                selectedPhaseId === phase._id ? 'bg-blue-50 border-blue-600 shadow-md cursor-pointer' : 'bg-white border-gray-100 hover:border-blue-200 cursor-pointer'
+                              }`}
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${selectedPhaseId === phase._id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                  {phase.orderIndex}
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-gray-800">{phase.title} {!isPhaseActive && <span className="text-[8px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter ml-1 italic">Closed</span>}</h4>
+                                  <p className="text-xs text-gray-500">${phase.price} • {phase.durationWeeks} Weeks</p>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-bold text-gray-800">{phase.title}</h4>
-                                <p className="text-xs text-gray-500">${phase.price} • {phase.durationWeeks} Weeks</p>
-                              </div>
+                              {selectedPhaseId === phase._id && <CheckCircle2 className="w-6 h-6 text-blue-600" />}
                             </div>
-                            {selectedPhaseId === phase._id && <CheckCircle2 className="w-6 h-6 text-blue-600" />}
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   )}
@@ -334,21 +357,23 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h4 className="text-2xl font-black text-gray-900 mb-2">Ready to Enroll?</h4>
-                  <p className="text-gray-500 font-medium">Please review the details below before completing.</p>
+                  <p className="text-gray-500 font-medium">Please review the details for your {selectedChildIds.length} student(s).</p>
                 </div>
 
                 <div className="space-y-3">
                   <div className="p-5 bg-white border border-gray-100 rounded-2xl flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-400 uppercase">Student</span>
-                    <span className="font-black text-gray-800">{children.find(c => c._id === selectedChildId)?.firstname}</span>
+                    <span className="text-sm font-bold text-gray-400 uppercase">Students</span>
+                    <span className="font-black text-gray-800 text-right">
+                      {selectedChildIds.map(id => children.find(c => c._id === id)?.firstname).join(', ')}
+                    </span>
                   </div>
                   <div className="p-5 bg-white border border-gray-100 rounded-2xl flex items-center justify-between">
                     <span className="text-sm font-bold text-gray-400 uppercase">Program/Phase</span>
                     <span className="font-black text-gray-800 text-right">{program.title} - {selectedPhase?.title}</span>
                   </div>
                   <div className="p-5 bg-white border border-gray-100 rounded-2xl flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-400 uppercase">Price</span>
-                    <span className="font-black text-blue-600 text-2xl">${selectedPhase?.price}</span>
+                    <span className="text-sm font-bold text-gray-400 uppercase">Total Price</span>
+                    <span className="font-black text-blue-600 text-2xl">${(selectedPhase?.price || 0) * selectedChildIds.length}</span>
                   </div>
                 </div>
 
@@ -357,7 +382,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                     <AlertTriangle className="w-4 h-4" />
                   </div>
                   <p className="text-[11px] font-bold text-amber-800 leading-relaxed uppercase tracking-widest">
-                    Enrollment is tentative until payment is confirmed. Once you complete this step, you'll be redirected to pay.
+                    Enrollment is tentative until payment is confirmed. Once you complete this step, you'll be redirected to pay for all students.
                   </p>
                 </div>
               </div>
@@ -371,17 +396,17 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                 </div>
                 <h3 className="text-3xl font-black text-gray-900 mb-3 tracking-tight">Enrollment Prepared!</h3>
                 <p className="text-gray-500 max-w-sm mb-10 font-medium leading-relaxed">
-                   Great job! Your enrollment is ready. Please click the button below to secure your child's spot.
+                   Great job! Enrollment for your {selectedChildIds.length} children has been prepared. Please proceed to payment via **Stripe** or **Zelle** to activate their courses.
                 </p>
                 
                 <button 
                   onClick={() => {
                     onClose();
-                    window.location.href = '/checkout';
+                    navigate('/checkout');
                   }}
                   className="w-full max-w-sm py-5 bg-green-600 hover:bg-green-700 text-white font-black rounded-[1.5rem] shadow-2xl shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                 >
-                  Go to Payment
+                  Proceed to Payment
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
@@ -404,7 +429,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                 type="button" 
                 onClick={step === 3 ? handleSubmit(onSubmit) : () => setStep(step + 1)}
                 disabled={
-                  (step === 1 && (!selectedPhaseId || !selectedChildId)) ||
+                  (step === 1 && (!selectedPhaseId || !selectedChildIds?.length)) ||
                   (step === 2 && (!selectedBatchId || !isAllSchedulesSelected)) ||
                   isSubmitting
                 }
