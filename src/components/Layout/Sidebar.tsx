@@ -8,6 +8,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type SubItem = { path: string; label: string };
 type NavItem = { path?: string; icon: any; label: string; subItems?: SubItem[] };
@@ -125,11 +126,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon className="flex-shrink-0 w-5 h-5 transition-transform duration-300 group-hover:scale-110 text-gray-400 group-hover:text-blue-500" />
-                    {isOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                    <motion.div whileHover={{ scale: 1.2, rotate: 5 }} whileTap={{ scale: 0.9 }}>
+                      <item.icon className="flex-shrink-0 w-5 h-5 transition-colors duration-300 text-gray-400 group-hover:text-blue-500" />
+                    </motion.div>
+                    {isOpen && (
+                      <motion.span 
+                        initial={{ opacity: 0, x: -10 }} 
+                        animate={{ opacity: 1, x: 0 }} 
+                        className="whitespace-nowrap font-black"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
                   </div>
                   {isOpen && (
-                    isMenuOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <motion.div animate={{ rotate: isMenuOpen ? 180 : 0 }}>
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    </motion.div>
+                  )}
+                  
+                  {/* Floating tooltip when closed */}
+                  {!isOpen && (
+                    <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
+                      {item.label}
+                      <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-r-[6px] border-r-blue-900" />
+                    </div>
                   )}
                 </button>
                 {isMenuOpen && isOpen && (
@@ -169,8 +190,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={clsx("flex-shrink-0 w-5 h-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500")} />
-                  {isOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                  <motion.div 
+                    whileHover={{ scale: 1.2, rotate: [0, -5, 5, 0] }} 
+                    transition={{ duration: 0.3 }}
+                    className="relative"
+                  >
+                    <item.icon className={clsx("flex-shrink-0 w-5 h-5 transition-colors duration-300", isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500")} />
+                    {isActive && (
+                      <motion.div 
+                        layoutId="active-dot"
+                        className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"
+                      />
+                    )}
+                  </motion.div>
+                  
+                  {isOpen ? (
+                    <motion.span 
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={clsx("whitespace-nowrap transition-all duration-300", isActive ? "font-black" : "font-bold")}
+                    >
+                      {item.label}
+                    </motion.span>
+                  ) : (
+                    /* Floating Tooltip */
+                    <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
+                      {item.label}
+                      <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-r-[6px] border-r-blue-900" />
+                    </div>
+                  )}
+                  
+                  {isActive && (
+                    <motion.div 
+                      layoutId="sidebar-active"
+                      className="absolute left-0 w-1.5 h-8 bg-blue-600 rounded-r-full"
+                    />
+                  )}
                 </>
               )}
             </NavLink>
@@ -197,8 +252,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               )
             }
           >
-            <UserIcon className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+            <motion.div whileHover={{ scale: 1.2 }}>
+              <UserIcon className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+            </motion.div>
             {isOpen && <span className="whitespace-nowrap">Profile</span>}
+            {!isOpen && (
+              <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
+                Profile
+              </div>
+            )}
         </NavLink>
 
         <NavLink
@@ -211,16 +273,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               )
             }
           >
-            <Settings className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+            <motion.div whileHover={{ scale: 1.2 }}>
+              <Settings className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-blue-500" />
+            </motion.div>
             {isOpen && <span className="whitespace-nowrap">Settings</span>}
+            {!isOpen && (
+              <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
+                Settings
+              </div>
+            )}
         </NavLink>
 
         <button
             onClick={handleLogout}
             className="w-full group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm text-gray-500 hover:text-red-500 hover:bg-red-50"
           >
-            <LogOut className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-red-500" />
+            <motion.div whileHover={{ scale: 1.2, x: 2 }}>
+              <LogOut className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-red-500" />
+            </motion.div>
             {isOpen && <span className="whitespace-nowrap">Logout</span>}
+            {!isOpen && (
+              <div className="fixed left-20 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
+                Logout
+              </div>
+            )}
         </button>
       </nav>
 
