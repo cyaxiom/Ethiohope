@@ -44,12 +44,12 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   const phases = (phasesResponse?.data || []);
   const batches = batchesData?.data || [];
   
-  // Filter available children: Exclude those already PAID/ACTIVE for the current phase
+  // Filter available children: Exclude those already PAID/ACTIVE or PENDING for the current phase
   const children = allChildren.filter((child: any) => {
     if (!selectedPhaseId) return true;
     const existingEnrollment = child.enrollments?.find((e: any) => 
       (e.phase?._id === selectedPhaseId || e.phase === selectedPhaseId) && 
-      (e.paymentStatus === 'PAID' || e.status === 'ACTIVE')
+      (e.paymentStatus === 'PAID' || e.status === 'ACTIVE' || e.status === 'PENDING')
     );
     return !existingEnrollment;
   });

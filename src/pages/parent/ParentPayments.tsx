@@ -388,8 +388,12 @@ export const ParentPayments: React.FC = () => {
                   {/* Student & Course Info */}
                   <div className="flex items-center gap-6 flex-1 w-full">
                     {isGroup ? (
-                      <div className="w-20 h-20 rounded-3xl bg-blue-50 flex items-center justify-center flex-shrink-0 border border-blue-100 group-hover:scale-105 transition-transform duration-500">
-                        <ShieldCheck className="w-10 h-10 text-blue-600" />
+                      <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
+                        {payment.items[0]?.program?.image ? (
+                          <img src={getImageUrl(payment.items[0].program.image)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <ShieldCheck className="w-10 h-10 text-blue-600" />
+                        )}
                       </div>
                     ) : (
                       <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
@@ -403,20 +407,12 @@ export const ParentPayments: React.FC = () => {
                     
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        {isGroup ? (
-                          <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">
-                            Bulk Payment Package
-                          </span>
-                        ) : (
-                          <>
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                              {payment.program?.title || 'Course'}
-                            </span>
-                            <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                              {payment.phase?.title || `Phase ${payment.phase?.orderIndex || 1}`}
-                            </span>
-                          </>
-                        )}
+                        <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                          {isGroup ? (payment.items[0]?.program?.title || 'Course') : (payment.program?.title || 'Course')}
+                        </span>
+                        <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                          {isGroup ? (payment.items[0]?.phase?.title || `Phase ${payment.items[0]?.phase?.orderIndex || 1}`) : (payment.phase?.title || `Phase ${payment.phase?.orderIndex || 1}`)}
+                        </span>
                       </div>
                       
                       {isGroup ? (
