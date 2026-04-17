@@ -20,6 +20,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
+  const [createdEnrollmentIds, setCreatedEnrollmentIds] = useState<string[]>([]);
   
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
@@ -115,6 +116,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
       };
 
       const result = await prepareEnrollment(payload).unwrap();
+      setCreatedEnrollmentIds(result.data?.enrollmentIds || []);
       setStep(4); // Success step
       toast.success(result.message);
     } catch (err: any) {
@@ -402,7 +404,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                 <button 
                   onClick={() => {
                     onClose();
-                    navigate('/checkout');
+                    navigate('/checkout', { state: { enrollmentIds: createdEnrollmentIds } });
                   }}
                   className="w-full max-w-sm py-5 bg-green-600 hover:bg-green-700 text-white font-black rounded-[1.5rem] shadow-2xl shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                 >

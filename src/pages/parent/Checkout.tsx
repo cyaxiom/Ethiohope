@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useGetMyPendingEnrollmentsQuery } from '../../features/enrollments/enrollmentApi';
 import { useCreateCheckoutSessionMutation } from '../../features/payments/paymentApi';
 import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck, Phone, MessageCircle, Wallet } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const Checkout = () => {
+  const location = useLocation();
+  const initialIds = location.state?.enrollmentIds || [];
   const { data: enrollmentsData, isLoading, error } = useGetMyPendingEnrollmentsQuery();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -13,12 +16,16 @@ const Checkout = () => {
 
   const enrollments = enrollmentsData?.data || [];
 
-  // Initialize selection with all enrollments when data arrives
+  // Initialize selection
   useEffect(() => {
-    if (enrollments.length > 0 && selectedIds.length === 0) {
-      setSelectedIds(enrollments.map((e: any) => e._id));
+    if (enrollments.length > 0) {
+      if (initialIds.length > 0) {
+        setSelectedIds(initialIds);
+      } else if (selectedIds.length === 0) {
+        setSelectedIds(enrollments.map((e: any) => e._id));
+      }
     }
-  }, [enrollments]);
+  }, [enrollments, initialIds]);
 
   const toggleSelection = (id: string) => {
     setSelectedIds(prev => 

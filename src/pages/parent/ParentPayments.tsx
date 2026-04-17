@@ -50,6 +50,45 @@ export const ParentPayments: React.FC = () => {
   
   const paymentsData = response?.data?.payments || [];
   const totalSpent = response?.data?.totalSpent || 0;
+  
+  const groupedPayments = React.useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    const individual: any[] = [];
+    
+    paymentsData.forEach((p: any) => {
+      // Group by transactionId if it's PAID and has a transactionId
+      if (p.paymentStatus === 'PAID' && p.transactionId) {
+        if (!groups[p.transactionId]) groups[p.transactionId] = [];
+        groups[p.transactionId].push(p);
+      } else {
+        individual.push(p);
+      }
+    });
+    
+    // Process groups into renderable format
+    const processedGroups: any[] = [];
+    Object.keys(groups).forEach(tid => {
+      const items = groups[tid];
+      if (items.length > 1) {
+        processedGroups.push({
+          _id: tid,
+          isGroup: true,
+          transactionId: tid,
+          items: items,
+          amount: items.reduce((acc, curr) => acc + (curr.amount || curr.phase?.price || 0), 0),
+          createdAt: items[0].createdAt,
+          paymentStatus: 'PAID',
+          status: 'ACTIVE'
+        });
+      } else {
+        individual.push(items[0]);
+      }
+    });
+    
+    return [...processedGroups, ...individual].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [paymentsData]);
 
   const handleDownloadInvoice = (payment: any) => {
     const invoiceId = `INV-${payment._id.slice(-8).toUpperCase()}`;
@@ -332,8 +371,10 @@ export const ParentPayments: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {paymentsData.map((payment: any) => {
+          {groupedPayments.map((payment: any) => {
             const status = getStatusStyles(payment.paymentStatus, payment.status);
+            const isGroup = payment.isGroup;
+            
             return (
               <motion.div 
                 key={payment._id}
@@ -346,26 +387,55 @@ export const ParentPayments: React.FC = () => {
                   
                   {/* Student & Course Info */}
                   <div className="flex items-center gap-6 flex-1 w-full">
-                    <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
-                      {payment.program?.image ? (
-                        <img src={getImageUrl(payment.program.image)} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <BookOpen className="w-10 h-10 text-gray-300" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                          {payment.program?.title || 'Course'}
-                        </span>
-                        <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                          {payment.phase?.title || `Phase ${payment.phase?.orderIndex || 1}`}
-                        </span>
+                    {isGroup ? (
+                      <div className="w-20 h-20 rounded-3xl bg-blue-50 flex items-center justify-center flex-shrink-0 border border-blue-100 group-hover:scale-105 transition-transform duration-500">
+                        <ShieldCheck className="w-10 h-10 text-blue-600" />
                       </div>
-                      <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
-                        {payment.child?.firstname} {payment.child?.lastname}
-                        <span className="text-sm font-bold text-gray-400">@{payment.child?.username}</span>
-                      </h3>
+                    ) : (
+                      <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
+                        {payment.program?.image ? (
+                          <img src={getImageUrl(payment.program.image)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <BookOpen className="w-10 h-10 text-gray-300" />
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        {isGroup ? (
+                          <span className="px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">
+                            Bulk Payment Package
+                          </span>
+                        ) : (
+                          <>
+                            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                              {payment.program?.title || 'Course'}
+                            </span>
+                            <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                              {payment.phase?.title || `Phase ${payment.phase?.orderIndex || 1}`}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      
+                      {isGroup ? (
+                        <h3 className="text-xl font-black text-gray-800 tracking-tight">
+                          {payment.items.map((item: any, idx: number) => (
+                            <React.Fragment key={item._id}>
+                              {item.child?.firstname}
+                              {idx < payment.items.length - 1 ? ', ' : ''}
+                            </React.Fragment>
+                          ))}
+                          <span className="text-sm font-bold text-gray-400 ml-2">({payment.items.length} Students)</span>
+                        </h3>
+                      ) : (
+                        <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
+                          {payment.child?.firstname} {payment.child?.lastname}
+                          <span className="text-sm font-bold text-gray-400">@{payment.child?.username}</span>
+                        </h3>
+                      )}
+                      
                       <div className="flex items-center gap-4 mt-2 text-gray-400">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-4 h-4" />
@@ -374,7 +444,9 @@ export const ParentPayments: React.FC = () => {
                         <div className="w-1 h-1 rounded-full bg-gray-200" />
                         <div className="flex items-center gap-1.5">
                           <CreditCard className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase tracking-wider">INV-{payment._id.slice(-6).toUpperCase()}</span>
+                          <span className="text-xs font-bold uppercase tracking-wider">
+                            {isGroup ? `TX-${payment.transactionId.slice(-8).toUpperCase()}` : `INV-${payment._id.slice(-6).toUpperCase()}`}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -391,12 +463,16 @@ export const ParentPayments: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col items-end min-w-[120px]">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Amount</span>
-                      <span className="text-2xl font-black text-gray-800 font-sans">${(payment.amount || payment.phase?.price || 0).toLocaleString()}</span>
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Total Amount</span>
+                      <span className="text-2xl font-black text-gray-800 font-sans">${payment.amount.toLocaleString()}</span>
                     </div>
 
                     <div className="flex gap-2">
-                      {payment.paymentStatus === 'PAID' ? (
+                      {isGroup ? (
+                        <div className="p-4 bg-blue-50 text-blue-600 rounded-3xl group-hover:bg-blue-600 group-hover:text-white transition-all cursor-default">
+                          <ShieldCheck className="w-5 h-5" />
+                        </div>
+                      ) : payment.paymentStatus === 'PAID' ? (
                         <button 
                           onClick={() => handleDownloadInvoice(payment)}
                           className="p-4 bg-gray-50 hover:bg-blue-600 text-gray-400 hover:text-white rounded-3xl transition-all duration-300 group/btn shadow-sm hover:shadow-lg hover:shadow-blue-200"
