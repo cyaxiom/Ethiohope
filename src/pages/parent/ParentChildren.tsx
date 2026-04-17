@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import SectionCard from '../../components/dashboard/SectionCard';
-import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus } from 'lucide-react';
+import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus, MapPin, ChevronDown, CheckCircle2 } from 'lucide-react';
 import Loading from '../../ui/Loading';
 import ChildDetailModal from '../../components/Enrollment/ChildDetailModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useRegisterChildMutation } from '../../features/user/userApi';
 import { toast } from 'sonner';
+import { Country, State } from 'country-state-city';
 
 export const ParentChildren: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -302,18 +303,88 @@ export const ParentChildren: React.FC = () => {
 };
 
 const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+    defaultValues: {
+      firstname: '',
+      lastname: '',
+      birthdate: '',
+      grade: '',
+      gender: 'male',
+      isUSA: true,
+      state: '',
+      country: 'US',
+      region: ''
+    }
+  });
+  
   const [registerChild, { isLoading }] = useRegisterChildMutation();
+
+  const isUSA = watch('isUSA');
+  const selectedCountryCode = watch('country');
+
+  const PRIORITY_COUNTRIES = ['ET', 'US', 'CA'];
+  const allCountries = Country.getAllCountries().sort((a, b) => {
+    const aPriority = PRIORITY_COUNTRIES.indexOf(a.isoCode);
+    const bPriority = PRIORITY_COUNTRIES.indexOf(b.isoCode);
+    
+    if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
+    if (aPriority !== -1) return -1;
+    if (bPriority !== -1) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const statesOfSelectedCountry = State.getStatesOfCountry(selectedCountryCode);
+
+  useEffect(() => {
+    if (isUSA) setValue('country', 'US');
+    else setValue('country', '');
+  }, [isUSA, setValue]);
 
   const onSubmit = async (data: any) => {
     try {
-      const res = await registerChild(data).unwrap();
-      toast.success(res.message || 'You registered your child and you will get child account through email. Now you can also visit courses and choose for your child.');
-      onClose();
+      const countryObj = Country.getCountryByCode(data.country);
+      const stateObj = State.getStateByCodeAndCountry(data.region || data.state, data.country);
+
+      const payload = {
+        ...data,
+        country: countryObj?.name || (data.isUSA ? 'United States' : ''),
+        region: stateObj?.name || data.region || data.state,
+      };
+
+      const res = await registerChild(payload).unwrap();
+      const msg = res.message || 'You registered your child and you will get child account through email. Now you can also visit courses and choose for your child.';
+      setSuccessMessage(msg);
+      toast.success(msg);
+      setIsSuccess(true);
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to register child');
     }
   };
+
+  if (isSuccess) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col items-center justify-center p-10 text-center animate-in zoom-in-95 duration-500">
+          <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-green-50">
+             <CheckCircle2 className="w-12 h-12" />
+          </div>
+          <h3 className="text-3xl font-black text-gray-900 mb-4">Child Added!</h3>
+          <p className="text-gray-500 max-w-sm mb-8 leading-relaxed font-medium">
+             {successMessage}
+          </p>
+          <button 
+            onClick={onClose}
+            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl shadow-lg shadow-green-100 transition-all active:scale-[0.98]"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
@@ -367,6 +438,59 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
 
+          <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-gray-800 flex items-center gap-2">
+                 <MapPin className="w-5 h-5 text-blue-600" />
+                 Location
+              </label>
+              <div className="flex bg-white p-1 rounded-lg border border-gray-200">
+                <button 
+                  type="button" 
+                  onClick={() => { setValue('isUSA', true); setValue('country', 'US'); }}
+                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${isUSA ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500'}`}
+                >USA</button>
+                <button 
+                  type="button" 
+                  onClick={() => { setValue('isUSA', false); setValue('country', ''); }}
+                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${!isUSA ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500'}`}
+                >International</button>
+              </div>
+            </div>
+
+            {isUSA ? (
+              <div>
+                <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-2">Specify State</label>
+                <select {...register('state', { required: isUSA })} className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none">
+                  <option value="">Select US State</option>
+                  {State.getStatesOfCountry('US').map(s => <option key={s.isoCode} value={s.isoCode}>{s.name}</option>)}
+                </select>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="relative group">
+                  <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-2">Country</label>
+                  <CustomCountryDropdown 
+                    countries={allCountries.filter(c => c.isoCode !== 'US')}
+                    selectedCode={selectedCountryCode}
+                    onSelect={(code) => { setValue('country', code); setValue('region', ''); }}
+                  />
+                </div>
+                <div className="relative group">
+                  <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-2">Region/State</label>
+                  <select 
+                    {...register('region', { required: !isUSA && statesOfSelectedCountry.length > 0 })} 
+                    disabled={!selectedCountryCode || statesOfSelectedCountry.length === 0}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none disabled:bg-gray-50 font-bold text-gray-700"
+                  >
+                    <option value="">{statesOfSelectedCountry.length > 0 ? 'Select Region' : 'N/A'}</option>
+                    {statesOfSelectedCountry.map(s => <option key={s.isoCode} value={s.isoCode}>{s.name}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
           <button 
             type="submit" 
             disabled={isLoading}
@@ -376,6 +500,109 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </button>
         </form>
       </div>
+    </div>
+  );
+};
+
+const CustomCountryDropdown: React.FC<{ 
+  countries: any[], 
+  selectedCode: string, 
+  onSelect: (code: string) => void 
+}> = ({ countries, selectedCode, onSelect }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  
+  const selectedCountry = countries.find(c => c.isoCode === selectedCode);
+  const filteredCountries = countries.filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+      >
+        <div className="flex items-center gap-3">
+          {selectedCountry ? (
+            <>
+              <img 
+                src={`https://flagcdn.com/w40/${selectedCountry.isoCode.toLowerCase()}.png`} 
+                alt={selectedCountry.name}
+                className="w-6 h-4 object-cover rounded-sm shadow-sm"
+              />
+              <span className="font-bold text-gray-800">{selectedCountry.name}</span>
+            </>
+          ) : (
+            <span className="text-gray-400 font-medium">Select Country</span>
+          )}
+        </div>
+        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute z-[110] left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden flex flex-col min-w-[200px]"
+          >
+            <div className="p-3 border-b border-gray-50 bg-gray-50/50">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input 
+                  autoFocus
+                  type="text"
+                  placeholder="Search countries..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            <div className="max-h-60 overflow-y-auto custom-scrollbar p-1">
+              {filteredCountries.length === 0 ? (
+                <div className="p-4 text-center text-gray-400 text-sm italic">No results found</div>
+              ) : (
+                filteredCountries.map((c) => (
+                  <button
+                    key={c.isoCode}
+                    type="button"
+                    onClick={() => {
+                      onSelect(c.isoCode);
+                      setIsOpen(false);
+                      setSearchTerm('');
+                    } }
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 rounded-xl transition-colors text-left ${
+                      selectedCode === c.isoCode ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                    }`}
+                  >
+                    <img 
+                      src={`https://flagcdn.com/w40/${c.isoCode.toLowerCase()}.png`} 
+                      alt={c.name}
+                      className="w-5 h-3.5 object-cover rounded-sm border border-gray-100"
+                    />
+                    <span className="font-bold text-sm">{c.name}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
