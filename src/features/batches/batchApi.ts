@@ -3,7 +3,6 @@ import { api } from '../../app/api';
 export interface Batch {
   _id: string;
   program: { _id: string; title: string };
-  phase: { _id: string; title: string };
   instructor?: { _id: string; firstname: string; lastname: string };
   capacity?: number;
   activeEnrollments?: number;
@@ -16,7 +15,6 @@ export interface Batch {
 
 export interface CreateBatchPayload {
   program: string;
-  phase: string;
   instructor?: string;
   capacity?: number;
   batchName: string;

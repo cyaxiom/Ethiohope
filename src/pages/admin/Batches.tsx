@@ -18,7 +18,6 @@ import {
   useDeleteBatchMutation 
 } from '../../features/batches/batchApi';
 import { useGetProgramsQuery } from '../../features/programs/programApi';
-import { useGetPhasesByProgramQuery } from '../../features/programs/phaseApi';
 import { useGetUsersQuery } from '../../features/user/userApi';
 
 const Batches: React.FC = () => {
@@ -116,7 +115,7 @@ const Batches: React.FC = () => {
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm">
               <tr>
                 <th className="px-6 py-4 font-medium">Batch Info</th>
-                <th className="px-6 py-4 font-medium">Program / Phase</th>
+                <th className="px-6 py-4 font-medium">Program</th>
                 <th className="px-6 py-4 font-medium">Instructor</th>
                 <th className="px-6 py-4 font-medium text-center">Status</th>
                 <th className="px-6 py-4 font-medium">Capacity</th>
@@ -153,7 +152,6 @@ const Batches: React.FC = () => {
                     <td className="px-6 py-4">
                       <div>
                         <p className="text-sm font-bold text-gray-800">{batch.program?.title}</p>
-                        <p className="text-xs text-blue-600 font-medium">{batch.phase?.title}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -296,7 +294,6 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       program: batch?.program?._id || '',
-      phase: batch?.phase?._id || '',
       instructor: batch?.instructor?._id || '',
       capacity: batch?.capacity || 20,
       batchName: batch?.batchName || '',
@@ -308,7 +305,6 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
 
   // Queries for form
   const { data: programsData } = useGetProgramsQuery({ limit: 100 });
-  const { data: phasesData, isLoading: isLoadingPhases } = useGetPhasesByProgramQuery(selectedProgramId, { skip: !selectedProgramId });
   const { data: instructorsData } = useGetUsersQuery({ role: 'instructor', limit: 100 });
 
   const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
@@ -359,7 +355,6 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               onChange={(e) => {
                 setValue('program', e.target.value);
-                setValue('phase', ''); // Reset phase when program changes
               }}
             >
               <option value="">Choose a program...</option>
@@ -370,20 +365,7 @@ const BatchModal: React.FC<{ onClose: () => void, batch?: any }> = ({ onClose, b
             {errors.program && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase italic">Required</p>}
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Select Phase</label>
-            <select 
-              {...register('phase', { required: 'Phase is required' })}
-              disabled={!selectedProgramId || isLoadingPhases}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-400"
-            >
-              <option value="">{selectedProgramId ? 'Choose a phase...' : 'Select a program first'}</option>
-              {phasesData?.data.map((ph: any) => (
-                <option key={ph._id} value={ph._id}>{ph.title} (Index: {ph.orderIndex})</option>
-              ))}
-            </select>
-            {errors.phase && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase italic">Required</p>}
-          </div>
+
 
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Instructor (Optional)</label>

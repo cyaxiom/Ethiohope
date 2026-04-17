@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Calendar, GraduationCap, MapPin, Globe, Users, Clock, CheckCircle2, ChevronDown, Search, AlertTriangle, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
-import { useGetPublicBatchesByPhaseQuery } from '../../features/programs/batchApi';
+import { useGetPublicBatchesByProgramQuery } from '../../features/programs/batchApi';
 import { usePrepareEnrollmentMutation } from '../../features/enrollments/enrollmentApi';
 import { toast } from 'sonner';
 
@@ -51,7 +51,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
 
   const statesOfSelectedCountry = State.getStatesOfCountry(selectedCountryCode);
 
-  const { data: batchesData, isLoading: isLoadingBatches } = useGetPublicBatchesByPhaseQuery(phase?._id, { skip: !phase?._id });
+  const { data: batchesData, isLoading: isLoadingBatches } = useGetPublicBatchesByProgramQuery(program?._id, { skip: !program?._id });
   const [prepareEnrollment, { isLoading: isSubmitting }] = usePrepareEnrollmentMutation();
 
   const batches = batchesData?.data || [];
@@ -269,7 +269,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                     </div>
                   ) : batches.length === 0 ? (
                     <div className="p-10 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200 text-center">
-                       <p className="text-gray-500 font-bold italic">No active batches available for this phase.</p>
+                       <p className="text-gray-500 font-bold italic">No active batches available for this program.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4">

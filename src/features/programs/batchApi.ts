@@ -3,7 +3,7 @@ import { api } from '../../app/api';
 export interface Batch {
   _id: string;
   program: string;
-  phase: string;
+
   instructor?: any;
   capacity?: number;
   activeEnrollments?: number;
@@ -20,12 +20,12 @@ export interface GetBatchesResponse {
 
 export const batchApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getPublicBatchesByPhase: builder.query<GetBatchesResponse, string>({
-      query: (phaseId) => `/programs/phases/${phaseId}/batches`,
+    getPublicBatchesByProgram: builder.query<GetBatchesResponse, string>({
+      query: (programId) => `/programs/${programId}/batches`,
     }),
   }),
 });
 
 export const {
-  useGetPublicBatchesByPhaseQuery,
+  useGetPublicBatchesByProgramQuery,
 } = batchApi;
