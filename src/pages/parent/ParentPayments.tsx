@@ -158,20 +158,40 @@ export const ParentPayments: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-50">
-                    <tr>
-                      <td class="py-8">
-                        <h4 class="text-lg font-black text-gray-800">${payment.program?.title}</h4>
-                        <p class="text-sm text-gray-500 font-medium mt-1">${payment.phase?.title || `Phase ${payment.phase?.orderIndex}`}</p>
-                      </td>
-                      <td class="py-8 text-center">
-                        <span class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-black text-xs">
-                          ${payment.child?.firstname} ${payment.child?.lastname}
-                        </span>
-                      </td>
-                      <td class="py-8 text-right">
-                        <span class="text-xl font-black text-gray-800">$${amount}</span>
-                      </td>
-                    </tr>
+                    ${payment.isGroup 
+                      ? payment.items.map((item: any) => `
+                        <tr>
+                          <td class="py-6">
+                            <h4 class="text-base font-black text-gray-800">${item.program?.title}</h4>
+                            <p class="text-xs text-gray-500 font-medium mt-1">${item.phase?.title || `Phase ${item.phase?.orderIndex}`}</p>
+                          </td>
+                          <td class="py-6 text-center">
+                            <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg font-black text-[10px]">
+                              ${item.child?.firstname} ${item.child?.lastname}
+                            </span>
+                          </td>
+                          <td class="py-6 text-right">
+                            <span class="text-lg font-black text-gray-800">$${(item.amount || item.phase?.price || 0).toLocaleString()}</span>
+                          </td>
+                        </tr>
+                      `).join('')
+                      : `
+                        <tr>
+                          <td class="py-8">
+                            <h4 class="text-lg font-black text-gray-800">${payment.program?.title}</h4>
+                            <p class="text-sm text-gray-500 font-medium mt-1">${payment.phase?.title || `Phase ${payment.phase?.orderIndex}`}</p>
+                          </td>
+                          <td class="py-8 text-center">
+                            <span class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-black text-xs">
+                              ${payment.child?.firstname} ${payment.child?.lastname}
+                            </span>
+                          </td>
+                          <td class="py-8 text-right">
+                            <span class="text-xl font-black text-gray-800">$${amount}</span>
+                          </td>
+                        </tr>
+                      `
+                    }
                   </tbody>
                 </table>
               </div>
@@ -464,11 +484,7 @@ export const ParentPayments: React.FC = () => {
                     </div>
 
                     <div className="flex gap-2">
-                      {isGroup ? (
-                        <div className="p-4 bg-blue-50 text-blue-600 rounded-3xl group-hover:bg-blue-600 group-hover:text-white transition-all cursor-default">
-                          <ShieldCheck className="w-5 h-5" />
-                        </div>
-                      ) : payment.paymentStatus === 'PAID' ? (
+                      {payment.paymentStatus === 'PAID' ? (
                         <button 
                           onClick={() => handleDownloadInvoice(payment)}
                           className="p-4 bg-gray-50 hover:bg-blue-600 text-gray-400 hover:text-white rounded-3xl transition-all duration-300 group/btn shadow-sm hover:shadow-lg hover:shadow-blue-200"
