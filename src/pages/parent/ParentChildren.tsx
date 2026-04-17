@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import SectionCard from '../../components/dashboard/SectionCard';
 import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus, MapPin, ChevronDown, CheckCircle2 } from 'lucide-react';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 import { Country, State } from 'country-state-city';
 
 export const ParentChildren: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [progressCategory, setProgressCategory] = useState<string>('');
@@ -66,6 +68,13 @@ export const ParentChildren: React.FC = () => {
             <User className="w-4 h-4" />
             {childrenData.length} Students
           </div>
+          <button 
+            onClick={() => navigate('/parent/childcourses')}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 rounded-2xl font-bold transition-all"
+          >
+            <BookOpen className="w-4 h-4" />
+            Visit Courses
+          </button>
           <button 
             onClick={() => setIsRegisterOpen(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
@@ -303,6 +312,7 @@ export const ParentChildren: React.FC = () => {
 };
 
 const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const navigate = useNavigate();
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
@@ -375,12 +385,24 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <p className="text-gray-500 max-w-sm mb-8 leading-relaxed font-medium">
              {successMessage}
           </p>
-          <button 
-            onClick={onClose}
-            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl shadow-lg shadow-green-100 transition-all active:scale-[0.98]"
-          >
-            Done
-          </button>
+          <div className="flex flex-col gap-3 w-full">
+            <button 
+              onClick={() => {
+                onClose();
+                navigate('/parent/childcourses');
+              }}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              <BookOpen className="w-5 h-5" />
+              Visit Courses Now
+            </button>
+            <button 
+              onClick={onClose}
+              className="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl transition-all"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -83,6 +83,7 @@ const AdminCourses = React.lazy(() => import('@pages/admin/Courses'));
 const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboard'));
 const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard'));
 const ParentChildren = React.lazy(() => import('@pages/parent/ParentChildren'));
+const ParentCourses = React.lazy(() => import('@pages/parent/ParentCourses'));
 const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
 const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
@@ -267,6 +268,11 @@ export const routes = [
         path: '/parent/children',
         name: 'Parent Children',
         element: <ParentChildren />,
+      },
+      {
+        path: '/parent/childcourses',
+        name: 'Enroll Programs',
+        element: <ParentCourses />,
       },
       {
         path: '/parent/payments',

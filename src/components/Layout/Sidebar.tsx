@@ -53,6 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     if (roles.includes('parent')) {
       return [
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
         { path: '/parent/children', icon: Users, label: 'Children' },
         { path: '/parent/payments', icon: CreditCard, label: 'Payments' },
       ];

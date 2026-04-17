@@ -1,16 +1,18 @@
 import { api } from '../../app/api';
 
 export interface EnrollmentPayload {
-  firstName: string;
-  lastName: string;
-  dob: string;
-  grade: string;
-  isUSA: boolean;
+  childId?: string;
+  firstName?: string;
+  lastName?: string;
+  dob?: string;
+  grade?: string;
+  isUSA?: boolean;
   country?: string;
   region?: string;
   programId: string;
   phaseId: string;
   batchId: string;
+  selectedSchedules?: string[];
 }
 
 export interface EnrollmentResponse {
