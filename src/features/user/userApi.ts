@@ -100,9 +100,21 @@ export const userApi = api.injectEndpoints({
       },
       providesTags: ['Users'],
     }),
+    registerChild: builder.mutation<any, any>({
+      query: (data) => ({
+        url: '/parent/children',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Users'],
+    }),
     getChildDetails: builder.query<{ success: boolean; data: any }, string>({
       query: (id) => `/parent/children/${id}`,
       providesTags: (result, error, id) => [{ type: 'Users', id }],
+    }),
+    getChildMe: builder.query<{ success: boolean; data: any }, void>({
+      query: () => '/child/me',
+      providesTags: ['Users'],
     }),
   }),
 });
@@ -115,6 +127,8 @@ export const {
   useCompleteProfileMutation,
   useLazyGetRegisterChildInitQuery,
   useGetParentChildrenQuery,
+  useRegisterChildMutation,
   useGetChildDetailsQuery,
+  useGetChildMeQuery,
 } = userApi;
 

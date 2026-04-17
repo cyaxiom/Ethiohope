@@ -1,5 +1,6 @@
 import React from 'react';
-import { BookOpen, Calendar, Clock, Trophy } from 'lucide-react';
+import { BookOpen, Calendar, Clock, Trophy, Lock } from 'lucide-react';
+import { useGetChildMeQuery } from '../../features/user/userApi';
 import SectionCard from '../../components/dashboard/SectionCard';
 import StatCard from '../../components/dashboard/StatCard';
 import HeroBanner from '../../components/dashboard/HeroBanner';
@@ -78,53 +79,84 @@ export const StudentDashboard: React.FC = () => {
     { title: 'Pathology Review', topics: 20, students: 90, progress: 20, date: '05/10/2023' },
   ];
 
+  const { data: childRes, isLoading } = useGetChildMeQuery();
+  const childData = childRes?.data;
+  const hasAccess = childData?.hasActiveEnrollment;
+
+  if (isLoading) {
+    return <div className="p-10 text-center text-gray-500 font-bold">Loading your dashboard...</div>;
+  }
+
   return (
-    <div className="animate-fadeIn pb-8 max-w-[1400px] mx-auto overflow-hidden">
-      <header className="mb-8">
-        <h1 className="text-2xl font-black text-blue-900 tracking-tight">Welcome back 👋</h1>
-      </header>
+    <div className="relative animate-fadeIn pb-8 max-w-[1400px] mx-auto overflow-hidden min-h-[60vh]">
+      {/* Active Dashboard or Blurred Background */}
+      <div className={`transition-all duration-500 ${!hasAccess ? 'blur-md opacity-40 select-none pointer-events-none' : ''}`}>
+        <header className="mb-8">
+          <h1 className="text-2xl font-black text-blue-900 tracking-tight">Welcome back 👋, {childData?.firstname || ''}</h1>
+        </header>
 
-      {/* Hero Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2">
-          <HeroBanner 
-            title="New Exams Available Now!"
-            description="well come to our new exam to attend and chek your results how log are you pertice for your papers, we provide the best service for every one this platfoam boost your"
-            ctaText="Explore More"
-            imageSrc={heroImage}
-            className="h-full"
-          />
+        {/* Hero Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-2">
+            <HeroBanner 
+              title="New Exams Available Now!"
+              description="Welcome to our new exams platform, where you can easily keep track of your results and progress."
+              ctaText="Explore More"
+              imageSrc={heroImage}
+              className="h-full"
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <RankingCard rankings={mockRankings} className="h-full" />
+          </div>
         </div>
-        <div className="lg:col-span-1">
-          <RankingCard rankings={mockRankings} className="h-full" />
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <StatCard title="Active Courses" value="12" icon={BookOpen} color="blue" />
+          <StatCard title="Assignments" value="08" icon={Calendar} color="orange" />
+          <StatCard title="Grade Average" value="85%" icon={Trophy} color="green" />
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Popular Lessons Section */}
+          <div className="lg:col-span-2">
+            <SectionCard title="Popular Lessons" viewAllPath="/student/courses" className="h-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {mockCourses.map((course, idx) => (
+                  <CourseCard key={idx} {...course} />
+                ))}
+              </div>
+            </SectionCard>
+          </div>
+
+          {/* Progress Section */}
+          <div className="lg:col-span-1">
+            <ProgressChart data={mockChartData} />
+          </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        <StatCard title="Active Courses" value="12" icon={BookOpen} color="blue" />
-        <StatCard title="Assignments" value="08" icon={Calendar} color="orange" />
-        <StatCard title="Grade Average" value="85%" icon={Trophy} color="green" />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Popular Lessons Section */}
-        <div className="lg:col-span-2">
-          <SectionCard title="Popular Lessons" viewAllPath="/student/courses" className="h-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {mockCourses.map((course, idx) => (
-                <CourseCard key={idx} {...course} />
-              ))}
-            </div>
-          </SectionCard>
+      {/* Lock Overlay */}
+      {!hasAccess && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 bg-white/20 backdrop-blur-sm rounded-3xl">
+          <div className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6 shadow-2xl border-4 border-white ring-4 ring-red-100 animate-bounce-slow">
+            <Lock className="w-12 h-12" />
+          </div>
+          <div className="bg-white p-8 rounded-3xl shadow-2xl border border-red-100 max-w-xl text-center">
+            <h1 className="text-3xl font-black text-gray-800 tracking-tight mb-4">
+              Study Space Locked 🔒
+            </h1>
+            <p className="text-lg text-gray-600 leading-relaxed font-medium">
+              Dear <span className="font-bold text-blue-600">{childData?.firstname || 'Student'}</span>, your parent (<span className="font-bold">{childData?.parentName || 'Parent'}</span>) didn't choose a program for you yet. 
+            </p>
+            <p className="text-gray-500 mt-4 leading-relaxed bg-blue-50/50 p-4 rounded-xl border border-blue-100 italic">
+              Please tell them to choose a program for you and you are going to start learning soon!
+            </p>
+          </div>
         </div>
-
-        {/* Progress Section */}
-        <div className="lg:col-span-1">
-          <ProgressChart data={mockChartData} />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

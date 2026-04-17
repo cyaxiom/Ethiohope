@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import SectionCard from '../../components/dashboard/SectionCard';
-import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X } from 'lucide-react';
+import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus } from 'lucide-react';
 import Loading from '../../ui/Loading';
 import ChildDetailModal from '../../components/Enrollment/ChildDetailModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { useRegisterChildMutation } from '../../features/user/userApi';
+import { toast } from 'sonner';
 
 export const ParentChildren: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,6 +15,7 @@ export const ParentChildren: React.FC = () => {
   const [progressCategory, setProgressCategory] = useState<string>('');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -61,6 +65,13 @@ export const ParentChildren: React.FC = () => {
             <User className="w-4 h-4" />
             {childrenData.length} Students
           </div>
+          <button 
+            onClick={() => setIsRegisterOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            Add Child
+          </button>
         </div>
       </header>
 
@@ -152,7 +163,7 @@ export const ParentChildren: React.FC = () => {
               Clear All Filters
             </button>
           ) : (
-            <button className="px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-[1.5rem] font-black shadow-2xl shadow-blue-200 transition-all active:scale-95 transform">
+            <button onClick={() => setIsRegisterOpen(true)} className="px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-[1.5rem] font-black shadow-2xl shadow-blue-200 transition-all active:scale-95 transform">
               Enroll Your First Child
             </button>
           )}
@@ -284,7 +295,87 @@ export const ParentChildren: React.FC = () => {
             childId={selectedChildId} 
           />
         )}
+        {isRegisterOpen && <RegisterChildModal onClose={() => setIsRegisterOpen(false)} />}
       </AnimatePresence>
+    </div>
+  );
+};
+
+const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const [registerChild, { isLoading }] = useRegisterChildMutation();
+
+  const onSubmit = async (data: any) => {
+    try {
+      const res = await registerChild(data).unwrap();
+      toast.success(res.message || 'Child registered successfully!');
+      onClose();
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to register child');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div>
+            <h3 className="text-2xl font-black text-gray-900 leading-tight">Add Your Child</h3>
+            <p className="text-gray-500 font-medium text-sm">Register your child to start exploring programs.</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+            <X className="w-6 h-6 text-gray-500" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 overflow-y-auto space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">First Name</label>
+              <input {...register('firstname', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+              {errors.firstname && <span className="text-xs text-red-500 font-bold">First name is required</span>}
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Last Name</label>
+              <input {...register('lastname', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+              {errors.lastname && <span className="text-xs text-red-500 font-bold">Last name is required</span>}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
+              <input type="date" {...register('birthdate', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+              {errors.birthdate && <span className="text-xs text-red-500 font-bold">DOB is required</span>}
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Grade Level</label>
+              <select {...register('grade', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                <option value="">Select Grade</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
+              </select>
+              {errors.grade && <span className="text-xs text-red-500 font-bold">Grade is required</span>}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+             <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
+              <select {...register('gender', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98] mt-6 disabled:opacity-50"
+          >
+            {isLoading ? 'Adding Child...' : 'Add Child'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
