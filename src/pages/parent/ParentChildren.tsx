@@ -308,7 +308,7 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const onSubmit = async (data: any) => {
     try {
       const res = await registerChild(data).unwrap();
-      toast.success(res.message || 'Child registered successfully!');
+      toast.success(res.message || 'You registered your child and you will get child account through email. Now you can also visit courses and choose for your child.');
       onClose();
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to register child');
