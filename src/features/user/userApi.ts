@@ -116,6 +116,10 @@ export const userApi = api.injectEndpoints({
       query: () => '/child/me',
       providesTags: ['Users'],
     }),
+    getParentDashboardStats: builder.query<{ success: boolean; data: any }, void>({
+      query: () => '/parent/dashboard/stats',
+      providesTags: ['Users'],
+    }),
   }),
 });
 
@@ -130,5 +134,6 @@ export const {
   useRegisterChildMutation,
   useGetChildDetailsQuery,
   useGetChildMeQuery,
+  useGetParentDashboardStatsQuery,
 } = userApi;
 
