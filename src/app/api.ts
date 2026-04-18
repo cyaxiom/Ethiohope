@@ -4,12 +4,12 @@ import { setCredentials, logout } from '../features/auth/authSlice';
 
 // Create a basic base query
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:2707/api/v1/',
+  baseUrl: (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1',
   prepareHeaders: (headers, { getState }) => {
     // Access the Redux state to dynamically inject the token globally
     const state = getState() as RootState;
     const token = state?.auth?.token;
-    
+
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
@@ -33,7 +33,7 @@ const baseQueryWithReauth: BaseQueryFn<
     if (refreshResult.data && refreshResult.data.success !== false) {
       // Assuming your backend returns { data: { token, user, roles, permissions } }
       const newAuthData = refreshResult.data.data;
-      
+
       // Store the new token in the Redux store
       api.dispatch(
         setCredentials({
