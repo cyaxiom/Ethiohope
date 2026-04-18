@@ -70,7 +70,7 @@ export function isInViewport(element: HTMLElement | null): boolean {
 export function getImageUrl(path: string | undefined): string {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707';
+  const baseUrl = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:2707';
   // If baseUrl ends with /api/v1, strip it to get the server root
   const serverRoot = baseUrl.split('/api/v1')[0];
   return `${serverRoot}${path}`;
