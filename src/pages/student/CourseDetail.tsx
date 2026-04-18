@@ -155,7 +155,17 @@ const CourseDetail: React.FC = () => {
   const course = courseData.data;
   const progress = progressData?.data;
   const totalLessons = course.weeks?.reduce((acc, week) => acc + (week.lessons?.length || 0), 0) || 0;
-  const completedLessonsCount = progress?.completedLessons?.length || 0;
+  
+  // Calculate specific progress for THIS course
+  const completedInThisCourse = useMemo(() => {
+    if (!progress?.completedLessons) return 0;
+    return progress.completedLessons.filter(l => l.courseId === id).length;
+  }, [progress, id]);
+  
+  const coursePercentage = useMemo(() => {
+    if (totalLessons === 0) return 0;
+    return Math.round((completedInThisCourse / totalLessons) * 100);
+  }, [completedInThisCourse, totalLessons]);
 
   return (
     <div className="max-w-6xl mx-auto pb-20 animate-fadeIn">
@@ -166,14 +176,14 @@ const CourseDetail: React.FC = () => {
           Back to Courses
         </Link>
         <div className="flex items-center gap-3">
-           <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Global Progress</span>
+           <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Course Progress</span>
            <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
              <div 
                className="h-full bg-blue-500 transition-all duration-1000" 
-               style={{ width: `${progress?.percentage || 0}%` }}
+               style={{ width: `${coursePercentage}%` }}
              />
            </div>
-           <span className="text-xs font-black text-blue-600">{progress?.percentage || 0}%</span>
+           <span className="text-xs font-black text-blue-600">{coursePercentage}%</span>
         </div>
       </div>
 
@@ -530,13 +540,13 @@ const CourseDetail: React.FC = () => {
                 <circle cx="64" cy="64" r="58" fill="transparent" stroke="#f3f4f6" strokeWidth="12" />
                 <circle cx="64" cy="64" r="58" fill="transparent" stroke="#3b82f6" strokeWidth="12" 
                   strokeDasharray={`${2 * Math.PI * 58}`} 
-                  strokeDashoffset={`${2 * Math.PI * 58 * (1 - (progress?.percentage || 0) / 100)}`}
+                  strokeDashoffset={`${2 * Math.PI * 58 * (1 - coursePercentage / 100)}`}
                   strokeLinecap="round" 
                   className="transition-all duration-1000 ease-out"
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-black text-blue-600">{progress?.percentage || 0}%</span>
+                <span className="text-2xl font-black text-blue-600">{coursePercentage}%</span>
                 <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Completed</span>
               </div>
             </div>
@@ -544,16 +554,16 @@ const CourseDetail: React.FC = () => {
             <div className="space-y-4">
                <div className="flex items-center justify-between text-xs font-bold">
                  <span className="text-gray-500">Completed Lessons</span>
-                 <span className="text-gray-800">{completedLessonsCount} / {totalLessons}</span>
+                 <span className="text-gray-800">{completedInThisCourse} / {totalLessons}</span>
                </div>
                <div className="flex items-center justify-between text-xs font-bold">
                  <span className="text-gray-500">Remaining</span>
-                 <span className="text-gray-800">{totalLessons - completedLessonsCount} Lessons</span>
+                 <span className="text-gray-800">{totalLessons - completedInThisCourse} Lessons</span>
                </div>
             </div>
 
             <button className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95">
-              {progress?.percentage === 100 ? 'Review Course' : 'Continue Learning'}
+              {coursePercentage === 100 ? 'Review Course' : 'Continue Learning'}
             </button>
           </div>
 
