@@ -85,7 +85,7 @@ export const courseApi = api.injectEndpoints({
           ? [...result.data.map(({ _id }) => ({ type: 'Courses' as const, id: _id })), { type: 'Courses', id: 'LIST' }]
           : [{ type: 'Courses', id: 'LIST' }],
     }),
-    getStudentCourseById: builder.query<{ success: boolean; data: Course }, string>({
+    getStudentCourseById: builder.query<{ success: boolean; data: Course; enrollmentId: string }, string>({
       query: (id) => `/student/courses/${id}`,
       providesTags: (result, error, id) => [{ type: 'Courses', id }],
     }),
