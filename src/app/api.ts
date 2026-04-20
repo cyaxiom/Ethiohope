@@ -4,7 +4,7 @@ import { setCredentials, logout } from '../features/auth/authSlice';
 
 // Create a basic base query
 const baseQuery = fetchBaseQuery({
-  baseUrl: (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1',
+  baseUrl: (import.meta as any).env.VITE_API_BASE_URL || '',
   prepareHeaders: (headers, { getState }) => {
     // Access the Redux state to dynamically inject the token globally
     const state = getState() as RootState;
