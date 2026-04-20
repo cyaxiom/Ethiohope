@@ -118,6 +118,24 @@ const CourseDetail: React.FC = () => {
     }
   };
 
+  const course = courseData?.data;
+  const progress = progressData?.data;
+
+  const totalLessons = useMemo(() => {
+    return course?.weeks?.reduce((acc: number, week: any) => acc + (week.lessons?.length || 0), 0) || 0;
+  }, [course]);
+
+  // Calculate specific progress for THIS course
+  const completedInThisCourse = useMemo(() => {
+    if (!progress?.completedLessons) return 0;
+    return progress.completedLessons.filter(l => l.courseId === id).length;
+  }, [progress, id]);
+  
+  const coursePercentage = useMemo(() => {
+    if (totalLessons === 0) return 0;
+    return Math.round((completedInThisCourse / totalLessons) * 100);
+  }, [completedInThisCourse, totalLessons]);
+
   if (!canRead) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-2xl border border-gray-100 min-h-[60vh]">
@@ -137,7 +155,7 @@ const CourseDetail: React.FC = () => {
     );
   }
 
-  if (isCourseError || !courseData) {
+  if (isCourseError || !courseData || !course) {
     return (
       <div className="max-w-2xl mx-auto py-20 text-center">
         <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -151,21 +169,6 @@ const CourseDetail: React.FC = () => {
       </div>
     );
   }
-
-  const course = courseData.data;
-  const progress = progressData?.data;
-  const totalLessons = course.weeks?.reduce((acc, week) => acc + (week.lessons?.length || 0), 0) || 0;
-  
-  // Calculate specific progress for THIS course
-  const completedInThisCourse = useMemo(() => {
-    if (!progress?.completedLessons) return 0;
-    return progress.completedLessons.filter(l => l.courseId === id).length;
-  }, [progress, id]);
-  
-  const coursePercentage = useMemo(() => {
-    if (totalLessons === 0) return 0;
-    return Math.round((completedInThisCourse / totalLessons) * 100);
-  }, [completedInThisCourse, totalLessons]);
 
   return (
     <div className="max-w-6xl mx-auto pb-20 animate-fadeIn">
