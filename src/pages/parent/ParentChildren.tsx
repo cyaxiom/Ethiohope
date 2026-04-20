@@ -316,6 +316,10 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   
+  const DATE_NOW = new Date();
+  const MIN_DATE = new Date(DATE_NOW.getFullYear() - 19, DATE_NOW.getMonth(), DATE_NOW.getDate() + 1).toISOString().split('T')[0];
+  const MAX_DATE = new Date(DATE_NOW.getFullYear() - 9, DATE_NOW.getMonth(), DATE_NOW.getDate()).toISOString().split('T')[0];
+
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       firstname: '',
@@ -329,6 +333,33 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       region: ''
     }
   });
+
+  const birthdateValue = watch('birthdate');
+  const [age, setAge] = useState<number | null>(null);
+  const [ageError, setAgeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (birthdateValue) {
+      const birthDate = new Date(birthdateValue);
+      let calculatedAge = DATE_NOW.getFullYear() - birthDate.getFullYear();
+      const monthDiff = DATE_NOW.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && DATE_NOW.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      setAge(calculatedAge);
+
+      if (calculatedAge < 9) {
+        setAgeError('Your child must be at least 9 years old.');
+      } else if (calculatedAge > 18) {
+        setAgeError('Your child must be no more than 18 years old.');
+      } else {
+        setAgeError(null);
+      }
+    } else {
+      setAge(null);
+      setAgeError(null);
+    }
+  }, [birthdateValue]);
   
   const [registerChild, { isLoading }] = useRegisterChildMutation();
 
@@ -437,8 +468,24 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
-              <input type="date" {...register('birthdate', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+              <input 
+                type="date" 
+                min={MIN_DATE}
+                max={MAX_DATE}
+                {...register('birthdate', { required: true })} 
+                className={`w-full px-4 py-3 bg-gray-50 border ${ageError ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all`} 
+              />
               {errors.birthdate && <span className="text-xs text-red-500 font-bold">DOB is required</span>}
+              {!ageError && age !== null && (
+                <p className="mt-1 text-xs font-bold text-blue-600">
+                  So your child is {age} years old
+                </p>
+              )}
+              {ageError && (
+                <p className="mt-1 text-xs font-bold text-red-500">
+                  {ageError}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Grade Level</label>
@@ -515,8 +562,8 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
           <button 
             type="submit" 
-            disabled={isLoading}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98] mt-6 disabled:opacity-50"
+            disabled={isLoading || !!ageError}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98] mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Adding Child...' : 'Add Child'}
           </button>
