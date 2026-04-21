@@ -20,6 +20,17 @@ import { useGetBatchesQuery } from '../../features/batches/batchApi';
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const [hours, minutes] = time.split(':');
+  let h = parseInt(hours, 10);
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12; // the hour '0' should be '12'
+  return `${h}:${m} ${ampm}`;
+};
+
 const Schedules: React.FC = () => {
   const [selectedBatchId, setSelectedBatchId] = useState<string>('');
   
@@ -189,7 +200,7 @@ const Schedules: React.FC = () => {
                              </div>
                              <div className="flex items-center gap-2 text-gray-600">
                                 <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                                <span className="text-[11px] font-bold">{slot.startTime} - {slot.endTime}</span>
+                                <span className="text-[11px] font-bold">{formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}</span>
                              </div>
                           </div>
                         ))}

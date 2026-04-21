@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useGetPublicBatchesByProgramQuery } from '../../features/programs/batchApi';
 import { usePrepareEnrollmentMutation } from '../../features/enrollments/enrollmentApi';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface EnrollChildModalProps {
   isOpen: boolean;
@@ -18,6 +19,12 @@ import { Country, State } from 'country-state-city';
 const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, program, phase }) => {
   const [step, setStep] = useState(1);
   const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
+  const [createdEnrollmentIds, setCreatedEnrollmentIds] = useState<string[]>([]);
+  const navigate = useNavigate();
+
+  const DATE_NOW = new Date();
+  const MIN_DATE = new Date(DATE_NOW.getFullYear() - 19, DATE_NOW.getMonth(), DATE_NOW.getDate() + 1).toISOString().split('T')[0];
+  const MAX_DATE = new Date(DATE_NOW.getFullYear() - 9, DATE_NOW.getMonth(), DATE_NOW.getDate()).toISOString().split('T')[0];
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
@@ -32,6 +39,33 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
       batchId: ''
     }
   });
+
+  const dobValue = watch('dob');
+  const [age, setAge] = useState<number | null>(null);
+  const [ageError, setAgeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (dobValue) {
+      const birthDate = new Date(dobValue);
+      let calculatedAge = DATE_NOW.getFullYear() - birthDate.getFullYear();
+      const monthDiff = DATE_NOW.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && DATE_NOW.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      setAge(calculatedAge);
+
+      if (calculatedAge < 9) {
+        setAgeError('Your child must be at least 9 years old.');
+      } else if (calculatedAge > 18) {
+        setAgeError('Your child must be no more than 18 years old.');
+      } else {
+        setAgeError(null);
+      }
+    } else {
+      setAge(null);
+      setAgeError(null);
+    }
+  }, [dobValue]);
 
   const isUSA = watch('isUSA');
   const selectedCountryCode = watch('country');
@@ -124,6 +158,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
       };
 
       const result = await prepareEnrollment(payload).unwrap();
+      setCreatedEnrollmentIds(result.data.enrollmentIds || []);
       setStep(3); // Success step
       toast.success(result.message);
     } catch (err: any) {
@@ -184,8 +219,24 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                     <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
                     <div className="relative">
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input type="date" {...register('dob', { required: true })} className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                      <input 
+                        type="date" 
+                        min={MIN_DATE}
+                        max={MAX_DATE}
+                        {...register('dob', { required: true })} 
+                        className={`w-full pl-12 pr-4 py-3 bg-gray-50 border ${ageError ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all`} 
+                      />
                     </div>
+                    {!ageError && age !== null && (
+                      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-blue-600">
+                        So your child is {age} years old
+                      </p>
+                    )}
+                    {ageError && (
+                      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-red-500">
+                        {ageError}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Grade Level</label>
@@ -412,7 +463,11 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                 <button 
                   onClick={() => {
                     onClose();
-                    window.location.href = '/checkout';
+                    if (createdEnrollmentIds.length > 0) {
+                      navigate('/checkout', { state: { enrollmentIds: createdEnrollmentIds } });
+                    } else {
+                      navigate('/checkout');
+                    }
                   }}
                   className="w-full max-w-sm py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl shadow-lg shadow-green-100 transition-all active:scale-[0.98]"
                 >
@@ -442,6 +497,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                     !watch('firstName') || 
                     !watch('lastName') || 
                     !watch('dob') || 
+                    ageError !== null ||
                     !watch('grade') ||
                     (isUSA ? !watch('state') : (!watch('country') || (statesOfSelectedCountry.length > 0 && !watch('region'))))
                   }
