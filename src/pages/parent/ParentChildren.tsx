@@ -251,6 +251,9 @@ export const ParentChildren: React.FC = () => {
                                     {enrollment.phase?.orderIndex ? `Phase ${enrollment.phase.orderIndex}` : 'Phase 1'}
                                     {enrollment.phase?.title ? ` - ${enrollment.phase.title}` : ''}
                                   </span>
+                                  <span className="text-[10px] font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                                    Batch: {enrollment.batch?.batchName || 'N/A'}
+                                  </span>
                                 </div>
                               </div>
                             </div>

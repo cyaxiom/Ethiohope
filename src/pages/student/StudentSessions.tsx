@@ -269,7 +269,7 @@ export default function StudentSessions() {
         </div>
       )}
       
-      {/* Policy Note */}
+      {/* Batch Info Note */}
       <div className="bg-blue-900 p-8 rounded-[40px] shadow-2xl shadow-blue-200 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-800 rounded-full -mr-32 -mt-32 opacity-50" />
         <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
@@ -277,10 +277,10 @@ export default function StudentSessions() {
             <ShieldAlert className="w-8 h-8 text-blue-200" />
           </div>
           <div className="space-y-2">
-            <h4 className="text-white text-xl font-black">Joining Guidelines</h4>
+            <h4 className="text-white text-xl font-black">Your Learning Group</h4>
             <p className="text-blue-100 font-medium leading-relaxed max-w-3xl">
-              Authenticity is key. Ensure your Zoom name matches your registered name. Session attendance is verified automatically. 
-              Recording of sessions is strictly prohibited under project privacy policy.
+              You are currently attending sessions with <strong>{sessions[0]?.batchId?.batchName || 'Your Assigned Batch'}</strong>. 
+              Please ensure you join on time to get the most out of your interactive learning experience.
             </p>
           </div>
         </div>
