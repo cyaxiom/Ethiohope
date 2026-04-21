@@ -199,78 +199,122 @@ export default function Sessions() {
             <p className="text-gray-400 text-sm mt-1">Click "Create Session" to get started.</p>
           </div>
         ) : (
-          sessions.map((session, i) => (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              key={session._id} 
-              className="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group"
-            >
-              <div className="flex flex-col gap-2 mb-4">
-                <div className="flex justify-between items-start">
-                  <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                    {session.sessionType}
-                  </span>
-                  <span className="text-gray-400 bg-gray-50 px-2 py-1 rounded text-[10px] font-bold font-mono">
-                    PROG: {(session.programId as any)?.title || 'N/A'}
-                  </span>
+          sessions.map((session, i) => {
+            const isStarted = new Date() >= new Date(session.startTime);
+            const isEnded = new Date() > new Date(session.endTime);
+            
+            return (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                key={session._id} 
+                className="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group"
+              >
+                <div className="flex flex-col gap-2 mb-4">
+                  <div className="flex justify-between items-start">
+                    <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                      {session.sessionType}
+                    </span>
+                    <span className="text-gray-400 bg-gray-50 px-2 py-1 rounded text-[10px] font-bold font-mono">
+                      PROG: {(session.programId as any)?.title || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <span className={`${isEnded ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'} px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight flex items-center gap-1.5`}>
+                       <span className={`w-1.5 h-1.5 rounded-full ${isEnded ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
+                       BATCH: {(session.batchId as any)?.batchName || 'N/A'}
+                     </span>
+                     {isEnded && (
+                       <span className="text-[9px] font-bold text-red-400 uppercase tracking-tighter italic">Needs Reschedule</span>
+                     )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                   <span className={`${new Date() > new Date(session.endTime) ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'} px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight flex items-center gap-1.5`}>
-                     <span className={`w-1.5 h-1.5 rounded-full ${new Date() > new Date(session.endTime) ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
-                     BATCH: {(session.batchId as any)?.batchName || 'N/A'}
-                   </span>
-                   {new Date() > new Date(session.endTime) && (
-                     <span className="text-[9px] font-bold text-red-400 uppercase tracking-tighter italic">Needs Reschedule</span>
-                   )}
+                
+                <h3 className="text-xl font-black text-gray-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
+                  {session.title}
+                </h3>
+                
+                <div className="space-y-3 mt-6">
+                  <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
+                    <Calendar className="w-4 h-4 text-blue-500" />
+                    {new Date(session.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
+                    <Clock className="w-4 h-4 text-orange-500" />
+                    {formatTime12h(new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))} 
+                    <span className="text-gray-300 mx-1">-</span>
+                    {formatTime12h(new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))}
+                  </div>
                 </div>
-              </div>
-              
-              <h3 className="text-xl font-black text-gray-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
-                {session.title}
-              </h3>
-              
-              <div className="space-y-3 mt-6">
-                <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                  <Calendar className="w-4 h-4 text-blue-500" />
-                  {new Date(session.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                </div>
-                <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                  <Clock className="w-4 h-4 text-orange-500" />
-                  {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
-                  <span className="text-gray-300 mx-1">-</span>
-                  {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between gap-2">
-                 <button 
-                   onClick={() => openEditModal(session)}
-                   className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2"
-                 >
-                    <Plus className="w-3.5 h-3.5" />
-                    Reschedule Session
-                 </button>
-                 <a 
-                   href={session.zoomLink} 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   className="p-2.5 bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-xl transition-all"
-                   title="Open Zoom Start Link"
-                 >
-                   <LinkIcon className="w-4 h-4" />
-                 </a>
-                 <button 
-                   onClick={() => setDeletingId(session._id)}
-                   className="p-2.5 bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl transition-all"
-                   title="Delete Session"
-                 >
-                   <Trash2 className="w-4 h-4" />
-                 </button>
-              </div>
-            </motion.div>
-          ))
+                <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between gap-2">
+                   <button 
+                     onClick={() => openEditModal(session)}
+                     className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2"
+                   >
+                      <Plus className="w-3.5 h-3.5" />
+                      Reschedule Session
+                   </button>
+                   <button 
+                     onClick={() => setDeletingId(session._id)}
+                     className="p-2.5 bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl transition-all"
+                     title="Delete Session"
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </button>
+                </div>
+
+                {/* Age-based Zoom Links */}
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Host Join Links</span>
+                    {!isStarted && (
+                      <span className="text-[9px] font-bold text-orange-500 flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5" />
+                        Available at start
+                      </span>
+                    )}
+                  </div>
+                  <div className={`grid grid-cols-2 gap-2 transition-all duration-500 ${!isStarted ? 'blur-[2px] pointer-events-none opacity-60' : ''}`}>
+                    {session.zoomLinkJunior ? (
+                      <a 
+                        href={session.zoomLinkJunior} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
+                      >
+                        <Video className="w-3 h-3" />
+                        Junior (9-12)
+                      </a>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase cursor-not-allowed">
+                        <Video className="w-3 h-3" />
+                        No Junior Link
+                      </div>
+                    )}
+
+                    {session.zoomLinkSenior ? (
+                      <a 
+                        href={session.zoomLinkSenior} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                      >
+                        <Video className="w-3 h-3" />
+                        Senior (13-18)
+                      </a>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase cursor-not-allowed">
+                        <Video className="w-3 h-3" />
+                        No Senior Link
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })
         )}
       </div>
 
@@ -341,8 +385,8 @@ export default function Sessions() {
                        <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
                        <div className="text-sm text-blue-900 font-medium leading-relaxed">
                           {editingSessionId 
-                            ? "Rescheduling will update the join date for all enrolled students. The Zoom meeting details will be preserved but the time will be updated."
-                            : "By choosing a template, the system will automatically pull the Program, Batch, and Phase. It will also generate a unique Zoom meeting for the selected date."
+                            ? "Rescheduling will update the join date for all enrolled students. Both Junior (9-12) and Senior (13-18) Zoom meetings will be updated."
+                            : "By choosing a template, the system will automatically pull the Program, Batch, and Phase. It will also generate TWO unique Zoom meetings: one for students aged 9-12 and another for ages 13-18."
                           }
                        </div>
                     </div>
