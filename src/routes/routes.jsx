@@ -78,6 +78,7 @@ const AdminBatches = React.lazy(() => import('@pages/admin/Batches'));
 const AdminSchedules = React.lazy(() => import('@pages/admin/Schedules'));
 const AdminPayments = React.lazy(() => import('@pages/admin/AdminPayments'));
 const AdminCourses = React.lazy(() => import('@pages/admin/Courses'));
+const AdminSessions = React.lazy(() => import('@pages/admin/Sessions'));
 
 // Role-based dashboards
 const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboard'));
@@ -88,6 +89,7 @@ const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
 const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
 const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
 const StudentCourseDetail = React.lazy(() => import('@pages/student/CourseDetail'));
+const StudentSessions = React.lazy(() => import('@pages/student/StudentSessions'));
 
 import { ProtectedRoute, PermissionRoute } from './Guard';
 
@@ -229,6 +231,11 @@ export const routes = [
         element: <AdminCourses />,
       },
       {
+        path: '/admin/sessions',
+        name: 'AdminSessions',
+        element: <AdminSessions />,
+      },
+      {
         path: '*',
         name: 'NotFound',
         element: <NotFound />,
@@ -305,6 +312,11 @@ export const routes = [
         path: '/student/courses/:id',
         name: 'Student Course Detail',
         element: <StudentCourseDetail />,
+      },
+      {
+        path: '/student/sessions',
+        name: 'StudentSessions',
+        element: <StudentSessions />,
       },
       {
         path: '*',

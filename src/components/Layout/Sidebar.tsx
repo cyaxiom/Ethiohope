@@ -3,7 +3,7 @@ import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, PanelLeftClose, PanelLeft, Bot, 
   Home, BookOpen, FileText, CreditCard, Activity, Settings, User as UserIcon, LogOut, 
-  GraduationCap, Library, Calendar, ChevronDown, ChevronUp, MessageCircle
+  GraduationCap, Library, Calendar, ChevronDown, ChevronUp, MessageCircle, Video
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clsx } from 'clsx';
@@ -47,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/batches', icon: Users, label: 'Batches' },
         { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
         { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
+        { path: '/admin/sessions', icon: Video, label: 'Sessions' },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
       ];
     }
@@ -74,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { path: '/student/courses', icon: BookOpen, label: 'Courses' },
       { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
-      { path: '/student/active-session', icon: Activity, label: 'Active Session' },
+      { path: '/student/sessions', icon: Video, label: 'Live Classes' },
     ];
   };
 
