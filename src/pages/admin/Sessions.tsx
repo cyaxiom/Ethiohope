@@ -3,6 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Video, Calendar, Clock, Link as LinkIcon, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const [hours, minutes] = time.split(':');
+  let h = parseInt(hours, 10);
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12; // the hour '0' should be '12'
+  return `${h}:${m} ${ampm}`;
+};
+
 // A beautifully styled Sessions management component for the admin panel.
 export default function Sessions() {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -305,7 +316,7 @@ export default function Sessions() {
                         <option value="">-- Choose Schedule --</option>
                         {schedules.map(s => (
                           <option key={s._id} value={s._id}>
-                             {s.sessionLabel} ({s.dayOfWeek} {s.startTime} - {s.endTime}) (Batch: {s.batch?.batchName || '...'})
+                             {s.sessionLabel} ({s.dayOfWeek} {formatTime12h(s.startTime)} - {formatTime12h(s.endTime)}) (Batch: {s.batch?.batchName || '...'})
                           </option>
                         ))}
                       </select>
