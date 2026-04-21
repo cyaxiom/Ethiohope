@@ -22,7 +22,9 @@ const Checkout = () => {
       if (initialIds.length > 0) {
         setSelectedIds(initialIds);
       } else if (selectedIds.length === 0) {
-        setSelectedIds(enrollments.map((e: any) => e._id));
+        // Only auto-select if we came from a specific enrollment flow
+        // Otherwise, let the user select manually to avoid accidental payments
+        setSelectedIds([]);
       }
     }
   }, [enrollments, initialIds]);

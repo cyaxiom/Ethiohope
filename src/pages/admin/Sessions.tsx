@@ -305,7 +305,7 @@ export default function Sessions() {
                         <option value="">-- Choose Schedule --</option>
                         {schedules.map(s => (
                           <option key={s._id} value={s._id}>
-                             {s.sessionLabel} (Batch: {s.batch?.batchName || '...'})
+                             {s.sessionLabel} ({s.dayOfWeek} {s.startTime} - {s.endTime}) (Batch: {s.batch?.batchName || '...'})
                           </option>
                         ))}
                       </select>

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useGetPublicBatchesByProgramQuery } from '../../features/programs/batchApi';
 import { usePrepareEnrollmentMutation } from '../../features/enrollments/enrollmentApi';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface EnrollChildModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ import { Country, State } from 'country-state-city';
 const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, program, phase }) => {
   const [step, setStep] = useState(1);
   const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
+  const [createdEnrollmentIds, setCreatedEnrollmentIds] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const DATE_NOW = new Date();
   const MIN_DATE = new Date(DATE_NOW.getFullYear() - 19, DATE_NOW.getMonth(), DATE_NOW.getDate() + 1).toISOString().split('T')[0];
@@ -155,6 +158,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
       };
 
       const result = await prepareEnrollment(payload).unwrap();
+      setCreatedEnrollmentIds(result.data.enrollmentIds || []);
       setStep(3); // Success step
       toast.success(result.message);
     } catch (err: any) {
@@ -459,7 +463,11 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                 <button 
                   onClick={() => {
                     onClose();
-                    window.location.href = '/checkout';
+                    if (createdEnrollmentIds.length > 0) {
+                      navigate('/checkout', { state: { enrollmentIds: createdEnrollmentIds } });
+                    } else {
+                      navigate('/checkout');
+                    }
                   }}
                   className="w-full max-w-sm py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl shadow-lg shadow-green-100 transition-all active:scale-[0.98]"
                 >
