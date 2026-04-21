@@ -120,9 +120,9 @@ export default function Sessions() {
     setIsModalOpen(true);
   };
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this session? This will also cancel the Zoom meeting.")) return;
-    
     try {
       setLoading(true);
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/${id}`, {
@@ -131,7 +131,8 @@ export default function Sessions() {
       });
       const result = await res.json();
       if (result.success) {
-        setNotification({ type: 'success', message: 'Session deleted successfully.' });
+        setNotification({ type: 'success', message: 'Session deleted and Zoom meeting cancelled.' });
+        setDeletingId(null);
         fetchSessions();
       } else {
         setNotification({ type: 'error', message: result.message || 'Failed to delete.' });
@@ -166,10 +167,10 @@ export default function Sessions() {
       </div>
 
       {/* Notifications */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {notification && (
           <motion.div 
-            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             className={`p-4 rounded-2xl border flex items-center gap-3 font-bold ${notification.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}
           >
             {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
@@ -250,7 +251,7 @@ export default function Sessions() {
                    <LinkIcon className="w-4 h-4" />
                  </a>
                  <button 
-                   onClick={() => handleDelete(session._id)}
+                   onClick={() => setDeletingId(session._id)}
                    className="p-2.5 bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl transition-all"
                    title="Delete Session"
                  >
@@ -348,6 +349,49 @@ export default function Sessions() {
                 </button>
               </div>
 
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deletingId && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-red-900/10 backdrop-blur-md"
+              onClick={() => setDeletingId(null)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[40px] shadow-2xl w-full max-w-md overflow-hidden relative z-10 p-10 text-center"
+            >
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                 <AlertCircle className="w-10 h-10 text-red-500" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 mb-2">Delete Session?</h2>
+              <p className="text-gray-500 font-medium leading-relaxed mb-8">
+                This action is irreversible. It will remove the record and <span className="text-red-600 font-bold">cancel the Zoom meeting</span> for all participants.
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => handleDelete(deletingId)}
+                  disabled={loading}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black tracking-wide shadow-xl shadow-red-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                   {loading ? 'Deleting...' : 'Yes, Delete Session'}
+                </button>
+                <button 
+                  onClick={() => setDeletingId(null)}
+                  className="w-full py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors"
+                >
+                   Keep Session
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
