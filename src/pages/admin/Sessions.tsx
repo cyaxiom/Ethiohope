@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Video, Calendar, Clock, Link as LinkIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, Link as LinkIcon, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
 // A beautifully styled Sessions management component for the admin panel.
@@ -120,6 +120,29 @@ export default function Sessions() {
     setIsModalOpen(true);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this session? This will also cancel the Zoom meeting.")) return;
+    
+    try {
+      setLoading(true);
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (result.success) {
+        setNotification({ type: 'success', message: 'Session deleted successfully.' });
+        fetchSessions();
+      } else {
+        setNotification({ type: 'error', message: result.message || 'Failed to delete.' });
+      }
+    } catch (err: any) {
+      setNotification({ type: 'error', message: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 md:p-8 w-full max-w-7xl mx-auto space-y-8 bg-gray-50/30 min-h-screen">
       
@@ -226,6 +249,13 @@ export default function Sessions() {
                  >
                    <LinkIcon className="w-4 h-4" />
                  </a>
+                 <button 
+                   onClick={() => handleDelete(session._id)}
+                   className="p-2.5 bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl transition-all"
+                   title="Delete Session"
+                 >
+                   <Trash2 className="w-4 h-4" />
+                 </button>
               </div>
             </motion.div>
           ))
@@ -282,7 +312,15 @@ export default function Sessions() {
 
                     <div className="col-span-1">
                       <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wider">Target Date</label>
-                      <input required type="date" name="targetDate" value={formData.targetDate} onChange={handleChange} className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all" />
+                      <input 
+                        required 
+                        type="date" 
+                        name="targetDate" 
+                        min={new Date().toISOString().split('T')[0]}
+                        value={formData.targetDate} 
+                        onChange={handleChange} 
+                        className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all" 
+                      />
                     </div>
                   </div>
 
