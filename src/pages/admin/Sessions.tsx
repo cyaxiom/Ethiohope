@@ -11,6 +11,8 @@ export default function Sessions() {
   const [loading, setLoading] = useState(false);
   const { token } = useSelector((state: any) => state.auth);
   
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  
   // Create Session State
   const [formData, setFormData] = useState({
     scheduleId: '',
@@ -56,7 +58,7 @@ export default function Sessions() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setNotification(null);
@@ -68,28 +70,54 @@ export default function Sessions() {
         return;
       }
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/schedule/${scheduleId}`, {
-        method: 'POST',
+      const url = editingSessionId 
+        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/${editingSessionId}`
+        : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/schedule/${scheduleId}`;
+      
+      const method = editingSessionId ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ targetDate })
+        body: JSON.stringify({ targetDate, scheduleId })
       });
       const result = await res.json();
       
       if (result.success) {
-        setNotification({ type: 'success', message: 'Session successfully created with an auto-generated Zoom Meeting!' });
+        setNotification({ type: 'success', message: `Session successfully ${editingSessionId ? 'updated' : 'created'}!` });
         setIsModalOpen(false);
         fetchSessions();
       } else {
-        setNotification({ type: 'error', message: result.message || 'Failed to create session.' });
+        setNotification({ type: 'error', message: result.message || 'Failed to process session.' });
       }
     } catch (err: any) {
       setNotification({ type: 'error', message: err.message || 'Network error encountered' });
     } finally {
       setLoading(false);
     }
+  };
+
+  const openCreateModal = () => {
+    setEditingSessionId(null);
+    setFormData({ scheduleId: '', targetDate: '' });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (session: any) => {
+    setEditingSessionId(session._id);
+    const sId = typeof session.scheduleId === 'object' ? session.scheduleId._id : session.scheduleId;
+    
+    // Extract date in YYYY-MM-DD format
+    const date = new Date(session.startTime).toISOString().split('T')[0];
+    
+    setFormData({
+      scheduleId: sId || '',
+      targetDate: date
+    });
+    setIsModalOpen(true);
   };
 
   return (
@@ -102,11 +130,11 @@ export default function Sessions() {
             <Video className="w-8 h-8 text-blue-600" />
             Live Sessions
           </h1>
-          <p className="text-gray-500 font-medium mt-1">Manage Zoom sessions and live classes automatically.</p>
+          <p className="text-gray-500 font-medium mt-1">Manage and Reschedule your automated Zoom sessions.</p>
         </div>
         
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreateModal}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold tracking-wide shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
@@ -144,13 +172,24 @@ export default function Sessions() {
               key={session._id} 
               className="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group"
             >
-              <div className="flex justify-between items-start mb-4">
-                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-black uppercase tracking-wider">
-                  {session.sessionType}
-                </span>
-                <span className="text-gray-400 bg-gray-50 px-2 py-1 rounded text-xs font-bold font-mono">
-                  ID: {session._id.slice(-6)}
-                </span>
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="flex justify-between items-start">
+                  <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                    {session.sessionType}
+                  </span>
+                  <span className="text-gray-400 bg-gray-50 px-2 py-1 rounded text-[10px] font-bold font-mono">
+                    PROG: {(session.programId as any)?.title || 'N/A'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                   <span className={`${new Date() > new Date(session.endTime) ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'} px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight flex items-center gap-1.5`}>
+                     <span className={`w-1.5 h-1.5 rounded-full ${new Date() > new Date(session.endTime) ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
+                     BATCH: {(session.batchId as any)?.batchName || 'N/A'}
+                   </span>
+                   {new Date() > new Date(session.endTime) && (
+                     <span className="text-[9px] font-bold text-red-400 uppercase tracking-tighter italic">Needs Reschedule</span>
+                   )}
+                </div>
               </div>
               
               <h3 className="text-xl font-black text-gray-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
@@ -170,18 +209,30 @@ export default function Sessions() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between">
-                 <button className="text-blue-600 font-bold text-sm tracking-wide hover:underline inline-flex items-center gap-2">
-                    <LinkIcon className="w-4 h-4" />
-                    Manage Zoom Settings
+              <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between gap-2">
+                 <button 
+                   onClick={() => openEditModal(session)}
+                   className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2"
+                 >
+                    <Plus className="w-3.5 h-3.5" />
+                    Reschedule Session
                  </button>
+                 <a 
+                   href={session.zoomLink} 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className="p-2.5 bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-xl transition-all"
+                   title="Open Zoom Start Link"
+                 >
+                   <LinkIcon className="w-4 h-4" />
+                 </a>
               </div>
             </motion.div>
           ))
         )}
       </div>
 
-      {/* Creation Modal */}
+      {/* Creation/Edit Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -197,22 +248,33 @@ export default function Sessions() {
               className="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 max-h-[90vh] flex flex-col"
             >
               <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
-                <h2 className="text-2xl font-black text-gray-900">Configure Live Session</h2>
-                <p className="text-gray-500 text-sm font-medium mt-1">This binds a new automated Zoom Meeting with your parameters.</p>
+                <h2 className="text-2xl font-black text-gray-900">
+                  {editingSessionId ? 'Reschedule Session' : 'Configure Live Session'}
+                </h2>
+                <p className="text-gray-500 text-sm font-medium mt-1">
+                  {editingSessionId ? 'Update the date of this specific session.' : 'Bind an automated Zoom Meeting to a schedule template.'}
+                </p>
               </div>
 
-              <div className="p-8 overflow-y-auto flex-1">
-                <form id="createSessionForm" onSubmit={handleCreate} className="space-y-6">
+              <div className="p-8 overflow-y-auto flex-1 text-left">
+                <form id="sessionForm" onSubmit={handleSubmit} className="space-y-6">
                   
                   {/* Schedule Selection */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="col-span-1">
-                      <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wider">Select Schedule Template</label>
-                      <select required name="scheduleId" value={formData.scheduleId} onChange={handleChange} className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all">
+                      <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wider">Schedule Template</label>
+                      <select 
+                        required 
+                        name="scheduleId" 
+                        value={formData.scheduleId} 
+                        onChange={handleChange} 
+                        disabled={!!editingSessionId}
+                        className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all disabled:opacity-50"
+                      >
                         <option value="">-- Choose Schedule --</option>
                         {schedules.map(s => (
                           <option key={s._id} value={s._id}>
-                             {s.sessionLabel} - {s.dayOfWeek} ({s.startTime} to {s.endTime})
+                             {s.sessionLabel} (Batch: {s.batch?.batchName || '...'})
                           </option>
                         ))}
                       </select>
@@ -221,7 +283,18 @@ export default function Sessions() {
                     <div className="col-span-1">
                       <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wider">Target Date</label>
                       <input required type="date" name="targetDate" value={formData.targetDate} onChange={handleChange} className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all" />
-                      <p className="text-xs text-gray-400 font-medium mt-2">The session times and batch are locked to your schedule configuration. Only select the exact date.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+                    <div className="flex gap-4">
+                       <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                       <div className="text-sm text-blue-900 font-medium leading-relaxed">
+                          {editingSessionId 
+                            ? "Rescheduling will update the join date for all enrolled students. The Zoom meeting details will be preserved but the time will be updated."
+                            : "By choosing a template, the system will automatically pull the Program, Batch, and Phase. It will also generate a unique Zoom meeting for the selected date."
+                          }
+                       </div>
                     </div>
                   </div>
 
@@ -232,8 +305,8 @@ export default function Sessions() {
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 font-bold text-gray-500 hover:text-gray-800 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" form="createSessionForm" disabled={loading} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black tracking-wide rounded-xl shadow-lg shadow-blue-200 transition-all">
-                  {loading ? 'Creating via Zoom...' : 'Publish Session'}
+                <button type="submit" form="sessionForm" disabled={loading} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black tracking-wide rounded-xl shadow-lg shadow-blue-200 transition-all">
+                  {loading ? 'Processing...' : editingSessionId ? 'Update Session' : 'Publish Session'}
                 </button>
               </div>
 
