@@ -97,7 +97,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
     if (roles.includes('super_admin') || roles.includes('admin')) return '/admin/dashboard';
     if (roles.includes('instructor')) return '/instructor/dashboard';
     if (roles.includes('parent')) return '/parent/dashboard';
-    if (roles.includes('student')) return '/student/dashboard';
+    if (roles.includes('student') || roles.includes('child')) return '/student/dashboard';
     return '/';
   };
 
