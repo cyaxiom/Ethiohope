@@ -1,7 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Video, Calendar, Clock, Link as LinkIcon, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
+import { Plus, Video, Calendar, Clock, Link as LinkIcon, CheckCircle2, AlertCircle, Trash2, Edit2, Activity, ShieldAlert } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { 
+  useGetSessionsQuery, 
+  useCreateSessionFromScheduleMutation, 
+  useUpdateSessionMutation, 
+  useDeleteSessionMutation 
+} from '../../features/sessions/sessionApi';
+import { useGetSchedulesQuery } from '../../features/batches/scheduleApi';
+import { RootState } from '../../app/store';
+import { hasPermission } from '../../lib/rbac';
+import { toast } from 'sonner';
 
 const formatTime12h = (time: string) => {
   if (!time) return '';
@@ -10,60 +20,42 @@ const formatTime12h = (time: string) => {
   const m = minutes;
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12;
-  h = h ? h : 12; // the hour '0' should be '12'
+  h = h ? h : 12;
   return `${h}:${m} ${ampm}`;
 };
 
-// A beautifully styled Sessions management component for the admin panel.
 export default function Sessions() {
-  const [sessions, setSessions] = useState<any[]>([]);
-  const [schedules, setSchedules] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { token } = useSelector((state: any) => state.auth);
-  
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
-  
-  // Create Session State
   const [formData, setFormData] = useState({
     scheduleId: '',
     targetDate: '',
   });
 
-  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  // Permissions
+  const permissions = useSelector((state: RootState) => state.auth.permissions);
+  const canRead = hasPermission(permissions, 'dashboard.admin') || hasPermission(permissions, 'session.read');
+  const canCreate = hasPermission(permissions, 'session.create');
+  const canUpdate = hasPermission(permissions, 'session.update');
+  const canDelete = hasPermission(permissions, 'session.delete');
 
-  const fetchSessions = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (result.success) {
-        setSessions(result.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch sessions");
-    }
-  };
+  // API Hooks
+  const { data: sessionsData, isLoading: isSessionsLoading } = useGetSessionsQuery(undefined, { skip: !canRead });
+  const { data: schedulesData, isLoading: isSchedulesLoading } = useGetSchedulesQuery({}, { skip: !canRead });
+  
+  const [createSession, { isLoading: isCreating }] = useCreateSessionFromScheduleMutation();
+  const [updateSession, { isLoading: isUpdating }] = useUpdateSessionMutation();
+  const [deleteSession, { isLoading: isDeleting }] = useDeleteSessionMutation();
 
-   const fetchMetadata = async () => {
-    try {
-      const headers = { 'Authorization': `Bearer ${token}` };
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/admin/schedules`, { headers });
-      const schedData = await res.json();
-      
-      if (schedData.success) {
-        setSchedules(schedData.data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch references");
-    }
-  };
-
-  useEffect(() => {
-    fetchSessions();
-    fetchMetadata();
-  }, []);
+  if (!canRead) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-2xl border border-gray-100 min-h-[60vh]">
+        <ShieldAlert className="w-16 h-16 text-red-500 mb-4" />
+        <h2 className="text-2xl font-bold text-gray-800">Access Denied</h2>
+        <p className="text-gray-500 mt-2">You don't have permission to manage sessions.</p>
+      </div>
+    );
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -71,387 +63,260 @@ export default function Sessions() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setNotification(null);
+    const { scheduleId, targetDate } = formData;
+    if (!scheduleId || !targetDate) {
+      toast.error('Please select a schedule and a target date.');
+      return;
+    }
+
     try {
-      const { scheduleId, targetDate } = formData;
-      if (!scheduleId || !targetDate) {
-        setNotification({ type: 'error', message: 'Please select a schedule and a target date.' });
-        setLoading(false);
-        return;
-      }
-
-      const url = editingSessionId 
-        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/${editingSessionId}`
-        : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/schedule/${scheduleId}`;
-      
-      const method = editingSessionId ? 'PATCH' : 'POST';
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ targetDate, scheduleId })
-      });
-      const result = await res.json();
-      
-      if (result.success) {
-        setNotification({ type: 'success', message: `Session successfully ${editingSessionId ? 'updated' : 'created'}!` });
-        setIsModalOpen(false);
-        fetchSessions();
+      if (editingSessionId) {
+        await updateSession({ id: editingSessionId, targetDate, scheduleId }).unwrap();
+        toast.success('Session updated successfully!');
       } else {
-        setNotification({ type: 'error', message: result.message || 'Failed to process session.' });
+        await createSession({ scheduleId, targetDate }).unwrap();
+        toast.success('Session created successfully!');
       }
+      setIsModalOpen(false);
+      setEditingSessionId(null);
+      setFormData({ scheduleId: '', targetDate: '' });
     } catch (err: any) {
-      setNotification({ type: 'error', message: err.message || 'Network error encountered' });
-    } finally {
-      setLoading(false);
+      toast.error(err?.data?.message || 'Failed to save session');
     }
   };
-
-  const openCreateModal = () => {
-    setEditingSessionId(null);
-    setFormData({ scheduleId: '', targetDate: '' });
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (session: any) => {
-    setEditingSessionId(session._id);
-    const sId = typeof session.scheduleId === 'object' ? session.scheduleId._id : session.scheduleId;
-    
-    // Extract date in YYYY-MM-DD format
-    const date = new Date(session.startTime).toISOString().split('T')[0];
-    
-    setFormData({
-      scheduleId: sId || '',
-      targetDate: date
-    });
-    setIsModalOpen(true);
-  };
-
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this session?')) return;
     try {
-      setLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:2707/api/v1'}/sessions/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const result = await res.json();
-      if (result.success) {
-        setNotification({ type: 'success', message: 'Session deleted and Zoom meeting cancelled.' });
-        setDeletingId(null);
-        fetchSessions();
-      } else {
-        setNotification({ type: 'error', message: result.message || 'Failed to delete.' });
-      }
+      await deleteSession(id).unwrap();
+      toast.success('Session deleted successfully');
     } catch (err: any) {
-      setNotification({ type: 'error', message: err.message });
-    } finally {
-      setLoading(false);
+      toast.error(err?.data?.message || 'Failed to delete session');
     }
   };
 
+  const sessions = sessionsData?.data || [];
+  const schedules = schedulesData?.data || [];
+
+  if (isSessionsLoading || isSchedulesLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 min-h-[60vh]">
+        <Activity className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Loading sessions...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 md:p-8 w-full max-w-7xl mx-auto space-y-8 bg-gray-50/30 min-h-screen">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-            <Video className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-black text-gray-800 flex items-center gap-3">
+            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
+              <Video className="w-8 h-8" />
+            </div>
             Live Sessions
           </h1>
-          <p className="text-gray-500 font-medium mt-1">Manage and Reschedule your automated Zoom sessions.</p>
+          <p className="text-gray-500 font-medium mt-2">Create and manage upcoming live classes from your schedules.</p>
         </div>
-        
-        <button 
-          onClick={openCreateModal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold tracking-wide shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Create Session
-        </button>
-      </div>
-
-      {/* Notifications */}
-      <AnimatePresence mode="wait">
-        {notification && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-            className={`p-4 rounded-2xl border flex items-center gap-3 font-bold ${notification.type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}
+        {canCreate && (
+          <button 
+            onClick={() => {
+              setEditingSessionId(null);
+              setFormData({ scheduleId: '', targetDate: '' });
+              setIsModalOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-100 transition-all active:scale-95 shrink-0"
           >
-            {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-            {notification.message}
-          </motion.div>
+            <Plus className="w-5 h-5" />
+            Generate Session
+          </button>
         )}
-      </AnimatePresence>
+      </div>
 
       {/* Sessions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {sessions.length === 0 ? (
-          <div className="col-span-full py-12 flex flex-col items-center justify-center bg-white rounded-3xl border border-gray-100 border-dashed">
-            <Video className="w-16 h-16 text-gray-200 mb-4" />
-            <h3 className="text-xl font-bold text-gray-400">No sessions currently scheduled.</h3>
-            <p className="text-gray-400 text-sm mt-1">Click "Create Session" to get started.</p>
-          </div>
-        ) : (
-          sessions.map((session, i) => {
-            const isStarted = new Date() >= new Date(session.startTime);
-            const isEnded = new Date() > new Date(session.endTime);
-            
-            return (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                key={session._id} 
-                className="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all group"
-              >
-                <div className="flex flex-col gap-2 mb-4">
-                  <div className="flex justify-between items-start">
-                    <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                      {session.sessionType}
-                    </span>
-                    <span className="text-gray-400 bg-gray-50 px-2 py-1 rounded text-[10px] font-bold font-mono">
-                      PROG: {(session.programId as any)?.title || 'N/A'}
-                    </span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatePresence mode="popLayout">
+          {sessions.map((session) => (
+            <motion.div
+              key={session._id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden"
+            >
+              {/* Background Decoration */}
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Video className="w-6 h-6" />
                   </div>
-                  <div className="flex items-center gap-2">
-                     <span className={`${isEnded ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'} px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight flex items-center gap-1.5`}>
-                       <span className={`w-1.5 h-1.5 rounded-full ${isEnded ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
-                       BATCH: {(session.batchId as any)?.batchName || 'N/A'}
-                     </span>
-                     {isEnded && (
-                       <span className="text-[9px] font-bold text-red-400 uppercase tracking-tighter italic">Needs Reschedule</span>
-                     )}
+                  <div className="flex items-center gap-1">
+                    {canUpdate && (
+                      <button 
+                        onClick={() => {
+                          const sId = typeof session.scheduleId === 'object' ? session.scheduleId._id : session.scheduleId;
+                          setEditingSessionId(session._id);
+                          setFormData({ 
+                            scheduleId: sId || '', 
+                            targetDate: session.startTime.split('T')[0] 
+                          });
+                          setIsModalOpen(true);
+                        }}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button 
+                        onClick={() => handleDelete(session._id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
-                
-                <h3 className="text-xl font-black text-gray-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
-                  {session.title}
-                </h3>
-                
-                <div className="space-y-3 mt-6">
-                  <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                    <Calendar className="w-4 h-4 text-blue-500" />
+
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md">
+                      {session.sessionType || 'Lecture'}
+                    </span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Live
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-gray-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                    {session.title}
+                  </h3>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
+                    <Calendar className="w-4 h-4 text-blue-400" />
                     {new Date(session.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                   </div>
-                  <div className="flex items-center gap-3 text-sm font-semibold text-gray-600">
-                    <Clock className="w-4 h-4 text-orange-500" />
-                    {formatTime12h(new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))} 
-                    <span className="text-gray-300 mx-1">-</span>
-                    {formatTime12h(new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))}
+                  <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between gap-2">
-                   <button 
-                     onClick={() => openEditModal(session)}
-                     className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center gap-2"
-                   >
-                      <Plus className="w-3.5 h-3.5" />
-                      Reschedule Session
-                   </button>
-                   <button 
-                     onClick={() => setDeletingId(session._id)}
-                     className="p-2.5 bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 rounded-xl transition-all"
-                     title="Delete Session"
-                   >
-                     <Trash2 className="w-4 h-4" />
-                   </button>
+                <div className="pt-4 flex items-center gap-3">
+                  <a 
+                    href={session.zoomLink || session.join_url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 bg-gray-50 hover:bg-blue-600 hover:text-white text-gray-700 py-3 rounded-xl font-black text-xs transition-all active:scale-95"
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    Join Meeting
+                  </a>
                 </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
-                {/* Age-based Zoom Links */}
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Host Join Links</span>
-                    {!isStarted && (
-                      <span className="text-[9px] font-bold text-orange-500 flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" />
-                        Available at start
-                      </span>
-                    )}
-                  </div>
-                  <div className={`grid grid-cols-2 gap-2 transition-all duration-500 ${!isStarted ? 'blur-[2px] pointer-events-none opacity-60' : ''}`}>
-                    {session.zoomLinkJunior ? (
-                      <a 
-                        href={session.zoomLinkJunior} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
-                      >
-                        <Video className="w-3 h-3" />
-                        Junior (9-12)
-                      </a>
-                    ) : (
-                      <div className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase cursor-not-allowed">
-                        <Video className="w-3 h-3" />
-                        No Junior Link
-                      </div>
-                    )}
-
-                    {session.zoomLinkSenior ? (
-                      <a 
-                        href={session.zoomLinkSenior} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
-                      >
-                        <Video className="w-3 h-3" />
-                        Senior (13-18)
-                      </a>
-                    ) : (
-                      <div className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase cursor-not-allowed">
-                        <Video className="w-3 h-3" />
-                        No Senior Link
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })
+        {sessions.length === 0 && !isSessionsLoading && (
+          <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-4">
+              <Video className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-black text-gray-800">No sessions yet</h3>
+            <p className="text-gray-500 font-medium">Generate a session from a schedule to get started.</p>
+          </div>
         )}
       </div>
 
-      {/* Creation/Edit Modal */}
+      {/* Modal Section */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
-              <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/50">
-                <h2 className="text-2xl font-black text-gray-900">
-                  {editingSessionId ? 'Reschedule Session' : 'Configure Live Session'}
-                </h2>
-                <p className="text-gray-500 text-sm font-medium mt-1">
-                  {editingSessionId ? 'Update the date of this specific session.' : 'Bind an automated Zoom Meeting to a schedule template.'}
-                </p>
-              </div>
+              <div className="p-8 md:p-12">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-black text-gray-800">
+                    {editingSessionId ? 'Edit Session' : 'Generate New Session'}
+                  </h2>
+                  <button 
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    <AlertCircle className="w-6 h-6 text-gray-400 rotate-45" />
+                  </button>
+                </div>
 
-              <div className="p-8 overflow-y-auto flex-1 text-left">
-                <form id="sessionForm" onSubmit={handleSubmit} className="space-y-6">
-                  
-                  {/* Schedule Selection */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="col-span-1">
-                      <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wider">Schedule Template</label>
-                      <select 
-                        required 
-                        name="scheduleId" 
-                        value={formData.scheduleId} 
-                        onChange={handleChange} 
-                        disabled={!!editingSessionId}
-                        className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all disabled:opacity-50"
-                      >
-                        <option value="">-- Choose Schedule --</option>
-                        {schedules.map(s => (
-                          <option key={s._id} value={s._id}>
-                             {s.sessionLabel} ({s.dayOfWeek} {formatTime12h(s.startTime)} - {formatTime12h(s.endTime)}) (Batch: {s.batch?.batchName || '...'})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="col-span-1">
-                      <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-wider">Target Date</label>
-                      <input 
-                        required 
-                        type="date" 
-                        name="targetDate" 
-                        min={new Date().toISOString().split('T')[0]}
-                        value={formData.targetDate} 
-                        onChange={handleChange} 
-                        className="w-full bg-gray-50 border-transparent font-medium focus:bg-white focus:border-blue-500 focus:ring-0 p-4 rounded-2xl transition-all" 
-                      />
-                    </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Select Schedule</label>
+                    <select 
+                      name="scheduleId" 
+                      value={formData.scheduleId} 
+                      onChange={handleChange}
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700 appearance-none"
+                    >
+                      <option value="">Choose a schedule template...</option>
+                      {schedules.map((s: any) => (
+                        <option key={s._id} value={s._id}>
+                          {s.sessionLabel} ({s.dayOfWeek} • {formatTime12h(s.startTime)})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
-                  <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
-                    <div className="flex gap-4">
-                       <CheckCircle2 className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                       <div className="text-sm text-blue-900 font-medium leading-relaxed">
-                          {editingSessionId 
-                            ? "Rescheduling will update the join date for all enrolled students. Both Junior (9-12) and Senior (13-18) Zoom meetings will be updated."
-                            : "By choosing a template, the system will automatically pull the Program, Batch, and Phase. It will also generate TWO unique Zoom meetings: one for students aged 9-12 and another for ages 13-18."
-                          }
-                       </div>
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Target Date</label>
+                    <input 
+                      type="date" 
+                      name="targetDate" 
+                      value={formData.targetDate} 
+                      onChange={handleChange}
+                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700"
+                    />
                   </div>
 
+                  <div className="pt-4 flex gap-4">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsModalOpen(false)}
+                      className="flex-1 py-4 bg-gray-50 text-gray-500 font-black rounded-2xl hover:bg-gray-100 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      disabled={isCreating || isUpdating}
+                      className="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {(isCreating || isUpdating) ? <Activity className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                      {editingSessionId ? 'Save Changes' : 'Generate Session'}
+                    </button>
+                  </div>
                 </form>
               </div>
-
-              <div className="px-8 py-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-[32px]">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 font-bold text-gray-500 hover:text-gray-800 transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" form="sessionForm" disabled={loading} className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black tracking-wide rounded-xl shadow-lg shadow-blue-200 transition-all">
-                  {loading ? 'Processing...' : editingSessionId ? 'Update Session' : 'Publish Session'}
-                </button>
-              </div>
-
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {deletingId && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-red-900/10 backdrop-blur-md"
-              onClick={() => setDeletingId(null)}
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-[40px] shadow-2xl w-full max-w-md overflow-hidden relative z-10 p-10 text-center"
-            >
-              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <AlertCircle className="w-10 h-10 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900 mb-2">Delete Session?</h2>
-              <p className="text-gray-500 font-medium leading-relaxed mb-8">
-                This action is irreversible. It will remove the record and <span className="text-red-600 font-bold">cancel the Zoom meeting</span> for all participants.
-              </p>
-              
-              <div className="flex flex-col gap-3">
-                <button 
-                  onClick={() => handleDelete(deletingId)}
-                  disabled={loading}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-black tracking-wide shadow-xl shadow-red-100 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                   {loading ? 'Deleting...' : 'Yes, Delete Session'}
-                </button>
-                <button 
-                  onClick={() => setDeletingId(null)}
-                  className="w-full py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors"
-                >
-                   Keep Session
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
     </div>
   );
 }
