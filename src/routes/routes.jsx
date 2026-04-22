@@ -296,7 +296,7 @@ export const routes = [
   {
     path: '/student',
     name: 'StudentPortal',
-    element: wrapInPermission(<DashboardLayout />, ['student', 'admin', 'super_admin'], ['dashboard.student']),
+    element: wrapInPermission(<DashboardLayout />, ['student', 'child', 'admin', 'super_admin'], ['dashboard.student']),
     routes: [
       {
         path: '/student/dashboard',
