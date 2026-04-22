@@ -4,6 +4,7 @@ export interface CompletedLesson {
   courseId: string;
   weekIndex: number;
   lessonIndex: number;
+  videoIndex: number;
   completedAt: string;
 }
 
@@ -30,7 +31,7 @@ export const progressApi = api.injectEndpoints({
       query: (enrollmentId) => `/progress/${enrollmentId}`,
       providesTags: (result, error, id) => [{ type: 'Progress', id }],
     }),
-    completeLesson: builder.mutation<ProgressResponse, { enrollmentId: string; courseId: string; weekIndex: number; lessonIndex: number }>({
+    completeLesson: builder.mutation<ProgressResponse, { enrollmentId: string; courseId: string; weekIndex: number; lessonIndex: number; videoIndex: number }>({
       query: (body) => ({
         url: '/progress/complete',
         method: 'POST',

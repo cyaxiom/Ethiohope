@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ChevronLeft, BookOpen, Video, FileText, 
@@ -17,87 +17,53 @@ import { toast } from 'sonner';
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
-  // Helper to extract YouTube video ID
-  const getYoutubeId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
-  };
-
-  // State for exercise answers
-  const [exerciseAnswers, setExerciseAnswers] = useState<Record<string, number>>({});
-
-  const handleSelectOption = (weekIndex: number, exerciseIndex: number, questionIndex: number, optionIndex: number) => {
-    const key = `${weekIndex}-${exerciseIndex}-${questionIndex}`;
-    setExerciseAnswers(prev => ({
-      ...prev,
-      [key]: optionIndex
-    }));
-  };
-  
-  // Permissions
+  // 1. Data Fetching & Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'course.read') || hasPermission(permissions, 'dashboard.student');
 
   const { data: courseData, isLoading: isCourseLoading, isError: isCourseError } = useGetStudentCourseByIdQuery(id || '', { skip: !canRead });
-  
   const enrollmentId = courseData?.enrollmentId;
   const { data: progressData, isLoading: isProgressLoading } = useGetProgressQuery(enrollmentId || '', { skip: !enrollmentId });
-  
   const [completeLesson, { isLoading: isCompleting }] = useCompleteLessonMutation();
 
+  // 2. State & Refs
+  const [exerciseAnswers, setExerciseAnswers] = useState<Record<string, number>>({});
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({ "0": true });
   const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
-  
-  // State for active video player view
   const [selectedVideo, setSelectedVideo] = useState<{
     weekIndex: number;
     lessonIndex: number;
     videoIndex: number;
   } | null>(null);
 
-  const toggleWeek = (index: number) => {
-    setExpandedWeeks(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
-  };
+  const playerRef = useRef<any>(null);
 
-  const toggleLesson = (weekIndex: number, lessonIndex: number, isLocked: boolean) => {
-    if (isLocked) {
-      toast.error('This lesson is locked! Complete the previous lesson first.');
-      return;
-    }
-    const key = `${weekIndex}-${lessonIndex}`;
-    setExpandedLessons(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+  // 3. Derived Data (Course & Progress)
+  const course = courseData?.data;
+  const progress = progressData?.data;
 
-  const toggleExercise = (weekIndex: number, exerciseIndex: number) => {
-    const key = `${weekIndex}-${exerciseIndex}`;
-    setExpandedExercises(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
-  // Progress Helper Functions
-  const isLessonCompleted = useMemo(() => (wIdx: number, lIdx: number) => {
-    if (!progressData?.data?.completedLessons) return false;
-    return progressData.data.completedLessons.some(
-      l => l.courseId === id && l.weekIndex === wIdx && l.lessonIndex === lIdx
+  // 4. Progress Helper Functions
+  const isLectureCompleted = useMemo(() => (wIdx: number, lIdx: number, vIdx: number) => {
+    if (!progress?.completedLessons) return false;
+    return progress.completedLessons.some(
+      l => String(l.courseId) === String(id) && l.weekIndex === wIdx && l.lessonIndex === lIdx && l.videoIndex === vIdx
     );
-  }, [progressData, id]);
+  }, [progress, id]);
+
+  const isLessonCompleted = useMemo(() => (wIdx: number, lIdx: number) => {
+    if (!course?.weeks?.[wIdx]?.lessons?.[lIdx]) return false;
+    const videosInLesson = course.weeks[wIdx].lessons[lIdx].videoUrls || [];
+    if (videosInLesson.length === 0) return true;
+    return videosInLesson.every((_, vIdx) => isLectureCompleted(wIdx, lIdx, vIdx));
+  }, [course, isLectureCompleted]);
 
   const isWeekCompleted = useMemo(() => (wIdx: number) => {
-    if (!courseData?.data?.weeks[wIdx]) return false;
-    const lessonsInWeek = courseData.data.weeks[wIdx].lessons || [];
-    if (lessonsInWeek.length === 0) return true; // Empty week is "completed" by default or handles differently
+    if (!course?.weeks?.[wIdx]) return false;
+    const lessonsInWeek = course.weeks[wIdx].lessons || [];
+    if (lessonsInWeek.length === 0) return true;
     return lessonsInWeek.every((_, lIdx) => isLessonCompleted(wIdx, lIdx));
-  }, [courseData, isLessonCompleted]);
+  }, [isLessonCompleted, course]);
 
   const isWeekLocked = useMemo(() => (wIdx: number) => {
     if (wIdx === 0) return false;
@@ -110,39 +76,156 @@ const CourseDetail: React.FC = () => {
     return !isLessonCompleted(wIdx, lIdx - 1);
   }, [isWeekLocked, isLessonCompleted]);
 
-  const handleCompleteLesson = async (weekIndex: number, lessonIndex: number) => {
+  const totalLectures = useMemo(() => {
+    return course?.weeks?.reduce((acc: number, week: any) => {
+      return acc + (week.lessons?.reduce((lAcc: number, lesson: any) => lAcc + (lesson.videoUrls?.length || 0), 0) || 0);
+    }, 0) || 0;
+  }, [course]);
+
+  const completedInThisCourse = useMemo(() => {
+    if (!progress?.completedLessons) return 0;
+    return progress.completedLessons.filter(l => String(l.courseId) === String(id)).length;
+  }, [progress, id]);
+  
+  const coursePercentage = useMemo(() => {
+    if (totalLectures === 0) return 0;
+    return Math.round((completedInThisCourse / totalLectures) * 100);
+  }, [completedInThisCourse, totalLectures]);
+
+  // 5. Action Handlers
+  const getYoutubeId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const handleSelectOption = (weekIndex: number, exerciseIndex: number, questionIndex: number, optionIndex: number) => {
+    const key = `${weekIndex}-${exerciseIndex}-${questionIndex}`;
+    setExerciseAnswers(prev => ({
+      ...prev,
+      [key]: optionIndex
+    }));
+  };
+
+  const handleCompleteLecture = async (weekIndex: number, lessonIndex: number, videoIndex: number) => {
     if (!enrollmentId || !id) return;
     try {
       await completeLesson({
         enrollmentId,
         courseId: id,
         weekIndex,
-        lessonIndex
+        lessonIndex,
+        videoIndex
       }).unwrap();
-      toast.success('Lesson completed!');
+      toast.success('Lecture completed!');
     } catch (err: any) {
-      toast.error(err?.data?.message || 'Failed to complete lesson');
+      if (err?.status !== 409) {
+        toast.error(err?.data?.message || 'Failed to complete lecture');
+      }
     }
   };
 
-  const course = courseData?.data;
-  const progress = progressData?.data;
+  const toggleWeek = (index: number) => {
+    setExpandedWeeks(prev => ({ ...prev, [index]: !prev[index] }));
+  };
 
-  const totalLessons = useMemo(() => {
-    return course?.weeks?.reduce((acc: number, week: any) => acc + (week.lessons?.length || 0), 0) || 0;
-  }, [course]);
+  const toggleLesson = (weekIndex: number, lessonIndex: number, isLocked: boolean) => {
+    if (isLocked) {
+      toast.error('This lecture is locked! Complete the previous one first.');
+      return;
+    }
+    const key = `${weekIndex}-${lessonIndex}`;
+    setExpandedLessons(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
-  // Calculate specific progress for THIS course
-  const completedInThisCourse = useMemo(() => {
-    if (!progress?.completedLessons) return 0;
-    return progress.completedLessons.filter(l => l.courseId === id).length;
-  }, [progress, id]);
-  
-  const coursePercentage = useMemo(() => {
-    if (totalLessons === 0) return 0;
-    return Math.round((completedInThisCourse / totalLessons) * 100);
-  }, [completedInThisCourse, totalLessons]);
+  const toggleExercise = (weekIndex: number, exerciseIndex: number) => {
+    const key = `${weekIndex}-${exerciseIndex}`;
+    setExpandedExercises(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
+  // 6. YouTube Player Effect
+  useEffect(() => {
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!selectedVideo || !course) return;
+
+    const videoId = getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex] || '');
+    if (!videoId) return;
+
+    let player: any = null;
+
+    const initPlayer = () => {
+      const elId = `youtube-player-${videoId}`;
+      const el = document.getElementById(elId);
+      
+      if (!el || !(window as any).YT || !(window as any).YT.Player) return;
+
+      player = new (window as any).YT.Player(elId, {
+        height: '100%',
+        width: '100%',
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          modestbranding: 1,
+          rel: 0,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: (event: any) => event.target.playVideo(),
+          onStateChange: (event: any) => {
+            if (event.data === (window as any).YT.PlayerState.ENDED) {
+              handleCompleteLecture(selectedVideo.weekIndex, selectedVideo.lessonIndex, selectedVideo.videoIndex);
+            }
+          },
+        },
+      });
+      playerRef.current = player;
+    };
+
+    const runInit = () => {
+      const elId = `youtube-player-${videoId}`;
+      if (document.getElementById(elId) && (window as any).YT && (window as any).YT.Player) {
+        initPlayer();
+      } else {
+        let retries = 0;
+        const retryInterval = setInterval(() => {
+          if (document.getElementById(elId) && (window as any).YT && (window as any).YT.Player) {
+            initPlayer();
+            clearInterval(retryInterval);
+          }
+          retries++;
+          if (retries > 20) clearInterval(retryInterval);
+        }, 100);
+      }
+    };
+
+    if ((window as any).YT && (window as any).YT.Player) {
+      const t = setTimeout(runInit, 500); // Increased delay for stability
+      return () => clearTimeout(t);
+    } else {
+      const prev = (window as any).onYouTubeIframeAPIReady;
+      (window as any).onYouTubeIframeAPIReady = () => {
+        if (prev) prev();
+        runInit();
+      };
+    }
+
+    return () => {
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch(e) {}
+        playerRef.current = null;
+      }
+    };
+  }, [selectedVideo, course]);
+
+  // 7. Render Loading/Error States
   if (!canRead) {
     return (
       <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-2xl border border-gray-100 min-h-[60vh]">
@@ -177,6 +260,7 @@ const CourseDetail: React.FC = () => {
     );
   }
 
+  // 8. Main Render
   return (
     <div className="max-w-7xl mx-auto pb-20 animate-fadeIn px-4">
       {/* Back Button */}
@@ -208,29 +292,44 @@ const CourseDetail: React.FC = () => {
           >
             {/* Main Player Column */}
             <div className="lg:col-span-3 space-y-6">
-              <div className="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl aspect-video relative border-4 border-white">
-                {getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]) ? (
-                  <iframe 
-                    src={`https://www.youtube.com/embed/${getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex])}?autoplay=1`}
-                    title="Video Player"
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center">
-                    <Video className="w-16 h-16 mb-4 text-gray-600" />
-                    <p className="text-xl font-bold mb-4">External Video Content</p>
-                    <a 
-                      href={course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="px-8 py-3 bg-blue-600 rounded-2xl font-black hover:bg-blue-700 transition-all"
+              <div className="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl aspect-video relative border-4 border-white group/player">
+                {(() => {
+                  const videoId = getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]);
+                  return videoId ? (
+                    <div key={videoId} id={`youtube-player-${videoId}`} className="absolute inset-0 w-full h-full" />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center">
+                      <Video className="w-16 h-16 mb-4 text-gray-600" />
+                      <p className="text-xl font-bold mb-4">External Video Content</p>
+                      <a 
+                        href={course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="px-8 py-3 bg-blue-600 rounded-2xl font-black hover:bg-blue-700 transition-all"
+                      >
+                        Open in New Tab
+                      </a>
+                    </div>
+                  );
+                })()}
+
+                {/* Mark as Completed Overlay Button */}
+                <div className="absolute bottom-6 right-6 z-20 transition-all duration-300 translate-y-2 opacity-0 group-hover/player:translate-y-0 group-hover/player:opacity-100">
+                  {isLectureCompleted(selectedVideo.weekIndex, selectedVideo.lessonIndex, selectedVideo.videoIndex) ? (
+                    <div className="flex items-center gap-2 bg-green-600 text-white font-black text-[10px] px-4 py-2.5 rounded-xl shadow-xl border border-white/20 backdrop-blur-md">
+                      <CheckCircle2 className="w-4 h-4" /> LECTURE COMPLETED
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => handleCompleteLecture(selectedVideo.weekIndex, selectedVideo.lessonIndex, selectedVideo.videoIndex)}
+                      disabled={isCompleting}
+                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-black text-[10px] px-6 py-3 rounded-xl shadow-2xl border border-white/30 backdrop-blur-xl transition-all active:scale-95 group/btn"
                     >
-                      Open in New Tab
-                    </a>
-                  </div>
-                )}
+                      {isCompleting ? <Activity className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-4 h-4 text-green-400 group-hover/btn:scale-110 transition-transform" />}
+                      MARK AS COMPLETED
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
@@ -240,7 +339,7 @@ const CourseDetail: React.FC = () => {
                       Week {selectedVideo.weekIndex + 1}
                     </span>
                     <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                      Lesson {selectedVideo.lessonIndex + 1}
+                      Lecture {selectedVideo.lessonIndex + 1}
                     </span>
                   </div>
                   <button 
@@ -257,25 +356,6 @@ const CourseDetail: React.FC = () => {
                 <p className="text-gray-500 font-medium leading-relaxed">
                   {course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].description}
                 </p>
-
-                <div className="mt-8 pt-8 border-t border-gray-50 flex items-center justify-between">
-                   <div className="flex items-center gap-4">
-                     {isLessonCompleted(selectedVideo.weekIndex, selectedVideo.lessonIndex) ? (
-                       <div className="flex items-center gap-2 text-green-600 font-black text-xs bg-green-50 px-4 py-2 rounded-xl border border-green-100">
-                         <CheckCircle2 className="w-4 h-4" /> Lesson Completed
-                       </div>
-                     ) : (
-                       <button 
-                         onClick={() => handleCompleteLesson(selectedVideo.weekIndex, selectedVideo.lessonIndex)}
-                         disabled={isCompleting}
-                         className="flex items-center gap-2 bg-green-600 text-white font-black text-xs px-6 py-3 rounded-xl shadow-lg shadow-green-100 hover:bg-green-700 active:scale-95 transition-all"
-                       >
-                         {isCompleting ? <Activity className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                         Mark as Completed
-                       </button>
-                     )}
-                   </div>
-                </div>
               </div>
             </div>
 
@@ -294,32 +374,38 @@ const CourseDetail: React.FC = () => {
 
                 <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                    {course.weeks[selectedVideo.weekIndex].lessons.map((lesson, lIdx) => (
-                    <div key={lIdx} className="space-y-2">
+                    <div key={lIdx} className="space-y-1">
                       {lesson.videoUrls.map((url, vIdx) => {
                         const isActive = selectedVideo.lessonIndex === lIdx && selectedVideo.videoIndex === vIdx;
+                        const isDone = isLectureCompleted(selectedVideo.weekIndex, lIdx, vIdx);
                         return (
                           <button 
                             key={vIdx}
                             onClick={() => setSelectedVideo({ ...selectedVideo, lessonIndex: lIdx, videoIndex: vIdx })}
-                            className={`w-full text-left p-3 rounded-2xl border transition-all flex items-center gap-3 group ${
+                            className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between group ${
                               isActive 
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' 
-                                : 'bg-gray-50 border-transparent hover:border-blue-200 text-gray-700'
+                                ? 'bg-blue-50 text-blue-600' 
+                                : 'hover:bg-gray-50 text-gray-700'
                             }`}
                           >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                              isActive ? 'bg-white/20 text-white' : 'bg-white text-gray-400 group-hover:text-blue-500 shadow-sm'
-                            }`}>
-                              {isActive ? <PlayCircle className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
+                                isDone 
+                                  ? 'bg-green-500 border-green-500 text-white' 
+                                  : isActive ? 'border-blue-500' : 'border-gray-200 group-hover:border-blue-400'
+                              }`}>
+                                {isDone && <CheckCircle2 className="w-3.5 h-3.5" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${isActive ? 'text-blue-500' : 'text-gray-400'}`}>
+                                  Part {vIdx + 1}
+                                </p>
+                                <p className={`text-xs font-bold truncate ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
+                                  {lesson.title}
+                                </p>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${isActive ? 'text-white/70' : 'text-gray-400'}`}>
-                                Lesson {lIdx + 1} • Part {vIdx + 1}
-                              </p>
-                              <p className={`text-xs font-bold truncate ${isActive ? 'text-white' : 'text-gray-700'}`}>
-                                {lesson.title}
-                              </p>
-                            </div>
+                            {isActive && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-sm" />}
                           </button>
                         );
                       })}
@@ -371,9 +457,9 @@ const CourseDetail: React.FC = () => {
                   <span className="text-sm font-bold text-gray-700">{course.weeks?.length || 0} Weeks</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lessons</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Lectures</span>
                   <span className="text-sm font-bold text-gray-700">
-                    {totalLessons} Total
+                    {totalLectures} Total
                   </span>
                 </div>
                 <div className="flex flex-col">
@@ -453,7 +539,7 @@ const CourseDetail: React.FC = () => {
                             {week.lessons && week.lessons.length > 0 && (
                               <div className="space-y-3">
                                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-                                  <Video className="w-3.5 h-3.5 text-blue-500" /> Lessons
+                                  <Video className="w-3.5 h-3.5 text-blue-500" /> Lectures
                                 </h4>
                                 <div className="grid grid-cols-1 gap-3">
                                   {week.lessons.map((lesson, lessonIndex) => {
@@ -481,7 +567,7 @@ const CourseDetail: React.FC = () => {
                                             <div>
                                               <h5 className={`text-sm font-bold ${lessonLocked ? 'text-gray-400' : 'text-gray-700 group-hover/item:text-blue-700'} transition-colors`}>{lesson.title}</h5>
                                               <div className="flex items-center gap-3 mt-0.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase">{lessonLocked ? 'Locked' : 'Video Lesson'}</span>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase">{lessonLocked ? 'Locked' : 'Lecture'}</span>
                                                 {lesson.pdfUrl && !lessonLocked && (
                                                   <span className="text-[10px] font-bold text-blue-400 uppercase flex items-center gap-1">
                                                     <FileText className="w-3 h-3" /> PDF Included
@@ -502,28 +588,39 @@ const CourseDetail: React.FC = () => {
                                               className="px-6 pb-6 pt-2 space-y-4"
                                             >
                                               <div className="grid grid-cols-1 gap-4">
-                                                {lesson.videoUrls?.map((url, videoIndex) => (
-                                                  <button 
-                                                    key={videoIndex} 
-                                                    onClick={() => setSelectedVideo({ weekIndex, lessonIndex, videoIndex })}
-                                                    className="w-full text-left bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:border-blue-500 hover:bg-blue-50 group transition-all"
-                                                  >
-                                                    <div className="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0 group-hover:bg-red-500 group-hover:text-white transition-colors">
-                                                      <Video className="w-6 h-6" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                      <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded-md group-hover:bg-red-100 transition-colors">Video {videoIndex + 1}</span>
-                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{lesson.title}</span>
+                                                {lesson.videoUrls?.map((url, videoIndex) => {
+                                                  const lectureDone = isLectureCompleted(weekIndex, lessonIndex, videoIndex);
+                                                  return (
+                                                    <button 
+                                                      key={videoIndex} 
+                                                      onClick={() => setSelectedVideo({ weekIndex, lessonIndex, videoIndex })}
+                                                      className={`w-full text-left bg-white p-4 rounded-2xl border shadow-sm flex items-center gap-4 transition-all group ${
+                                                        lectureDone ? 'border-green-100 hover:border-green-300' : 'border-gray-100 hover:border-blue-500 hover:bg-blue-50'
+                                                      }`}
+                                                    >
+                                                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                                                        lectureDone ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white'
+                                                      }`}>
+                                                        {lectureDone ? <CheckCircle2 className="w-6 h-6" /> : <Video className="w-6 h-6" />}
                                                       </div>
-                                                      <h6 className="text-sm font-black text-gray-800 truncate">{lesson.description || 'Watch lesson video'}</h6>
-                                                      <p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">Click to play this video lesson</p>
-                                                    </div>
-                                                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                                                      <PlayCircle className="w-5 h-5" />
-                                                    </div>
-                                                  </button>
-                                                ))}
+                                                      <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md transition-colors ${
+                                                            lectureDone ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500 group-hover:bg-red-100'
+                                                          }`}>Lecture {videoIndex + 1}</span>
+                                                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{lesson.title}</span>
+                                                        </div>
+                                                        <h6 className="text-sm font-black text-gray-800 truncate">{lesson.description || 'Watch lecture video'}</h6>
+                                                        <p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">Click to play this lecture</p>
+                                                      </div>
+                                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all transform ${
+                                                        lectureDone ? 'bg-green-50 text-green-500' : 'bg-blue-50 text-blue-500 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0'
+                                                      }`}>
+                                                        {lectureDone ? <CheckCircle2 className="w-5 h-5" /> : <PlayCircle className="w-5 h-5" />}
+                                                      </div>
+                                                    </button>
+                                                  );
+                                                })}
                                               </div>
                                               
                                               {lesson.pdfUrl && (
@@ -535,34 +632,13 @@ const CourseDetail: React.FC = () => {
                                                      <div className="flex flex-col">
                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reading Material</span>
                                                        <a href={lesson.pdfUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-gray-700 hover:underline line-clamp-1">
-                                                         Download Lesson PDF
+                                                         Download Lecture PDF
                                                        </a>
                                                      </div>
                                                   </div>
                                                   <a href={lesson.pdfUrl} target="_blank" rel="noreferrer" className="p-2 bg-gray-50 text-gray-400 rounded-lg opacity-0 group-hover/pdf:opacity-100 transition-opacity">
                                                     <FileText className="w-4 h-4" />
                                                   </a>
-                                                </div>
-                                              )}
-
-                                              {/* Action: Mark as Completed */}
-                                              {!lessonDone ? (
-                                                <button 
-                                                  onClick={() => handleCompleteLesson(weekIndex, lessonIndex)}
-                                                  disabled={isCompleting}
-                                                  className="w-full mt-4 py-4 bg-green-600 text-white rounded-2xl font-black text-xs shadow-lg shadow-green-100 hover:bg-green-700 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                                >
-                                                  {isCompleting ? (
-                                                    <Activity className="w-4 h-4 animate-spin" />
-                                                  ) : (
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                  )}
-                                                  Complete Lesson
-                                                </button>
-                                              ) : (
-                                                <div className="w-full mt-4 py-4 bg-green-50 text-green-600 rounded-2xl font-black text-xs flex items-center justify-center gap-2 border border-green-100">
-                                                  <CheckCircle2 className="w-4 h-4" />
-                                                  Lesson Completed
                                                 </div>
                                               )}
                                             </motion.div>
@@ -693,12 +769,12 @@ const CourseDetail: React.FC = () => {
 
             <div className="space-y-4">
                <div className="flex items-center justify-between text-xs font-bold">
-                 <span className="text-gray-500">Completed Lessons</span>
-                 <span className="text-gray-800">{completedInThisCourse} / {totalLessons}</span>
+                 <span className="text-gray-500">Completed Lectures</span>
+                 <span className="text-gray-800">{completedInThisCourse} / {totalLectures}</span>
                </div>
                <div className="flex items-center justify-between text-xs font-bold">
-                 <span className="text-gray-500">Remaining</span>
-                 <span className="text-gray-800">{totalLessons - completedInThisCourse} Lessons</span>
+                 <span className="text-gray-500">Remaining Lectures</span>
+                 <span className="text-gray-800">{totalLectures - completedInThisCourse}</span>
                </div>
             </div>
 
