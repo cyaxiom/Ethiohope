@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { 
   ChevronLeft, BookOpen, Video, FileText, 
   HelpCircle, ChevronDown, ChevronRight, PlayCircle,
-  CheckCircle, Clock, Award, Layout, 
+  CheckCircle, Clock, Award, Layout, Layers,
   ArrowLeft, Activity, ShieldAlert, Lock, CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,6 +49,13 @@ const CourseDetail: React.FC = () => {
   const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({ "0": true });
   const [expandedLessons, setExpandedLessons] = useState<Record<string, boolean>>({});
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
+  
+  // State for active video player view
+  const [selectedVideo, setSelectedVideo] = useState<{
+    weekIndex: number;
+    lessonIndex: number;
+    videoIndex: number;
+  } | null>(null);
 
   const toggleWeek = (index: number) => {
     setExpandedWeeks(prev => ({
@@ -171,7 +178,7 @@ const CourseDetail: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 animate-fadeIn">
+    <div className="max-w-7xl mx-auto pb-20 animate-fadeIn px-4">
       {/* Back Button */}
       <div className="flex items-center justify-between mb-8">
         <Link to="/student/courses" className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 font-bold transition-colors group">
@@ -190,10 +197,155 @@ const CourseDetail: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        
-        {/* Left Column: Course Info & Weeks */}
-        <div className="lg:col-span-2 space-y-8">
+      <AnimatePresence mode="wait">
+        {selectedVideo ? (
+          <motion.div 
+            key="video-player"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="grid grid-cols-1 lg:grid-cols-4 gap-8"
+          >
+            {/* Main Player Column */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl aspect-video relative border-4 border-white">
+                {getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]) ? (
+                  <iframe 
+                    src={`https://www.youtube.com/embed/${getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex])}?autoplay=1`}
+                    title="Video Player"
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center">
+                    <Video className="w-16 h-16 mb-4 text-gray-600" />
+                    <p className="text-xl font-bold mb-4">External Video Content</p>
+                    <a 
+                      href={course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="px-8 py-3 bg-blue-600 rounded-2xl font-black hover:bg-blue-700 transition-all"
+                    >
+                      Open in New Tab
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                      Week {selectedVideo.weekIndex + 1}
+                    </span>
+                    <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                      Lesson {selectedVideo.lessonIndex + 1}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedVideo(null)}
+                    className="p-3 bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-2xl transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <h2 className="text-2xl font-black text-gray-800 mb-2">
+                  {course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].title}
+                </h2>
+                <p className="text-gray-500 font-medium leading-relaxed">
+                  {course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].description}
+                </p>
+
+                <div className="mt-8 pt-8 border-t border-gray-50 flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                     {isLessonCompleted(selectedVideo.weekIndex, selectedVideo.lessonIndex) ? (
+                       <div className="flex items-center gap-2 text-green-600 font-black text-xs bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+                         <CheckCircle2 className="w-4 h-4" /> Lesson Completed
+                       </div>
+                     ) : (
+                       <button 
+                         onClick={() => handleCompleteLesson(selectedVideo.weekIndex, selectedVideo.lessonIndex)}
+                         disabled={isCompleting}
+                         className="flex items-center gap-2 bg-green-600 text-white font-black text-xs px-6 py-3 rounded-xl shadow-lg shadow-green-100 hover:bg-green-700 active:scale-95 transition-all"
+                       >
+                         {isCompleting ? <Activity className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                         Mark as Completed
+                       </button>
+                     )}
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar Column */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-[2.5rem] p-6 border border-gray-100 shadow-sm h-full max-h-[calc(100vh-200px)] flex flex-col">
+                <div className="flex items-center gap-3 mb-6 px-2">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                    <Layers className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-gray-800">Week {selectedVideo.weekIndex + 1} Videos</h3>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Course Playlist</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                   {course.weeks[selectedVideo.weekIndex].lessons.map((lesson, lIdx) => (
+                    <div key={lIdx} className="space-y-2">
+                      {lesson.videoUrls.map((url, vIdx) => {
+                        const isActive = selectedVideo.lessonIndex === lIdx && selectedVideo.videoIndex === vIdx;
+                        return (
+                          <button 
+                            key={vIdx}
+                            onClick={() => setSelectedVideo({ ...selectedVideo, lessonIndex: lIdx, videoIndex: vIdx })}
+                            className={`w-full text-left p-3 rounded-2xl border transition-all flex items-center gap-3 group ${
+                              isActive 
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' 
+                                : 'bg-gray-50 border-transparent hover:border-blue-200 text-gray-700'
+                            }`}
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-white text-gray-400 group-hover:text-blue-500 shadow-sm'
+                            }`}>
+                              {isActive ? <PlayCircle className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${isActive ? 'text-white/70' : 'text-gray-400'}`}>
+                                Lesson {lIdx + 1} • Part {vIdx + 1}
+                              </p>
+                              <p className={`text-xs font-bold truncate ${isActive ? 'text-white' : 'text-gray-700'}`}>
+                                {lesson.title}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setSelectedVideo(null)}
+                  className="mt-6 w-full py-4 bg-gray-50 text-gray-500 font-black text-xs rounded-2xl hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Back to Curriculum
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="curriculum-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"
+          >
+            {/* Left Column: Course Info & Weeks */}
+            <div className="lg:col-span-2 space-y-8">
           {/* Course Header */}
           <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50" />
@@ -347,47 +499,32 @@ const CourseDetail: React.FC = () => {
                                               initial={{ height: 0, opacity: 0 }}
                                               animate={{ height: 'auto', opacity: 1 }}
                                               exit={{ height: 0, opacity: 0 }}
-                                              className="px-6 pb-6 pt-2 space-y-6"
+                                              className="px-6 pb-6 pt-2 space-y-4"
                                             >
-                                              {lesson.videoUrls?.map((url, idx) => {
-                                                const videoId = getYoutubeId(url);
-                                                return (
-                                                  <div key={idx} className="space-y-3">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                      <div className="w-6 h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-                                                        <Video className="w-3.5 h-3.5" />
-                                                      </div>
-                                                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Video {idx + 1}</span>
+                                              <div className="grid grid-cols-1 gap-4">
+                                                {lesson.videoUrls?.map((url, videoIndex) => (
+                                                  <button 
+                                                    key={videoIndex} 
+                                                    onClick={() => setSelectedVideo({ weekIndex, lessonIndex, videoIndex })}
+                                                    className="w-full text-left bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:border-blue-500 hover:bg-blue-50 group transition-all"
+                                                  >
+                                                    <div className="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                                      <Video className="w-6 h-6" />
                                                     </div>
-                                                    
-                                                    {videoId ? (
-                                                      <div className="relative aspect-video rounded-2xl overflow-hidden bg-black shadow-lg border border-gray-100">
-                                                        <iframe 
-                                                          src={`https://www.youtube.com/embed/${videoId}`}
-                                                          title={`Lesson Video ${idx + 1}`}
-                                                          className="absolute inset-0 w-full h-full"
-                                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                          allowFullScreen
-                                                        />
+                                                    <div className="flex-1 min-w-0">
+                                                      <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded-md group-hover:bg-red-100 transition-colors">Video {videoIndex + 1}</span>
+                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{lesson.title}</span>
                                                       </div>
-                                                    ) : (
-                                                      <div className="bg-white p-4 rounded-xl border border-blue-50 shadow-sm flex items-center justify-between group/link">
-                                                        <div className="flex items-center gap-3">
-                                                           <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center">
-                                                             <Video className="w-4 h-4" />
-                                                           </div>
-                                                           <div className="flex flex-col">
-                                                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">External Video</span>
-                                                             <a href={url} target="_blank" rel="noreferrer" className="text-xs font-bold text-blue-600 hover:underline line-clamp-1">
-                                                               {url}
-                                                             </a>
-                                                           </div>
-                                                        </div>
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                );
-                                              })}
+                                                      <h6 className="text-sm font-black text-gray-800 truncate">{lesson.description || 'Watch lesson video'}</h6>
+                                                      <p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">Click to play this video lesson</p>
+                                                    </div>
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                                      <PlayCircle className="w-5 h-5" />
+                                                    </div>
+                                                  </button>
+                                                ))}
+                                              </div>
                                               
                                               {lesson.pdfUrl && (
                                                 <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between group/pdf">
@@ -585,9 +722,11 @@ const CourseDetail: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+);
 };
 
 export default CourseDetail;
