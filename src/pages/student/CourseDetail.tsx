@@ -14,6 +14,33 @@ import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast } from 'sonner';
 
+type CourseVideoItem = string | {
+  url?: string;
+  subtitle?: string;
+  description?: string;
+};
+
+const resolveVideoMeta = (video: CourseVideoItem, lesson: any, videoIndex: number) => {
+  const lessonTitle = typeof lesson?.title === 'string' ? lesson.title.trim() : '';
+  const fallbackSubtitle = lessonTitle || `Lecture ${videoIndex + 1}`;
+
+  if (typeof video === 'string') {
+    return {
+      url: video,
+      subtitle: fallbackSubtitle,
+      description: lesson?.description || 'Watch this lecture video',
+    };
+  }
+
+  const subtitle = video?.subtitle?.trim();
+  const description = video?.description?.trim();
+  return {
+    url: video?.url || '',
+    subtitle: subtitle || fallbackSubtitle,
+    description: description || lesson?.description || 'Watch this lecture video',
+  };
+};
+
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
@@ -156,7 +183,9 @@ const CourseDetail: React.FC = () => {
   useEffect(() => {
     if (!selectedVideo || !course) return;
 
-    const videoId = getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex] || '');
+    const currentLesson = course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex];
+    const selectedVideoMeta = resolveVideoMeta(currentLesson.videoUrls[selectedVideo.videoIndex], currentLesson, selectedVideo.videoIndex);
+    const videoId = getYoutubeId(selectedVideoMeta.url);
     if (!videoId) return;
 
     let player: any = null;
@@ -294,7 +323,9 @@ const CourseDetail: React.FC = () => {
             <div className="lg:col-span-3 space-y-6">
               <div className="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl aspect-video relative border-4 border-white group/player">
                 {(() => {
-                  const videoId = getYoutubeId(course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]);
+                  const currentLesson = course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex];
+                  const selectedVideoMeta = resolveVideoMeta(currentLesson.videoUrls[selectedVideo.videoIndex], currentLesson, selectedVideo.videoIndex);
+                  const videoId = getYoutubeId(selectedVideoMeta.url);
                   return videoId ? (
                     <div key={videoId} id={`youtube-player-${videoId}`} className="absolute inset-0 w-full h-full" />
                   ) : (
@@ -302,7 +333,7 @@ const CourseDetail: React.FC = () => {
                       <Video className="w-16 h-16 mb-4 text-gray-600" />
                       <p className="text-xl font-bold mb-4">External Video Content</p>
                       <a 
-                        href={course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].videoUrls[selectedVideo.videoIndex]} 
+                        href={selectedVideoMeta.url} 
                         target="_blank" 
                         rel="noreferrer"
                         className="px-8 py-3 bg-blue-600 rounded-2xl font-black hover:bg-blue-700 transition-all"
@@ -350,12 +381,20 @@ const CourseDetail: React.FC = () => {
                   </button>
                 </div>
                 
-                <h2 className="text-2xl font-black text-gray-800 mb-2">
-                  {course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].title}
-                </h2>
-                <p className="text-gray-500 font-medium leading-relaxed">
-                  {course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex].description}
-                </p>
+                {(() => {
+                  const currentLesson = course.weeks[selectedVideo.weekIndex].lessons[selectedVideo.lessonIndex];
+                  const selectedVideoMeta = resolveVideoMeta(currentLesson.videoUrls[selectedVideo.videoIndex], currentLesson, selectedVideo.videoIndex);
+                  return (
+                    <>
+                      <h2 className="text-2xl font-black text-gray-800 mb-2">
+                        {selectedVideoMeta.subtitle}
+                      </h2>
+                      <p className="text-gray-500 font-medium leading-relaxed">
+                        {selectedVideoMeta.description}
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -375,7 +414,8 @@ const CourseDetail: React.FC = () => {
                 <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                    {course.weeks[selectedVideo.weekIndex].lessons.map((lesson, lIdx) => (
                     <div key={lIdx} className="space-y-1">
-                      {lesson.videoUrls.map((url, vIdx) => {
+                      {lesson.videoUrls.map((video, vIdx) => {
+                        const videoMeta = resolveVideoMeta(video, lesson, vIdx);
                         const isActive = selectedVideo.lessonIndex === lIdx && selectedVideo.videoIndex === vIdx;
                         const isDone = isLectureCompleted(selectedVideo.weekIndex, lIdx, vIdx);
                         return (
@@ -401,7 +441,7 @@ const CourseDetail: React.FC = () => {
                                   Part {vIdx + 1}
                                 </p>
                                 <p className={`text-xs font-bold truncate ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
-                                  {lesson.title}
+                                  {videoMeta.subtitle}
                                 </p>
                               </div>
                             </div>
@@ -588,7 +628,8 @@ const CourseDetail: React.FC = () => {
                                               className="px-6 pb-6 pt-2 space-y-4"
                                             >
                                               <div className="grid grid-cols-1 gap-4">
-                                                {lesson.videoUrls?.map((url, videoIndex) => {
+                                                {lesson.videoUrls?.map((video, videoIndex) => {
+                                                  const videoMeta = resolveVideoMeta(video, lesson, videoIndex);
                                                   const lectureDone = isLectureCompleted(weekIndex, lessonIndex, videoIndex);
                                                   return (
                                                     <button 
@@ -608,9 +649,9 @@ const CourseDetail: React.FC = () => {
                                                           <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md transition-colors ${
                                                             lectureDone ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500 group-hover:bg-red-100'
                                                           }`}>Lecture {videoIndex + 1}</span>
-                                                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{lesson.title}</span>
+                                                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{videoMeta.subtitle}</span>
                                                         </div>
-                                                        <h6 className="text-sm font-black text-gray-800 truncate">{lesson.description || 'Watch lecture video'}</h6>
+                                                        <h6 className="text-sm font-black text-gray-800 truncate">{videoMeta.description}</h6>
                                                         <p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">Click to play this lecture</p>
                                                       </div>
                                                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all transform ${

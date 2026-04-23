@@ -10,7 +10,7 @@ import {
 import { toast } from 'sonner';
 
 import { useCompleteProfileMutation, CompleteProfilePayload } from '../../features/user/userApi';
-import { updateUser, logout } from '../../features/auth/authSlice';
+import { setCredentials, logout } from '../../features/auth/authSlice';
 import { RootState } from '../../app/store';
 
 interface CompleteProfileModalProps {
@@ -108,9 +108,11 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
         city: formData.city,
       }).unwrap();
       
-      dispatch(updateUser({
-        user: { isProfileComplete: true, phone: formData.phone, phoneVerified: true },
-        roles: result.roleCodes || ['user', 'parent'],
+      dispatch(setCredentials({
+        user: { ...auth.user, ...result.user, isProfileComplete: true, phone: formData.phone, phoneVerified: true },
+        token: result.token,
+        roles: result.roleCodes,
+        permissions: result.permissions
       }));
 
       toast.success('Profile completed successfully!', { duration: 4000 });
