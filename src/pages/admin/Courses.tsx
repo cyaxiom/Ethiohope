@@ -23,6 +23,47 @@ import { useGetProgramsQuery } from '../../features/programs/programApi';
 import { useGetPhasesByProgramQuery } from '../../features/programs/phaseApi';
 import { motion, AnimatePresence } from 'framer-motion';
 
+type CourseVideoInput = {
+  url: string;
+  subtitle?: string;
+  description?: string;
+};
+
+const normalizeVideoInput = (video: unknown): CourseVideoInput => {
+  if (typeof video === 'string') {
+    return { url: video, subtitle: '', description: '' };
+  }
+
+  if (video && typeof video === 'object' && 'url' in (video as Record<string, unknown>)) {
+    const item = video as Record<string, unknown>;
+    return {
+      url: typeof item.url === 'string' ? item.url : '',
+      subtitle: typeof item.subtitle === 'string' ? item.subtitle : '',
+      description: typeof item.description === 'string' ? item.description : '',
+    };
+  }
+
+  return { url: '', subtitle: '', description: '' };
+};
+
+const normalizeCourseWeeks = (weeks: any[] | undefined) => {
+  if (!Array.isArray(weeks) || weeks.length === 0) {
+    return [{ title: 'Week#1', lessons: [], exercises: [] }];
+  }
+
+  return weeks.map((week) => ({
+    ...week,
+    lessons: Array.isArray(week.lessons)
+      ? week.lessons.map((lesson: any) => ({
+          ...lesson,
+          videoUrls: Array.isArray(lesson.videoUrls)
+            ? lesson.videoUrls.map((video: unknown) => normalizeVideoInput(video))
+            : [],
+        }))
+      : [],
+  }));
+};
+
 const Courses: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -271,7 +312,7 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
       thumbnail: course?.thumbnail || '',
       program: course?.program?._id || '',
       phase: course?.phase?._id || '',
-      weeks: course?.weeks || [{ title: 'Week#1', lessons: [], exercises: [] }],
+      weeks: normalizeCourseWeeks(course?.weeks),
       isActive: course?.isActive ?? true
     }
   });
@@ -497,7 +538,7 @@ const WeeksManager: React.FC<{ control: any, register: any, watch: any, setValue
           type="button" 
           onClick={() => append({ 
             title: `Week#${fields.length + 1}`, 
-            lessons: [{ title: '', videoUrls: [''], pdfUrl: '' }], 
+            lessons: [{ title: '', videoUrls: [{ url: '', subtitle: '', description: '' }], pdfUrl: '' }], 
             exercises: [] 
           })}
           className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors"
@@ -567,7 +608,7 @@ const LessonsManager: React.FC<{ weekIndex: number, control: any, register: any 
         </h5>
         <button 
           type="button" 
-          onClick={() => append({ title: '', videoUrls: [''], pdfUrl: '' })}
+          onClick={() => append({ title: '', videoUrls: [{ url: '', subtitle: '', description: '' }], pdfUrl: '' })}
           className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-white px-3 py-1.5 rounded-lg border border-blue-100"
         >
           + Add Lesson
@@ -607,26 +648,38 @@ const VideoUrlsManager: React.FC<{ weekIndex: number, lessonIndex: number, contr
       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Video URLs (YouTube)</label>
       <div className="grid grid-cols-1 gap-2">
         {fields.map((field, videoIndex) => (
-          <div key={field.id} className="flex gap-2">
-            <div className="relative flex-1">
+          <div key={field.id} className="rounded-xl border border-gray-100 bg-white p-3 space-y-2">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
               <PlayCircle className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
               <input 
-                {...register(`weeks.${weekIndex}.lessons.${lessonIndex}.videoUrls.${videoIndex}`)} 
+                {...register(`weeks.${weekIndex}.lessons.${lessonIndex}.videoUrls.${videoIndex}.url`)} 
                 className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs" 
                 placeholder="https://youtube.com/..." 
               />
+              </div>
+              {fields.length > 1 && (
+                <button type="button" onClick={() => remove(videoIndex)} className="p-1.5 text-gray-400 hover:text-red-500 self-start">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
-            {fields.length > 1 && (
-              <button type="button" onClick={() => remove(videoIndex)} className="p-1.5 text-gray-400 hover:text-red-500">
-                <X className="w-4 h-4" />
-              </button>
-            )}
+            <input
+              {...register(`weeks.${weekIndex}.lessons.${lessonIndex}.videoUrls.${videoIndex}.subtitle`)}
+              className="w-full px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs"
+              placeholder={`Lecture ${videoIndex + 1} subtitle (optional)`}
+            />
+            <textarea
+              {...register(`weeks.${weekIndex}.lessons.${lessonIndex}.videoUrls.${videoIndex}.description`)}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs min-h-[70px]"
+              placeholder="Video description (optional)"
+            />
           </div>
         ))}
       </div>
       <button 
         type="button" 
-        onClick={() => append('')}
+        onClick={() => append({ url: '', subtitle: '', description: '' })}
         className="text-[10px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest mt-1"
       >
         + Add Another Video

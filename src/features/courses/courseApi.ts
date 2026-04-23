@@ -4,8 +4,14 @@ export interface Lesson {
   _id?: string;
   title: string;
   description?: string;
-  videoUrls: string[];
+  videoUrls: CourseVideo[];
   pdfUrl?: string;
+}
+
+export interface CourseVideo {
+  url: string;
+  subtitle?: string;
+  description?: string;
 }
 
 export interface Question {
