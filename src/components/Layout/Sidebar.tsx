@@ -47,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/batches', icon: Users, label: 'Batches' },
         { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
         { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
+        { path: '/admin/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/admin/sessions', icon: Video, label: 'Sessions' },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
       ];
@@ -57,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
         { path: '/parent/children', icon: Users, label: 'Children' },
+        { path: '/parent/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/parent/payments', icon: CreditCard, label: 'Payments' },
       ];
     }

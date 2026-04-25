@@ -231,6 +231,11 @@ export const routes = [
         element: <AdminCourses />,
       },
       {
+        path: '/admin/chat',
+        name: 'AdminChat',
+        element: <Chats />,
+      },
+      {
         path: '/admin/sessions',
         name: 'AdminSessions',
         element: <AdminSessions />,
@@ -287,6 +292,11 @@ export const routes = [
         element: <ParentPayments />,
       },
       {
+        path: '/parent/chat',
+        name: 'ParentChat',
+        element: <Chats />,
+      },
+      {
         path: '*',
         name: 'NotFound',
         element: <NotFound />,
@@ -312,6 +322,11 @@ export const routes = [
         path: '/student/courses/:id',
         name: 'Student Course Detail',
         element: <StudentCourseDetail />,
+      },
+      {
+        path: '/student/chat',
+        name: 'StudentChat',
+        element: <Chats />,
       },
       {
         path: '/student/sessions',
