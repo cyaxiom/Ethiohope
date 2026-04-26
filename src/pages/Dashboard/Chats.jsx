@@ -3,6 +3,9 @@ import React, { useMemo } from 'react';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
 
 import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { DS } from '@/constants/designSystem';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +48,10 @@ import {
   Flag,
   ChevronDown,
   MessageCircleX,
+  MessageSquare,
+  RefreshCw,
 } from 'lucide-react';
+
 import { debounce } from '../../lib/utils';
 import { CONTACTS } from '../../data/mockChat.js';
 
@@ -638,15 +644,14 @@ const AudioRecorder = ({ onSave, onClose }) => {
 
 export default function Chats() {
   // State for layout and basic navigation
-  const [activeId, setActiveId] = useState('1');
+  const [activeId, setActiveId] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
   const [isContactInfoOpen, setIsContactInfoOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [showTopSearchInput, setShowSearchInput] = useState(false);
   const [showAllOnline, setShowAllOnline] = useState(false);
-  const [contactslist, setContactslist] = useState(CONTACTS);
-  //reply state
-  const [replyingTo, setReplyingTo] = useState(null);
+  const [contactslist, setContactslist] = useState([]);
+
   // State for menus
   //menu for new chat, create group, invite others
   const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
@@ -664,6 +669,96 @@ export default function Chats() {
   const [showMediaPreview, setShowMediaPreview] = useState(false);
   const [takePictureMode, setTakePictureMode] = useState(false);
   const [recordAudioMode, setRecordAudioMode] = useState(false);
+  
+  // Chat Category State
+  const [chatCategory, setChatCategory] = useState('direct'); // 'direct' | 'discussion' | 'announcement'
+  const [programChats, setProgramChats] = useState([]);
+  const [batchChats, setBatchChats] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const { user, roles: authRoles, token } = useSelector((state) => state.auth || {});
+  
+  // Check both user.roles (if nested) and authRoles (from slice root)
+  const isAdmin = [...(authRoles || []), ...(user?.roles || [])].some(r => {
+    const code = typeof r === 'string' ? r : r?.code;
+    return ['admin', 'super_admin', 'superadmin', 'administrator'].includes(code?.toLowerCase());
+  });
+
+  const authHeader = {
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true
+  };
+
+  // Fetch Program Announcement Groups
+  const fetchProgramChats = async () => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/programs`, authHeader);
+      setProgramChats(res.data.data);
+    } catch (err) {
+      console.error('Error fetching program chats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch Batch Discussion Groups
+  const fetchBatchChats = async () => {
+    if (!isAdmin) return;
+    try {
+      setLoading(true);
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/batches`, authHeader);
+      setBatchChats(res.data.data);
+    } catch (err) {
+      console.error('Error fetching batch chats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (chatCategory === 'announcement') {
+      fetchProgramChats();
+    } else if (chatCategory === 'discussion') {
+        fetchBatchChats();
+    }
+  }, [chatCategory, token]); // Added token dependency
+
+  const handleSyncMembers = async (chatId) => {
+    try {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/${chatId}/sync`, {}, authHeader);
+        toast.success("Members synced successfully!");
+    } catch (err) {
+        toast.error("Failed to sync members");
+    }
+  };
+
+  const handleGlobalSync = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/sync-all`, {}, authHeader);
+      toast.success(res.data.message);
+      // Refresh current tab data
+      if (chatCategory === 'announcement') fetchProgramChats();
+      if (chatCategory === 'discussion') fetchBatchChats();
+    } catch (err) {
+      toast.error("System sync failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInitializeProgramChat = async (programId) => {
+    try {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/programs/${programId}/ensure`, {}, authHeader);
+      toast.success("Program chat initialized!");
+      fetchProgramChats();
+    } catch (err) {
+      toast.error("Failed to initialize program chat");
+    }
+  };
+
   // Messages state
   // const [messages, setMessages] = useState(INITIAL_MESSAGES);//use contactsList[index].messages
   const [inputText, setInputText] = useState('');
@@ -672,8 +767,56 @@ export default function Chats() {
   const navigator = useNavigate();
 
   const activeContact = useMemo(() => {
-    return contactslist.find((c) => c.id === activeId);
-  }, [contactslist, activeId]);
+    const fromList = contactslist.find((c) => c.id === activeId);
+    if (fromList) return fromList;
+    
+    const fromPrograms = programChats.find((c) => c._id === activeId);
+    if (fromPrograms) {
+      return {
+        ...fromPrograms,
+        id: fromPrograms._id,
+        avatar: '/Apen.png',
+        messages: fromPrograms.messages || []
+      };
+    }
+
+    const fromBatches = batchChats.find((c) => c._id === activeId);
+    if (fromBatches) {
+        return {
+          ...fromBatches,
+          id: fromBatches._id,
+          avatar: '/Apen.png', 
+          messages: fromBatches.messages || []
+        };
+      }
+    return null;
+  }, [contactslist, programChats, batchChats, activeId]);
+
+  // Fetch messages when activeId changes (for real chats)
+  useEffect(() => {
+     const fetchMessages = async () => {
+        const isRealId = activeId?.length === 24;
+        if (!isRealId) return;
+
+        try {
+           const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/${activeId}/messages`, authHeader);
+           
+           if (chatCategory === 'announcement') {
+              setProgramChats(prev => prev.map(c => 
+                 c._id === activeId ? { ...c, messages: res.data.data.reverse() } : c
+              ));
+           } else if (chatCategory === 'discussion') {
+               setBatchChats(prev => prev.map(c => 
+                   c._id === activeId ? { ...c, messages: res.data.data.reverse() } : c
+                ));
+           }
+        } catch (err) {
+           console.error("Error fetching messages:", err);
+        }
+     };
+
+     fetchMessages();
+  }, [activeId, chatCategory]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -696,10 +839,44 @@ export default function Chats() {
     };
   }, [rightSideBarRef]);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e?.preventDefault();
     if (!inputText.trim()) return;
-    //with replied message
+
+    const isRealId = activeId?.length === 24;
+
+    if (isRealId) {
+      try {
+        const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/admin/chats/${activeId}/messages`,
+        { text: inputText, type: 'text' },
+        authHeader
+      );
+
+        const newMessage = {
+          ...res.data.data,
+          id: res.data.data._id,
+          isSender: true,
+          time: new Date(res.data.data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+        };
+
+        if (chatCategory === 'announcement') {
+          setProgramChats(prev => prev.map(c => 
+            c._id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
+          ));
+        } else if (chatCategory === 'discussion') {
+            setBatchChats(prev => prev.map(c => 
+              c._id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
+            ));
+          }
+        setInputText('');
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to send message");
+      }
+      return;
+    }
+
+    // fallback for mock data
     const newMessage = {
       id: Date.now().toString(),
       text: inputText,
@@ -827,12 +1004,13 @@ export default function Chats() {
   // starred messages
   //============================
   const handleStarMessage = (messageId) => {
+    if (!activeId) return;
     setContactslist((prev) =>
       prev.map((c) => {
         if (c.id === activeId) {
           return {
             ...c,
-            messages: c.messages.map((m) => {
+            messages: (c.messages || []).map((m) => {
               if (m.id === messageId) {
                 return { ...m, isStarred: !m.isStarred };
               }
@@ -844,6 +1022,7 @@ export default function Chats() {
       }),
     );
   };
+
   //============================
   //starred message list
   // ===========================
@@ -856,6 +1035,7 @@ export default function Chats() {
   }, [contactslist, activeId]);
 
   const sharedMedia = (label) => {
+    if (!activeContact || !activeContact.messages) return [];
     // filter the media with label from messages list
     const filtered = activeContact.messages.filter((m) => {
       if (label === 'photos') return m.type === 'image';
@@ -863,9 +1043,11 @@ export default function Chats() {
       if (label === 'link') return m.type === 'link';
       if (label === 'audio') return m.type === 'audio';
       if (label === 'files') return m.type === 'file';
+      return false;
     });
     return filtered;
   };
+
 
   //better to memoize each function output
   // const getSharedMedia = useMemo(() => {
@@ -1005,7 +1187,7 @@ export default function Chats() {
       >
         <div className="p-5 flex items-center justify-between">
           {!showTopSearchInput && (
-            <h1 className="text-xl font-bold text-foreground">All Chats</h1>
+            <h1 className="text-xl font-bold text-foreground">Message</h1>
           )}
           {showTopSearchInput && (
             <motion.input
@@ -1024,6 +1206,31 @@ export default function Chats() {
             />
           )}
           <div className="flex items-center gap-2">
+            {!showTopSearchInput && isAdmin && (
+               <button
+                 onClick={handleGlobalSync}
+                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20"
+                 title="Sync All Chat Groups"
+                 disabled={loading}
+               >
+                 <CheckCheck className={`h-4 w-4 ${loading ? 'animate-pulse' : ''}`} />
+                 <span className="text-[10px] font-bold uppercase tracking-tight">Sync All</span>
+               </button>
+            )}
+            
+            {!showTopSearchInput && !isAdmin && (
+              <button
+                onClick={() => {
+                   if(chatCategory === 'announcement') fetchProgramChats();
+                   if(chatCategory === 'discussion') fetchBatchChats();
+                }}
+                className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
+              >
+                <RefreshCw className="h-5 w-5" />
+              </button>
+            )}
+
+
             {!showTopSearchInput && (
               <button
                 onClick={() => setShowSearchInput((prev) => !prev)}
@@ -1065,6 +1272,32 @@ export default function Chats() {
           </div>
         </div>
 
+        {/* Category Tabs */}
+        <div className="px-5 mb-4">
+          <div className="flex bg-muted p-1 rounded-xl gap-1">
+            <button
+              onClick={() => setChatCategory('direct')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              Direct
+            </button>
+            <button
+              onClick={() => setChatCategory('discussion')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              Groups
+            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setChatCategory('announcement')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                Programs
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="px-5 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-foreground">Online Now</h2>
@@ -1097,111 +1330,174 @@ export default function Chats() {
           </div>
         </div>
 
-        <div className="flex-1 h-full px-2 space-y-6 pb-4">
-          <div className="overflow-y-scroll custom-scrollbar h-[30%] relative">
-            <h3
-              className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground
-            sticky top-0 left-0 w-full py-2 bg-background z-50
-            "
-            >
-              Pinned Chat
-            </h3>
-            {contactslist
-              .filter((c) => c.isPinned)
-              .map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    setActiveId(c.id);
-                    setIsMobileSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
-                    }`}
-                >
-                  <Avatar src={c.avatar} isOnline={c.isOnline} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <h4 className="font-bold text-sm truncate text-foreground">
-                        {c.name}
-                      </h4>
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {c.time}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p
-                        className={`text-xs truncate ${c.isTyping
-                            ? 'text-primary font-semibold'
-                            : 'text-muted-foreground'
-                          }`}
+        <div className="flex-1 h-full px-2 space-y-6 pb-4 overflow-y-auto custom-scrollbar">
+          {chatCategory === 'announcement' || chatCategory === 'discussion' ? (
+             <div className="space-y-2">
+                 <h3 className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sticky top-0 left-0 w-full py-2 bg-background z-50">
+                    {chatCategory === 'announcement' ? 'Program Announcements' : 'Batch Discussions'}
+                 </h3>
+                 {loading ? (
+                    <div className="px-4 text-xs text-muted-foreground">Loading groups...</div>
+                 ) : (
+                    (chatCategory === 'announcement' ? programChats : batchChats).map((chat) => (
+                      <button
+                        key={chat._id}
+                        onClick={() => setActiveId(chat._id)}
+                        className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === chat._id ? 'bg-muted' : 'hover:bg-muted'}`}
                       >
-                        {c.lastMessage}
-                      </p>
-                      <div className="flex items-center gap-1.5 ml-2">
-                        <Pin className="h-3 w-3 text-muted-foreground" />
-                        <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                        <Avatar src="/Apen.png" size="md" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-sm truncate text-foreground">
+                            {chat.name}
+                          </h4>
+                          <p className="text-[10px] text-muted-foreground">
+                            {chat.programId?.title || chat.batchId?.batchName || 'Group Chat'}
+                          </p>
+                        </div>
+                      </button>
+                    ))
+                 )}
+                 {isAdmin && (chatCategory === 'announcement' ? programChats : batchChats).length === 0 && !loading && (
+                   <div className="p-8 text-center flex flex-col items-center gap-3">
+                      <div className="bg-muted p-3 rounded-full">
+                         <MessageSquarePlus className="w-6 h-6 text-muted-foreground" />
                       </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-          </div>
-
-          <div className="overflow-y-scroll custom-scrollbar h-[70%] relative">
-            <h3
-              className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground
-            sticky top-0 left-0 w-full py-2 bg-background z-50
-            "
-            >
-              Recent Chat
-            </h3>
-            {contactslist
-              .filter((c) => !c.isPinned)
-              .map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    setActiveId(c.id);
-                    setIsMobileSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
-                    }`}
+                      <div>
+                        <p className="text-sm font-bold text-foreground">No {chatCategory} chats found</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 max-w-[200px] mx-auto">
+                           {chatCategory === 'announcement' 
+                             ? "Click the sync icon at the top to initialize your program channels."
+                             : "Batch discussion groups will appear here once batches are created and synced."
+                           }
+                        </p>
+                      </div>
+                      <button 
+                        onClick={handleGlobalSync}
+                        className="mt-2 text-[10px] font-bold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-all uppercase tracking-wider"
+                      >
+                        Initialize All Now
+                      </button>
+                   </div>
+                 )}
+             </div>
+          ) : (
+            <>
+              <div className="overflow-y-scroll custom-scrollbar h-[30%] relative">
+                <h3
+                  className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground
+                sticky top-0 left-0 w-full py-2 bg-background z-50
+                "
                 >
-                  <Avatar src={c.avatar} isOnline={c.isOnline} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <h4 className="font-bold text-sm truncate text-foreground">
-                        {c.name}
-                      </h4>
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {c.time}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs truncate text-muted-foreground">
-                        {c.lastMessage}
-                      </p>
-                      {c.unreadCount && (
-                        <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                          {c.unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
-          </div>
+                  Pinned Chat
+                </h3>
+                {contactslist
+                  .filter((c) => c.isPinned)
+                  .map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setActiveId(c.id);
+                        setIsMobileSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                        }`}
+                    >
+                      <Avatar src={c.avatar} isOnline={c.isOnline} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline mb-0.5">
+                          <h4 className="font-bold text-sm truncate text-foreground">
+                            {c.name}
+                          </h4>
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            {c.time}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p
+                            className={`text-xs truncate ${c.isTyping
+                                ? 'text-primary font-semibold'
+                                : 'text-muted-foreground'
+                              }`}
+                          >
+                            {c.lastMessage}
+                          </p>
+                          <div className="flex items-center gap-1.5 ml-2">
+                            <Pin className="h-3 w-3 text-muted-foreground" />
+                            <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+
+              <div className="overflow-y-scroll custom-scrollbar h-[70%] relative">
+                <h3
+                  className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground
+                sticky top-0 left-0 w-full py-2 bg-background z-50
+                "
+                >
+                  Recent Chat
+                </h3>
+                {contactslist
+                  .filter((c) => !c.isPinned)
+                  .map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => {
+                        setActiveId(c.id);
+                        setIsMobileSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
+                        }`}
+                    >
+                      <Avatar src={c.avatar} isOnline={c.isOnline} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-baseline mb-0.5">
+                          <h4 className="font-bold text-sm truncate text-foreground">
+                            {c.name}
+                          </h4>
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            {c.time}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs truncate text-muted-foreground">
+                            {c.lastMessage}
+                          </p>
+                          {c.unreadCount && (
+                            <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                              {c.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            </>
+          )}
+
         </div>
       </aside>
 
-      {/* Main Conversation Area */}
       <main
         className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'
-          } md:flex flex-1 flex-col h-full bg-muted overflow-hidden`}
+          } md:flex flex-col flex-1 relative h-full bg-background`}
       >
-        {/* Chat Header */}
-        <header className="px-6 py-4  bg-car border-b border-border flex items-center justify-between z-10">
+        {!activeId ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-card/10">
+            <div className="bg-primary/10 p-6 rounded-full mb-6">
+               <MessageSquare className="w-12 h-12 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Welcome specifically to your Messaging Hub</h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+               Select a conversation from the sidebar to view messages, send files, and manage your program communications.
+            </p>
+          </div>
+        ) : (
           <>
+        <header className="flex items-center justify-between px-6 py-4 bg-card border-b border-border sticky top-0 z-40">
             <div className="flex items-center gap-4 min-w-0">
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
@@ -1255,6 +1551,17 @@ export default function Chats() {
               >
                 <Info className="h-5 w-5" />
               </button>
+              
+              {isAdmin && activeId?.length === 24 && (
+                <button
+                  onClick={() => handleSyncMembers(activeId)}
+                  className={`${ICON_BTN} p-2.5 rounded-xl text-primary hover:bg-primary/10`}
+                  title="Sync Members (Admin)"
+                >
+                  <UserPlus className="h-5 w-5" />
+                </button>
+              )}
+
               <div className="relative">
                 <button
                   onClick={() => setChatMenuOpen(!chatMenuOpen)}
@@ -1296,7 +1603,6 @@ export default function Chats() {
                 </div>
               </div>
             </div>
-          </>
         </header>
         {isSearchActive && (
           <motion.div
@@ -1332,10 +1638,8 @@ export default function Chats() {
               Today, July 24
             </span>
           </div>
-          {contactslist.find((c) => c.id === activeId)?.messages.length > 0 ? (
-            contactslist
-              .find((c) => c.id === activeId)
-              ?.messages.map((m) => (
+          {activeContact?.messages?.length > 0 ? (
+            activeContact.messages.map((m) => (
                 <MessageBubble
                   onReply={handleReply}
                   key={m.id}
@@ -1491,7 +1795,10 @@ export default function Chats() {
             </button>
           </form>
         </div>
+            </>
+        )}
       </main>
+
 
       {/* Right Sidebar - Contact Info */}
       {isContactInfoOpen && (
@@ -1941,7 +2248,7 @@ export default function Chats() {
       )}
 
       {/* Global CSS for scrollbars */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
         }
@@ -1962,7 +2269,8 @@ export default function Chats() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-      `}</style>
+      `}} />
+
     </div>
   );
 }
