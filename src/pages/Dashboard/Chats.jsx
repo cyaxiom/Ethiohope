@@ -53,7 +53,6 @@ import {
 } from 'lucide-react';
 
 import { debounce } from '../../lib/utils';
-import { CONTACTS } from '../../data/mockChat.js';
 
 // --- Components ---
 
@@ -651,6 +650,7 @@ export default function Chats() {
   const [showTopSearchInput, setShowSearchInput] = useState(false);
   const [showAllOnline, setShowAllOnline] = useState(false);
   const [contactslist, setContactslist] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
 
   // State for menus
   //menu for new chat, create group, invite others
@@ -689,7 +689,86 @@ export default function Chats() {
     withCredentials: true
   };
 
-  // Fetch Program Announcement Groups
+  // ========== SOCKET.IO REAL-TIME CONNECTION ==========
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    // Dynamic import of socket.io-client
+    import('socket.io-client').then(({ io }) => {
+      const serverUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:2707';
+      
+      const socket = io(serverUrl, {
+        auth: { token },
+        withCredentials: true,
+        transports: ['websocket', 'polling'],
+      });
+
+      socket.on('connect', () => {
+        console.log('🔌 Socket connected:', socket.id);
+      });
+
+      // Listen for real-time messages
+      socket.on('new-message', ({ conversationId, message }) => {
+        const formattedMsg = {
+          ...message,
+          id: message._id,
+          isSender: message.senderId?._id === user?.id || message.senderId?._id === user?._id,
+          time: new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+        };
+
+        // Update whichever list contains this conversation
+        setProgramChats(prev => prev.map(c =>
+          c._id === conversationId ? { ...c, messages: [...(c.messages || []), formattedMsg] } : c
+        ));
+        setBatchChats(prev => prev.map(c =>
+          c._id === conversationId ? { ...c, messages: [...(c.messages || []), formattedMsg] } : c
+        ));
+      });
+
+      // Typing indicators
+      socket.on('user-typing', ({ userId: typingUserId, conversationId, isTyping }) => {
+        // Could be used for UI typing dots in the future
+      });
+
+      socket.on('disconnect', () => {
+        console.log('🔌 Socket disconnected');
+      });
+
+      socketRef.current = socket;
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [token]);
+  // ========== END SOCKET.IO ==========
+
+  // ========== UNIFIED DATA FETCHING ==========
+  // For Admin: fetch all program/batch chats via admin routes
+  // For Everyone: fetch "my chats" via unified route
+
+  const fetchMyChats = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/my-chats`, authHeader);
+      const allChats = res.data.data;
+      
+      // Split into categories
+      setProgramChats(allChats.filter(c => c.type === 'PROGRAM_GROUP'));
+      setBatchChats(allChats.filter(c => c.type === 'GROUP'));
+    } catch (err) {
+      console.error('Error fetching my chats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Admin-specific fetchers (kept for admin-only list views with full data)
   const fetchProgramChats = async () => {
     if (!isAdmin) return;
     try {
@@ -703,7 +782,6 @@ export default function Chats() {
     }
   };
 
-  // Fetch Batch Discussion Groups
   const fetchBatchChats = async () => {
     if (!isAdmin) return;
     try {
@@ -718,12 +796,17 @@ export default function Chats() {
   };
 
   useEffect(() => {
-    if (chatCategory === 'announcement') {
-      fetchProgramChats();
-    } else if (chatCategory === 'discussion') {
-        fetchBatchChats();
+    if (!token) return;
+    
+    if (isAdmin) {
+      // Admin sees ALL groups
+      if (chatCategory === 'announcement') fetchProgramChats();
+      else if (chatCategory === 'discussion') fetchBatchChats();
+    } else {
+      // Students/Parents see only their enrolled chats
+      fetchMyChats();
     }
-  }, [chatCategory, token]); // Added token dependency
+  }, [chatCategory, token]);
 
   const handleSyncMembers = async (chatId) => {
     try {
@@ -760,7 +843,6 @@ export default function Chats() {
   };
 
   // Messages state
-  // const [messages, setMessages] = useState(INITIAL_MESSAGES);//use contactsList[index].messages
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef(null);
   const rightSideBarRef = useRef();
@@ -792,14 +874,19 @@ export default function Chats() {
     return null;
   }, [contactslist, programChats, batchChats, activeId]);
 
-  // Fetch messages when activeId changes (for real chats)
+  // Fetch messages when activeId changes — uses UNIFIED route
   useEffect(() => {
      const fetchMessages = async () => {
         const isRealId = activeId?.length === 24;
         if (!isRealId) return;
 
+        // Join the socket room for this conversation
+        if (socketRef.current) {
+          socketRef.current.emit('join-room', activeId);
+        }
+
         try {
-           const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/${activeId}/messages`, authHeader);
+           const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`, authHeader);
            
            if (chatCategory === 'announcement') {
               setProgramChats(prev => prev.map(c => 
@@ -847,8 +934,9 @@ export default function Chats() {
 
     if (isRealId) {
       try {
+        // Use UNIFIED route for sending messages
         const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/admin/chats/${activeId}/messages`,
+        `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
         { text: inputText, type: 'text' },
         authHeader
       );
@@ -867,6 +955,7 @@ export default function Chats() {
         } else if (chatCategory === 'discussion') {
             setBatchChats(prev => prev.map(c => 
               c._id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
+
             ));
           }
         setInputText('');
@@ -1287,16 +1376,15 @@ export default function Chats() {
             >
               Groups
             </button>
-            {isAdmin && (
-              <button
-                onClick={() => setChatCategory('announcement')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-              >
-                Programs
-              </button>
-            )}
+            <button
+              onClick={() => setChatCategory('announcement')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              Programs
+            </button>
           </div>
         </div>
+
 
         <div className="px-5 mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -1357,28 +1445,37 @@ export default function Chats() {
                       </button>
                     ))
                  )}
-                 {isAdmin && (chatCategory === 'announcement' ? programChats : batchChats).length === 0 && !loading && (
+                 {(chatCategory === 'announcement' ? programChats : batchChats).length === 0 && !loading && (
                    <div className="p-8 text-center flex flex-col items-center gap-3">
                       <div className="bg-muted p-3 rounded-full">
                          <MessageSquarePlus className="w-6 h-6 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-foreground">No {chatCategory} chats found</p>
-                        <p className="text-[11px] text-muted-foreground mt-1 max-w-[200px] mx-auto">
-                           {chatCategory === 'announcement' 
-                             ? "Click the sync icon at the top to initialize your program channels."
-                             : "Batch discussion groups will appear here once batches are created and synced."
+                        <p className="text-sm font-bold text-foreground">
+                          {chatCategory === 'announcement' ? 'No program chats found' : 'No group chats found'}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px] mx-auto">
+                           {isAdmin
+                             ? (chatCategory === 'announcement' 
+                               ? "Click sync to initialize your program channels."
+                               : "Batch groups appear once batches are created and synced.")
+                             : (chatCategory === 'announcement'
+                               ? "Program announcements will appear here once you are enrolled in a program."
+                               : "Your batch discussion groups will appear here once you are enrolled.")
                            }
                         </p>
                       </div>
-                      <button 
-                        onClick={handleGlobalSync}
-                        className="mt-2 text-[10px] font-bold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-all uppercase tracking-wider"
-                      >
-                        Initialize All Now
-                      </button>
+                      {isAdmin && (
+                        <button 
+                          onClick={handleGlobalSync}
+                          className="mt-2 text-[10px] font-bold text-primary border border-primary px-3 py-1.5 rounded-lg hover:bg-primary hover:text-white transition-all uppercase tracking-wider"
+                        >
+                          Initialize All Now
+                        </button>
+                      )}
                    </div>
                  )}
+
              </div>
           ) : (
             <>
