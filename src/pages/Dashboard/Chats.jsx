@@ -50,6 +50,7 @@ import {
   MessageCircleX,
   MessageSquare,
   RefreshCw,
+  Lock,
 } from 'lucide-react';
 
 import { debounce } from '../../lib/utils';
@@ -709,23 +710,35 @@ export default function Chats() {
         console.log('🔌 Socket connected:', socket.id);
       });
 
-      // Listen for real-time messages
+      // Listen for real-time messages from OTHER users
       socket.on('new-message', ({ conversationId, message }) => {
+        // Skip messages sent by us — we already added them in handleSend
+        const senderId = message.senderId?._id || message.senderId;
+        const myId = user?.id || user?._id;
+        if (senderId === myId) return;
+
         const formattedMsg = {
           ...message,
           id: message._id,
-          isSender: message.senderId?._id === user?.id || message.senderId?._id === user?._id,
+          isSender: false,
           time: new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
         };
 
-        // Update whichever list contains this conversation
-        setProgramChats(prev => prev.map(c =>
-          c._id === conversationId ? { ...c, messages: [...(c.messages || []), formattedMsg] } : c
-        ));
-        setBatchChats(prev => prev.map(c =>
-          c._id === conversationId ? { ...c, messages: [...(c.messages || []), formattedMsg] } : c
-        ));
+        // Update whichever list contains this conversation with DE-DUPLICATION
+        const updateWithDedupe = (prev) => prev.map(c => {
+          if (c._id === conversationId) {
+            const alreadyExists = (c.messages || []).some(m => m.id === formattedMsg.id || m._id === formattedMsg.id);
+            if (alreadyExists) return c;
+            return { ...c, messages: [...(c.messages || []), formattedMsg] };
+          }
+          return c;
+        });
+
+        setProgramChats(updateWithDedupe);
+        setBatchChats(updateWithDedupe);
       });
+
+
 
       // Typing indicators
       socket.on('user-typing', ({ userId: typingUserId, conversationId, isTyping }) => {
@@ -1761,38 +1774,46 @@ export default function Chats() {
         </div>
         {/* Input Bar */}
         <div className="border-t border-border bg-card px-5 py-4">
-          {/* Reply preview */}
-          {replyingTo && (
-            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/60 px-4 py-2.5">
-              <div className="flex flex-col text-sm">
-                <span className="text-xs font-semibold text-primary">
-                  Replying to
-                </span>
-                <span className="truncate text-muted-foreground">
-                  {replyingTo.text}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setReplyingTo(null)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition"
-              >
-                ✕
-              </button>
+          {activeContact?.type === 'PROGRAM_GROUP' && !isAdmin ? (
+            <div className="flex items-center justify-center py-2 px-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-medium italic">
+              <Lock className="w-3 h-3 mr-2" />
+              This is a read-only announcement channel.
             </div>
-          )}
+          ) : (
+            <>
+              {/* Reply preview */}
+              {replyingTo && (
+                <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/60 px-4 py-2.5">
+                  <div className="flex flex-col text-sm">
+                    <span className="text-xs font-semibold text-primary">
+                      Replying to
+                    </span>
+                    <span className="truncate text-muted-foreground">
+                      {replyingTo.text}
+                    </span>
+                  </div>
 
-          <form onSubmit={handleSend} className="flex items-end gap-3 relative">
-            {/* Attachment button */}
-            <button
-              type="button"
-              onClick={() => setAttachmentMenuOpen(!attachmentMenuOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl
-                   text-muted-foreground hover:bg-muted transition"
-            >
-              <MoreVertical className="h-5 w-5" />
-            </button>
+                  <button
+                    type="button"
+                    onClick={() => setReplyingTo(null)}
+                    className="rounded-lg p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              <form onSubmit={handleSend} className="flex items-end gap-3 relative">
+                {/* Attachment button */}
+                <button
+                  type="button"
+                  onClick={() => setAttachmentMenuOpen(!attachmentMenuOpen)}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl
+                       text-muted-foreground hover:bg-muted transition"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </button>
+
 
             {attachmentMenuOpen && (
               <div className="absolute bottom-full left-0 mb-3">
@@ -1891,10 +1912,14 @@ export default function Chats() {
               <Send className="h-5 w-5" />
             </button>
           </form>
-        </div>
-            </>
+          </>
         )}
+        </div>
+        </>
+      )}
       </main>
+
+
 
 
       {/* Right Sidebar - Contact Info */}
