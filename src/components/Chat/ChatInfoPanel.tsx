@@ -39,6 +39,7 @@ interface ChatInfoPanelProps {
   starredMessagesList: any[];
   showDetails: string | null;
   setShowDetails: (details: string | null) => void;
+  onNavigateToMessage: (id: string) => void;
 }
 
 const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
@@ -54,6 +55,7 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
   starredMessagesList,
   showDetails,
   setShowDetails,
+  onNavigateToMessage,
 }) => {
   return (
     <motion.aside
@@ -186,7 +188,11 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
               {mediaTab === 'photos' && (
                 <div className="grid grid-cols-3 gap-2">
                   {photoMedia.map((p, i) => (
-                    <div key={i} className="aspect-square rounded-xl bg-muted overflow-hidden border border-border">
+                    <div 
+                      key={i} 
+                      onClick={() => onNavigateToMessage(p._id || p.id)}
+                      className="aspect-square rounded-xl bg-muted overflow-hidden border border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                    >
                       <img
                         src={getMediaUrl(p?.mediaUrl || p?.imageUrl)}
                         className="w-full h-full object-cover"
@@ -199,7 +205,11 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
               {mediaTab === 'videos' && (
                 <div className="space-y-2">
                   {videoMedia.map((v, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-muted p-2 rounded-lg border border-border">
+                    <div 
+                      key={i} 
+                      onClick={() => onNavigateToMessage(v._id || v.id)}
+                      className="flex items-center gap-3 bg-muted p-2 rounded-lg border border-border cursor-pointer hover:bg-muted-foreground/10 transition-colors"
+                    >
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <Mic className="h-4 w-4 text-primary" />
                       </div>

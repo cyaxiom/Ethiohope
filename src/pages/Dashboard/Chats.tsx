@@ -447,9 +447,21 @@ export default function Chats() {
   };
 
   const photoMedia = useMemo(() => sharedMedia('photos'), [activeContact]);
-  const videoMedia = useMemo(() => sharedMedia('videos'), [activeContact]);
+  const audioMedia = useMemo(() => sharedMedia('audio'), [activeContact]);
   const linkMedia = useMemo(() => sharedMedia('link'), [activeContact]);
   const fileMedia = useMemo(() => sharedMedia('files'), [activeContact]);
+
+  const scrollToMessage = (msgId: string) => {
+    const id = `msg-${msgId}`;
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'rounded-lg');
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+      }, 3000);
+    }
+  };
 
   const pickAndSendEmoji = (emoji: string) => setInputText((prev) => prev + emoji);
 
@@ -642,20 +654,21 @@ export default function Chats() {
       </main>
 
       {isContactInfoOpen && (
-        <ChatInfoPanel 
-          rightSideBarRef={rightSideBarRef}
-          activeContact={activeContact}
-          setIsContactInfoOpen={setIsContactInfoOpen}
-          mediaTab={mediaTab}
-          setMediaTab={setMediaTab}
-          photoMedia={photoMedia}
-          videoMedia={videoMedia}
-          fileMedia={fileMedia}
-          linkMedia={linkMedia}
-          starredMessagesList={starredMessagesList}
-          showDetails={showDetails}
-          setShowDetails={setShowDetails}
-        />
+          <ChatInfoPanel 
+            rightSideBarRef={rightSideBarRef}
+            activeContact={activeContact}
+            setIsContactInfoOpen={setIsContactInfoOpen}
+            mediaTab={mediaTab}
+            setMediaTab={setMediaTab}
+            photoMedia={photoMedia}
+            videoMedia={audioMedia}
+            fileMedia={fileMedia}
+            linkMedia={linkMedia}
+            starredMessagesList={starredMessagesList}
+            showDetails={showDetails}
+            setShowDetails={setShowDetails}
+            onNavigateToMessage={scrollToMessage}
+          />
       )}
 
       {showMediaPreview && (

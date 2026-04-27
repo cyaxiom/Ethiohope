@@ -72,6 +72,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div
+      id={`msg-${message._id || message.id}`}
       className={`flex flex-col mb-6 ${isAnnouncement ? 'items-center w-full px-2 md:px-6' : (isSender ? 'items-end' : 'items-start')}`}
     >
       <div
