@@ -744,12 +744,22 @@ export default function Chats() {
   const [batchChats, setBatchChats] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const { user, roles: authRoles, token } = useSelector((state) => state.auth || {});
+  const { user, roles: authRoles, permissions: authPermissions, token } = useSelector((state) => state.auth || {});
   
   // Check both user.roles (if nested) and authRoles (from slice root)
   const isAdmin = [...(authRoles || []), ...(user?.roles || [])].some(r => {
     const code = typeof r === 'string' ? r : r?.code;
     return ['admin', 'super_admin', 'superadmin', 'administrator'].includes(code?.toLowerCase());
+  });
+
+  // Extract scalable permissions
+  const allPermissions = [
+    ...(authPermissions || []),
+    ...(user?.permissions || [])
+  ];
+  const hasBroadcastPermission = isAdmin || allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.broadcast';
   });
 
   const authHeader = {
@@ -1821,7 +1831,7 @@ export default function Chats() {
         </div>
         {/* Input Bar */}
         <div className="border-t border-border bg-card px-5 py-4">
-          {activeContact?.type === 'PROGRAM_GROUP' && !isAdmin ? (
+          {activeContact?.type === 'PROGRAM_GROUP' && !hasBroadcastPermission ? (
             <div className="flex items-center justify-center py-2 px-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-medium italic">
               <Lock className="w-3 h-3 mr-2" />
               This is a read-only announcement channel.
