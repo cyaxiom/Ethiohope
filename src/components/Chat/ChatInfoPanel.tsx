@@ -13,7 +13,8 @@ import {
   Flag,
   ChevronDown,
   ChevronRight,
-  Link2
+  Link2,
+  Download
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { Mic } from 'lucide-react';
@@ -190,14 +191,24 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
                   {photoMedia.map((p, i) => (
                     <div 
                       key={i} 
-                      onClick={() => onNavigateToMessage(p._id || p.id)}
-                      className="aspect-square rounded-xl bg-muted overflow-hidden border border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                      className="group/img relative aspect-square rounded-xl bg-muted overflow-hidden border border-border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
                     >
                       <img
                         src={getMediaUrl(p?.mediaUrl || p?.imageUrl)}
                         className="w-full h-full object-cover"
                         alt="media"
+                        onClick={() => onNavigateToMessage(p._id || p.id)}
                       />
+                      <a 
+                        href={getMediaUrl(p?.mediaUrl || p?.imageUrl)}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute bottom-1.5 right-1.5 p-1 rounded-md bg-black/40 text-white opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-black/60"
+                        title="Download"
+                      >
+                        <Download className="h-3 w-3" />
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -240,9 +251,15 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
                         </p>
                       </div>
                     </div>
-                    <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
-                      <Send className="h-4 w-4 rotate-90" />
-                    </button>
+                    <a 
+                      href={getMediaUrl(f.mediaUrl)} 
+                      download
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
                   </div>
                 ))}
               </div>

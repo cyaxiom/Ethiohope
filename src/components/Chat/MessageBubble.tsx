@@ -10,7 +10,8 @@ import {
   Flag,
   Trash2,
   Bell,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -285,11 +286,23 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             ) : (
               <div className={`flex flex-col gap-2 relative`}>
                 {(message.mediaUrl || message.imageUrl) && (
-                  <img
-                    src={getMediaUrl(message.mediaUrl || message.imageUrl)}
-                    alt="message-img"
-                    className="max-w-xs md:max-w-sm lg:max-w-md rounded-lg object-cover"
-                  />
+                  <div className="relative group/img">
+                    <img
+                      src={getMediaUrl(message.mediaUrl || message.imageUrl)}
+                      alt="message-img"
+                      className="max-w-xs md:max-w-sm lg:max-w-md rounded-lg object-cover"
+                    />
+                    <a 
+                      href={getMediaUrl(message.mediaUrl || message.imageUrl)}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/40 text-white opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-black/60"
+                      title="Download Image"
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </div>
                 )}
                 {message.text && (
                   <p className="text-sm leading-relaxed text-card-foreground whitespace-pre-wrap break-words max-w-xs md:max-w-sm lg:max-w-md">
