@@ -214,7 +214,10 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               (chatCategory === 'announcement' ? programChats : batchChats).map((chat) => (
                 <button
                   key={chat._id}
-                  onClick={() => setActiveId(chat._id)}
+                  onClick={() => {
+                    setActiveId(chat._id);
+                    setIsMobileSidebarOpen(false);
+                  }}
                   className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === chat._id ? 'bg-muted' : 'hover:bg-muted'}`}
                 >
                   <Avatar src={chat.avatar} name={chat.name} size="md" />

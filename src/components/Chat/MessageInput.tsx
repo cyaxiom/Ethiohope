@@ -55,7 +55,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   setRecordAudioMode,
 }) => {
   return (
-    <div className="border-t border-border bg-card px-5 py-4">
+    <div className="border-t border-border bg-card px-2 md:px-5 py-3 md:py-4">
       {activeContact?.type === 'PROGRAM_GROUP' && !hasBroadcastPermission && !replyingTo ? (
         <div className="flex items-center justify-center py-2 px-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-medium italic">
           <Lock className="w-3 h-3 mr-2" />
@@ -83,11 +83,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
             </div>
           )}
 
-          <form onSubmit={handleSend} className="flex items-end gap-3 relative">
+          <form onSubmit={handleSend} className="flex items-center gap-1 md:gap-3 relative">
             <button
               type="button"
               onClick={() => setAttachmentMenuOpen(!attachmentMenuOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted transition"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted transition"
             >
               <MoreVertical className="h-5 w-5" />
             </button>
@@ -141,7 +141,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <button
               onClick={() => setShowReactionPicker((prev: boolean) => !prev)}
               type="button"
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted transition cursor-pointer"
+              className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted transition cursor-pointer"
             >
               <Smile className="h-5 w-5" />
             </button>
@@ -149,26 +149,26 @@ const MessageInput: React.FC<MessageInputProps> = ({
             <button
               onClick={() => setRecordAudioMode(true)}
               type="button"
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted transition cursor-pointer"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted transition cursor-pointer"
               title="Record Voice Message"
             >
               <Mic className="h-5 w-5" />
             </button>
 
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type a message…"
-                className="h-11 w-full rounded-xl bg-muted px-5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/60 transition"
+                placeholder="Type..."
+                className="h-10 w-full rounded-xl bg-muted px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 transition"
               />
             </div>
 
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50 transition active:scale-95"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50 transition active:scale-95"
             >
               <Send className="h-5 w-5" />
             </button>

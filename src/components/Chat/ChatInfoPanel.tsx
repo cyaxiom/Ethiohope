@@ -64,7 +64,7 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
       initial={{ x: '100%', opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="fixed inset-0 md:relative md:inset-auto shrink-0 w-full md:w-[320px] bg-card border-l border-border flex flex-col z-30"
+      className="fixed inset-0 lg:relative lg:inset-auto shrink-0 w-full lg:w-[320px] bg-card border-l border-border flex flex-col z-50 lg:z-30"
     >
       <div className="p-5 flex items-center justify-between border-b border-border">
         <h2 className="text-base font-bold text-foreground">
@@ -165,9 +165,6 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
         <div className="border-t border-border mt-4">
           <div className="p-5 flex items-center justify-between">
             <h4 className="text-sm font-bold text-foreground">Shared Media</h4>
-            <button className="text-xs font-bold text-primary hover:underline uppercase tracking-wider">
-              View All
-            </button>
           </div>
           <div className="px-5 pb-6">
             <div className="flex gap-2 mb-6">

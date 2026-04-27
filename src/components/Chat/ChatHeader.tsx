@@ -27,7 +27,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   setIsContactInfoOpen,
 }) => {
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-card border-b border-border sticky top-0 z-40">
+    <header className="flex items-center justify-between px-3 md:px-6 py-4 bg-card border-b border-border sticky top-0 z-40">
       <div className="flex items-center gap-4 min-w-0">
         <button
           onClick={() => setIsMobileSidebarOpen(true)}

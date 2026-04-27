@@ -583,7 +583,7 @@ export default function Chats() {
         fetchBatchChats={fetchBatchChats}
       />
 
-      <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background`}>
+      <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background min-w-0 overflow-hidden w-full`}>
         {!activeId ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-card/10">
             <div className="bg-primary/10 p-6 rounded-full mb-6">

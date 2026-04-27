@@ -75,7 +75,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <div
       id={`msg-${message._id || message.id}`}
-      className={`flex flex-col mb-6 ${isAnnouncement ? 'items-center w-full px-2 md:px-6' : (isSender ? 'items-end' : 'items-start')}`}
+      className={`flex flex-col mb-6 w-full ${isAnnouncement ? 'items-center px-2 md:px-6' : (isSender ? 'items-end pl-10' : 'items-start pr-10')}`}
     >
       <div
         className={`flex items-center gap-2 mb-1 group ${!isAnnouncement && isSender ? 'flex-row-reverse' : ''}`}
@@ -173,7 +173,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         )}
         <div className={`flex flex-col gap-1 relative ${isAnnouncement ? 'flex-1 min-w-0' : ''}`}>
           <div
-            className={`relative p-3 md:p-4 rounded-2xl ${
+            className={`relative p-3 md:p-4 rounded-2xl break-words max-w-full ${
               isAnnouncement
                 ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/60 shadow-md w-full rounded-tl-none'
                 : (!isOnlyEmoji(message.text) && message.type !== 'audio'
