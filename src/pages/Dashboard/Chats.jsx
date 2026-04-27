@@ -1686,30 +1686,7 @@ export default function Chats() {
               >
                 <Search className="h-5 w-5" />
               </button>
-              <button
-                // route to /video-call
-                onClick={() => navigator('./video-call')}
-                className={`${ICON_BTN} p-2.5 rounded-xl text-muted-foreground`}
-              >
-                <Video className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() =>
-                  navigator('./voice-call', {
-                    replace: false,
-                  })
-                }
-                className={`${ICON_BTN} p-2.5 rounded-xl text-muted-foreground`}
-              >
-                <Phone className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setIsContactInfoOpen(!isContactInfoOpen)}
-                className={`${ICON_BTN} p-2.5 rounded-xl transition-colors ${isContactInfoOpen ? 'bg-muted text-primary' : ''
-                  }`}
-              >
-                <Info className="h-5 w-5" />
-              </button>
+
               
               {isAdmin && activeId?.length === 24 && (
                 <button
@@ -2008,16 +1985,6 @@ export default function Chats() {
               </p>
 
               <div className="flex gap-3 mt-6">
-                <button
-                  className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
-                >
-                  <Phone className="" />
-                </button>
-                <button
-                  className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
-                >
-                  <Video className="h-full w-full" />
-                </button>
                 <button
                   className={`${PRIMARY_ICON_BTN} h-10 w-10 rounded-full`}
                 >
