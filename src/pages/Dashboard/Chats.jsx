@@ -206,6 +206,7 @@ const MessageBubble = ({
   onReply,
   onStarMessage,
   currentUser,
+  isAnnouncement,
 }) => {
   const isSender = message.isSender;
   const actualSenderName = isSender 
@@ -226,18 +227,21 @@ const MessageBubble = ({
 
   return (
     <div
-      className={`flex flex-col mb-6 ${isSender ? 'items-end' : 'items-start'}`}
+      className={`flex flex-col mb-6 ${isAnnouncement ? 'items-center w-full px-2 md:px-6' : (isSender ? 'items-end' : 'items-start')}`}
     >
       <div
-        className={`flex items-center gap-2 mb-1 group ${isSender ? 'flex-row-reverse' : ''
-          }`}
+        className={`flex items-center gap-2 mb-1 group ${!isAnnouncement && isSender ? 'flex-row-reverse' : ''}`}
       >
-        <span className="text-xs font-semibold text-card-foreground">
-          {actualSenderName}
-        </span>
-        <span className="text-[10px] text-muted-foreground">
-          {message.time}
-        </span>
+        {!isAnnouncement && (
+          <>
+            <span className="text-xs font-semibold text-card-foreground">
+              {actualSenderName}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {message.time}
+            </span>
+          </>
+        )}
         <div className="relative">
           <button
             onClick={(e) => {
@@ -311,19 +315,34 @@ const MessageBubble = ({
       </div>
       {/*  */}
       <div
-        className={`flex gap-3 max-w-[85%] group relative ${isSender ? 'flex-row-reverse' : ''
-          }`}
+        className={`flex gap-3 group relative w-full ${isAnnouncement ? 'max-w-3xl' : (isSender ? 'max-w-[85%] flex-row-reverse' : 'max-w-[85%]')}`}
       >
-        {!isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
-        <div className="flex flex-col gap-1 relative">
+        {!isAnnouncement && !isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
+        {isAnnouncement && (
+          <div className="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center shadow-sm border border-blue-200 dark:border-blue-800">
+            <Bell className="h-5 w-5 md:h-6 md:w-6" /> 
+          </div>
+        )}
+        <div className={`flex flex-col gap-1 relative ${isAnnouncement ? 'flex-1 min-w-0' : ''}`}>
           <div
-            className={`relative p-3 rounded-2xl ${!isOnlyEmoji(message.text) && message.type !== 'audio'
+            className={`relative p-3 md:p-4 rounded-2xl ${
+              isAnnouncement
+                ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/60 dark:border-blue-800/60 shadow-md w-full rounded-tl-none'
+                : (!isOnlyEmoji(message.text) && message.type !== 'audio'
                 ? isSender
                   ? 'bg-primary text-primary-foreground rounded-tr-none shadow-md'
                   : 'bg-card text-card-foreground rounded-tl-none border border-border shadow-sm'
-                : ''
+                : '')
               }`}
           >
+            {isAnnouncement && (
+              <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-blue-200/50 dark:border-blue-800/50">
+                <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                  Official Announcement
+                </span>
+                <span className="text-[10px] text-blue-500/70 font-medium">{message.time}</span>
+              </div>
+            )}
             {showReactions && (
               <ReactionPicker
                 onClose={() => setShowReactions(false)}
@@ -454,7 +473,7 @@ const MessageBubble = ({
 
           {message.reactions && message.reactions.length > 0 && (
             <div
-              className={`flex gap-1 mt-1.5 ${isSender ? 'justify-end' : ''}`}
+              className={`flex gap-1 mt-1.5 ${isAnnouncement ? 'justify-start px-2' : (isSender ? 'justify-end' : '')}`}
             >
               {message.reactions.map((r, i) => (
                 <div
@@ -470,7 +489,7 @@ const MessageBubble = ({
             </div>
           )}
         </div>
-        {isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
+        {!isAnnouncement && isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
       </div>
     </div>
   );
@@ -1784,6 +1803,7 @@ export default function Chats() {
                   onReact={handleReact}
                   onStarMessage={handleStarMessage}
                   currentUser={user}
+                  isAnnouncement={activeContact?.type === 'PROGRAM_GROUP'}
                 />
               ))
           ) : (
