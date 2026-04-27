@@ -113,7 +113,7 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-foreground">Members</span>
-                  <span className="text-sm font-medium text-muted-foreground">{activeContact.members?.length || 0}</span>
+                  <span className="text-sm font-medium text-muted-foreground">{activeContact.membersCount || activeContact.members?.length || 0}</span>
                 </div>
               </div>
             </>
@@ -132,7 +132,7 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-foreground">Members</span>
-                  <span className="text-sm font-medium text-muted-foreground">{activeContact.members?.length || 0}</span>
+                  <span className="text-sm font-medium text-muted-foreground">{activeContact.membersCount || activeContact.members?.length || 0}</span>
                 </div>
               </div>
             </>
