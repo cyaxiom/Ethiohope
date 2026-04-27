@@ -57,22 +57,67 @@ import { debounce } from '../../lib/utils';
 
 // --- Components ---
 
-const Avatar = ({ src, isOnline, size = 'md' }) => {
+const Avatar = ({ src, name, isOnline, size = 'md' }) => {
   const sizes = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
-    lg: 'h-12 w-12',
-    xl: 'h-24 w-24',
+    sm: 'h-8 w-8 text-xs',
+    md: 'h-10 w-10 text-sm',
+    lg: 'h-12 w-12 text-base',
+    xl: 'h-24 w-24 text-3xl',
   };
+
+  const getInitials = (userName) => {
+    if (!userName) return '?';
+    const names = userName.trim().split(' ').filter(Boolean);
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return userName.substring(0, 2).toUpperCase();
+  };
+
+  const getAvatarColor = (userName) => {
+    if (!userName || userName === '?' || userName === 'Unknown' || userName === 'You') return 'bg-gray-200 text-gray-700 border-gray-300';
+    const colors = [
+      'bg-red-100 text-red-700 border-red-200',
+      'bg-orange-100 text-orange-700 border-orange-200',
+      'bg-amber-100 text-amber-700 border-amber-200',
+      'bg-emerald-100 text-emerald-700 border-emerald-200',
+      'bg-cyan-100 text-cyan-700 border-cyan-200',
+      'bg-blue-100 text-blue-700 border-blue-200',
+      'bg-indigo-100 text-indigo-700 border-indigo-200',
+      'bg-violet-100 text-violet-700 border-violet-200',
+      'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
+      'bg-rose-100 text-rose-700 border-rose-200',
+    ];
+    let hash = 0;
+    for (let i = 0; i < userName.length; i++) {
+        hash = userName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
+
+  const isDefaultImage = !src || src.includes('placeholder') || src.includes('Apen.png');
+  const colorClass = getAvatarColor(name);
+
   return (
-    <div className={`relative flex-shrink-0 ${sizes[size]}`}>
-      <img
-        src={src || '/Apen.png'}
-        alt="avatar"
-        className="rounded-full object-cover h-full w-full bg-muted"
-      />
+    <div className={`relative flex-shrink-0 ${sizes[size]} rounded-full flex items-center justify-center font-bold border ${colorClass}`}>
+      {!isDefaultImage ? (
+        <>
+          <img
+            src={src}
+            alt={name || "avatar"}
+            className="rounded-full object-cover h-full w-full absolute inset-0 z-10"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+          <span className="z-0">{getInitials(name)}</span>
+        </>
+      ) : (
+        <span>{getInitials(name)}</span>
+      )}
       {isOnline && (
-        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card bg-success" />
+        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card bg-success z-20" />
       )}
     </div>
   );
@@ -154,15 +199,18 @@ const ReactionPicker = ({ onReact, onClose }) => {
     </>
   );
 };
-//onOpenContext is not used currently but can be used to open context menu on message
 const MessageBubble = ({
   message,
   onOpenContext,
   onReact,
   onReply,
   onStarMessage,
+  currentUser,
 }) => {
   const isSender = message.isSender;
+  const actualSenderName = isSender 
+    ? (message.senderName || (currentUser?.firstname || currentUser?.firstName ? (currentUser.firstname || currentUser.firstName) + " " + (currentUser?.lastname || currentUser?.lastName || "") : currentUser?.name) || 'You').trim() 
+    : (message.senderName || (message.senderId?.firstname ? message.senderId.firstname + " " + (message.senderId.lastname || "") : null) || 'Unknown').trim();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
 
@@ -185,7 +233,7 @@ const MessageBubble = ({
           }`}
       >
         <span className="text-xs font-semibold text-card-foreground">
-          {message.senderName}
+          {actualSenderName}
         </span>
         <span className="text-[10px] text-muted-foreground">
           {message.time}
@@ -266,7 +314,7 @@ const MessageBubble = ({
         className={`flex gap-3 max-w-[85%] group relative ${isSender ? 'flex-row-reverse' : ''
           }`}
       >
-        {!isSender && <Avatar src="/placeholder.png" size="md" />}
+        {!isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
         <div className="flex flex-col gap-1 relative">
           <div
             className={`relative p-3 rounded-2xl ${!isOnlyEmoji(message.text) && message.type !== 'audio'
@@ -422,7 +470,7 @@ const MessageBubble = ({
             </div>
           )}
         </div>
-        {isSender && <Avatar src="/placeholder.png" size="md" />}
+        {isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
       </div>
     </div>
   );
@@ -1422,7 +1470,7 @@ export default function Chats() {
                 }}
                 className="flex flex-col items-center gap-2"
               >
-                <Avatar src={contact.avatar} isOnline={contact.isOnline} />
+                <Avatar src={contact.avatar} name={contact.name} isOnline={contact.isOnline} />
                 <span className="text-xs font-medium text-foreground truncate w-16 text-center">
                   {contact.name}
                 </span>
@@ -1446,7 +1494,7 @@ export default function Chats() {
                         onClick={() => setActiveId(chat._id)}
                         className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === chat._id ? 'bg-muted' : 'hover:bg-muted'}`}
                       >
-                        <Avatar src="/Apen.png" size="md" />
+                        <Avatar src={chat.avatar} name={chat.name} size="md" />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-sm truncate text-foreground">
                             {chat.name}
@@ -1512,7 +1560,7 @@ export default function Chats() {
                       className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
                         }`}
                     >
-                      <Avatar src={c.avatar} isOnline={c.isOnline} />
+                      <Avatar src={c.avatar} name={c.name} isOnline={c.isOnline} />
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-baseline mb-0.5">
                           <h4 className="font-bold text-sm truncate text-foreground">
@@ -1561,7 +1609,7 @@ export default function Chats() {
                       className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left mt-8 ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'
                         }`}
                     >
-                      <Avatar src={c.avatar} isOnline={c.isOnline} />
+                      <Avatar src={c.avatar} name={c.name} isOnline={c.isOnline} />
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-baseline mb-0.5">
                           <h4 className="font-bold text-sm truncate text-foreground">
@@ -1617,6 +1665,7 @@ export default function Chats() {
               </button>
               <Avatar
                 src={activeContact?.avatar}
+                name={activeContact?.name}
                 isOnline={activeContact?.isOnline}
               />
               <div className="min-w-0">
@@ -1757,6 +1806,7 @@ export default function Chats() {
                   onOpenContext={() => { }}
                   onReact={handleReact}
                   onStarMessage={handleStarMessage}
+                  currentUser={user}
                 />
               ))
           ) : (
@@ -1949,7 +1999,7 @@ export default function Chats() {
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-8 flex flex-col items-center text-center">
-              <Avatar src={activeContact?.avatar} size="xl" />
+              <Avatar src={activeContact?.avatar} name={activeContact?.name} size="xl" />
               <h3 className="mt-5 text-xl font-bold text-foreground">
                 {activeContact?.name}
               </h3>
