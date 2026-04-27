@@ -207,6 +207,13 @@ const MessageBubble = ({
   onStarMessage,
   currentUser,
   isAnnouncement,
+  chatPermissions = {
+    canReply: true,
+    canReact: true,
+    canDelete: false,
+    canReport: true,
+    canForward: true,
+  }
 }) => {
   const isSender = message.isSender;
   const actualSenderName = isSender 
@@ -265,12 +272,12 @@ const MessageBubble = ({
                       console.log('Message Info clicked');
                     },
                   },
-                  {
+                  chatPermissions.canReply && {
                     icon: <Reply className="h-4 w-4" />,
                     label: 'Reply',
                     onClick: () => onReply(message),
                   },
-                  {
+                  chatPermissions.canReact && {
                     icon: <Smile className="h-4 w-4" />,
                     label: 'React',
                     onClick: () => {
@@ -278,7 +285,7 @@ const MessageBubble = ({
                       setIsMenuOpen(false);
                     },
                   },
-                  {
+                  chatPermissions.canForward && {
                     icon: <Forward className="h-4 w-4" />,
                     label: 'Forward',
                     onClick: () => {
@@ -292,14 +299,14 @@ const MessageBubble = ({
                       onStarMessage(message.id);
                     },
                   },
-                  {
+                  chatPermissions.canReport && !isAnnouncement && {
                     icon: <Flag className="h-4 w-4" />,
                     label: 'Report',
                     onClick: () => {
                       console.log('Report clicked');
                     },
                   },
-                  {
+                  (chatPermissions.canDelete || isSender) && {
                     icon: <Trash2 className="h-4 w-4 text-red-500" />,
                     label: 'Delete',
                     destructive: true,
@@ -307,7 +314,7 @@ const MessageBubble = ({
                       console.log('Delete clicked');
                     },
                   },
-                ]}
+                ].filter(Boolean)}
               />
             </div>
           )}
@@ -478,11 +485,22 @@ const MessageBubble = ({
               {message.reactions.map((r, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 bg-card border border-border rounded-full px-2 py-1 text-xs shadow-sm cursor-pointer hover:bg-muted transition-all transform hover:scale-105"
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     // Only toggle if they have react permission
+                     if (chatPermissions.canReact) {
+                       onReact(message.id || message._id, r.emoji);
+                     }
+                  }}
+                  className={`flex items-center gap-1.5 border rounded-full px-2 py-1 text-xs shadow-sm cursor-pointer transition-all transform hover:scale-105 ${
+                     r.users && currentUser && r.users.some(u => u === currentUser._id || u._id === currentUser._id)
+                       ? 'bg-primary/20 border-primary/40 text-primary dark:text-primary dark:bg-primary/30'
+                       : 'bg-card border-border hover:bg-muted text-foreground'
+                  }`}
                 >
                   <span>{r.emoji}</span>
-                  <span className="font-bold text-muted-foreground">
-                    {r.count}
+                  <span className="font-bold opacity-80">
+                    {r.users?.length || r.count || 1}
                   </span>
                 </div>
               ))}
@@ -767,6 +785,14 @@ export default function Chats() {
     withCredentials: true
   };
 
+  const chatPermissions = {
+    canReply: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.reply'),
+    canReact: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.react'),
+    canDelete: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete'),
+    canReport: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'), // fallback typical user
+    canForward: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
+  };
+
   // ========== SOCKET.IO REAL-TIME CONNECTION ==========
   const socketRef = useRef(null);
 
@@ -1024,31 +1050,43 @@ export default function Chats() {
 
     if (isRealId) {
       try {
-        // Use UNIFIED route for sending messages
-        const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
-        { text: inputText, type: 'text' },
-        authHeader
-      );
+        if (activeContact) {
+          const res = await axios.post(
+            `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
+            { 
+              text: inputText, 
+              type: 'text',
+              ...(replyingTo ? { replyTo: replyingTo.id || replyingTo._id } : {})
+            },
+            authHeader
+          );
 
-        const newMessage = {
-          ...res.data.data,
-          id: res.data.data._id,
-          isSender: true,
-          time: new Date(res.data.data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-        };
+          const newMessage = {
+            ...res.data.data,
+            id: res.data.data._id,
+            isSender: true,
+            time: new Date(res.data.data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+          };
 
-        if (chatCategory === 'announcement') {
-          setProgramChats(prev => prev.map(c => 
-            c._id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
-          ));
-        } else if (chatCategory === 'discussion') {
-            setBatchChats(prev => prev.map(c => 
+          if (chatCategory === 'announcement') {
+            setProgramChats(prev => prev.map(c => 
               c._id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
-
             ));
+          } else if (chatCategory === 'discussion') {
+              setBatchChats(prev => prev.map(c => 
+                c._id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
+              ));
+          } else {
+              setContactslist((prev) =>
+                prev.map((c) =>
+                   c.id === activeId ? { ...c, messages: [...(c.messages || []), newMessage] } : c
+                )
+              );
           }
-        setInputText('');
+          
+          setInputText('');
+          setReplyingTo(null);
+        }
       } catch (err) {
         toast.error(err.response?.data?.message || "Failed to send message");
       }
@@ -1089,33 +1127,56 @@ export default function Chats() {
     setReplyingTo(null);
   };
 
-  const handleReact = (id, emoji) => {
-    setContactslist((prev) =>
-      prev.map((c) => {
-        if (c.id === activeId) {
-          return {
-            ...c,
-            messages: c.messages.map((m) => {
-              if (m.id === id) {
-                const reactions = [...(m.reactions || [])];
-                const idx = reactions.findIndex((r) => r.emoji === emoji);
-                if (idx > -1) {
-                  reactions[idx] = {
-                    ...reactions[idx],
-                    count: reactions[idx].count + 1,
-                  };
-                } else {
-                  reactions.push({ emoji, count: 1 });
+  const handleReact = async (id, emoji) => {
+    const userId = user?._id || user?.id; // safely grab userId
+    
+    // Optimistic UI updates
+    const updateMessagesWithReaction = (messages, messageId, reactedEmoji) => {
+      return messages.map((m) => {
+        if (m.id === messageId || m._id === messageId) {
+          // Deep clone the reactions array so we don't accidentally mutate identical references in mock data
+          const reactions = (m.reactions || []).map(r => ({ ...r, users: [...(r.users || [])] }));
+          const idx = reactions.findIndex((r) => r.emoji === reactedEmoji);
+
+          if (idx > -1) {
+             const userIdx = reactions[idx].users.findIndex(u => u === userId || u._id === userId);
+             if (userIdx > -1) { // toggle off
+                reactions[idx].users.splice(userIdx, 1);
+                reactions[idx].count = Math.max(0, (reactions[idx].count || reactions[idx].users.length + 1) - 1);
+                if (reactions[idx].count === 0 && reactions[idx].users.length === 0) {
+                   reactions.splice(idx, 1);
                 }
-                return { ...m, reactions };
-              }
-              return m;
-            }),
-          };
+             } else { // toggle on
+                reactions[idx].users.push(userId);
+                reactions[idx].count = (reactions[idx].count || reactions[idx].users.length - 1) + 1;
+             }
+          } else {
+             reactions.push({ emoji: reactedEmoji, count: 1, users: [userId] });
+          }
+          return { ...m, reactions };
         }
-        return c;
-      }),
-    );
+        return m;
+      });
+    };
+
+    if (chatCategory === 'announcement') {
+      setProgramChats(prev => prev.map(c => c._id === activeId ? { ...c, messages: updateMessagesWithReaction(c.messages || [], id, emoji) } : c));
+    } else if (chatCategory === 'discussion') {
+      setBatchChats(prev => prev.map(c => c._id === activeId ? { ...c, messages: updateMessagesWithReaction(c.messages || [], id, emoji) } : c));
+    } else {
+      setContactslist(prev => prev.map(c => c.id === activeId ? { ...c, messages: updateMessagesWithReaction(c.messages || [], id, emoji) } : c));
+    }
+
+    // Send to backend
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages/${id}/react`,
+        { emoji },
+        authHeader
+      );
+    } catch (err) {
+      console.error("Failed to sync reaction", err);
+    }
   };
   // ===========================
   // search friends in sidebar
@@ -1814,6 +1875,7 @@ export default function Chats() {
                   onStarMessage={handleStarMessage}
                   currentUser={user}
                   isAnnouncement={activeContact?.type === 'PROGRAM_GROUP'}
+                  chatPermissions={chatPermissions}
                 />
               ))
           ) : (
@@ -1831,7 +1893,7 @@ export default function Chats() {
         </div>
         {/* Input Bar */}
         <div className="border-t border-border bg-card px-5 py-4">
-          {activeContact?.type === 'PROGRAM_GROUP' && !hasBroadcastPermission ? (
+          {activeContact?.type === 'PROGRAM_GROUP' && !hasBroadcastPermission && !replyingTo ? (
             <div className="flex items-center justify-center py-2 px-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-medium italic">
               <Lock className="w-3 h-3 mr-2" />
               This is a read-only announcement channel.

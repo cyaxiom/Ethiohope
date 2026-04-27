@@ -41,7 +41,7 @@ const Likes = React.lazy(() => import('@components/Forum/Likes'));
 const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 
 //dashboard routes
-const Chats = React.lazy(() => import('@pages/Dashboard/Chats'));
+const Chats = React.lazy(() => import('@pages/Dashboard/Chats.tsx'));
 const VideoCall = React.lazy(() => import('@pages/Dashboard/VideoCall'));
 const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
 const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
