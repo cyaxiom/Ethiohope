@@ -80,15 +80,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <Info className="h-5 w-5" />
         </button>
 
-        {isAdmin && activeId?.length === 24 && (
-          <button
-            onClick={() => handleSyncMembers(activeId!)}
-            className={`${ICON_BTN} p-2.5 rounded-xl text-primary hover:bg-primary/10`}
-            title="Sync Members (Admin)"
-          >
-            <UserPlus className="h-5 w-5" />
-          </button>
-        )}
 
         <div className="relative">
           <button

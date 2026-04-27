@@ -88,26 +88,68 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
         </div>
 
         <div className="px-6 py-4 space-y-6">
-          <div>
-            <h4 className="text-sm font-bold text-foreground mb-2">Bio</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {activeContact?.bio || 'No bio available'}
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-foreground">Phone</span>
-              <span className="text-sm font-medium text-muted-foreground">
-                {activeContact?.phone || 'Not set'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-foreground">Email Address</span>
-              <span className="text-sm font-medium text-muted-foreground">
-                {activeContact?.email || 'Not set'}
-              </span>
-            </div>
-          </div>
+          {activeContact?.programId ? (
+            <>
+              <div>
+                <h4 className="text-sm font-bold text-foreground mb-2">Program Details</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {activeContact.programId.description || 'Exclusive announcement channel for the ' + activeContact.programId.title + ' program.'}
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-foreground">Program</span>
+                  <span className="text-sm font-medium text-muted-foreground truncate ml-4">{activeContact.programId.title}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-foreground">Members</span>
+                  <span className="text-sm font-medium text-muted-foreground">{activeContact.members?.length || 0}</span>
+                </div>
+              </div>
+            </>
+          ) : activeContact?.batchId ? (
+            <>
+              <div>
+                <h4 className="text-sm font-bold text-foreground mb-2">Batch Info</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Collaborative discussion group for members of {activeContact.batchId.batchName}.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-foreground">Batch</span>
+                  <span className="text-sm font-medium text-muted-foreground">{activeContact.batchId.batchName}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-foreground">Members</span>
+                  <span className="text-sm font-medium text-muted-foreground">{activeContact.members?.length || 0}</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <h4 className="text-sm font-bold text-foreground mb-2">Bio</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {activeContact?.bio || 'No bio available'}
+                </p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-foreground">Phone</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {activeContact?.phone || 'Not set'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-foreground">Email Address</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {activeContact?.email || 'Not set'}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="border-t border-border mt-4">

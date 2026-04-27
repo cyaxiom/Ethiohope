@@ -103,7 +103,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                 width="w-48"
                 onClose={() => setIsMenuOpen(false)}
                 items={[
-                  {
+                  !isAnnouncement && {
                     icon: <Info className="h-4 w-4" />,
                     label: 'Message Info',
                     onClick: () => {
@@ -130,7 +130,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                       console.log('Forward clicked');
                     },
                   },
-                  {
+                  !isAnnouncement && {
                     icon: <Star className="h-4 w-4" />,
                     label: 'Star Message',
                     onClick: () => {
