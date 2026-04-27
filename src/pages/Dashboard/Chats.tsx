@@ -599,9 +599,6 @@ export default function Chats() {
               setIsSearchActive={setIsSearchActive}
               isAdmin={isAdmin}
               activeId={activeId}
-              handleSyncMembers={handleSyncMembers}
-              chatMenuOpen={chatMenuOpen}
-              setChatMenuOpen={setChatMenuOpen}
               setIsContactInfoOpen={setIsContactInfoOpen}
             />
 
