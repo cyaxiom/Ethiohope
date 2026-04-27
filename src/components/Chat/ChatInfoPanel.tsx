@@ -16,6 +16,15 @@ import {
   Link2
 } from 'lucide-react';
 import Avatar from './Avatar';
+import { Mic } from 'lucide-react';
+
+const getMediaUrl = (url: string) => {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  const apiBase = (import.meta.env as any).VITE_API_BASE_URL || '';
+  const serverRoot = apiBase.replace('/api/v1', '');
+  return `${serverRoot}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 interface ChatInfoPanelProps {
   rightSideBarRef: React.RefObject<any>;
@@ -59,8 +68,6 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
           Contact Info
         </h2>
         <div className="flex items-center gap-2">
-          <Star className="h-5 w-5 text-warning cursor-pointer" />
-          <Trash2 className="h-5 w-5 text-error cursor-pointer" />
           <button
             onClick={() => setIsContactInfoOpen(false)}
             className="p-2 hover:bg-muted rounded-full"
@@ -170,27 +177,42 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
                       : 'text-muted-foreground hover:bg-muted'
                     }`}
                 >
-                  {tab === 'photos' ? 'Photos' : tab === 'videos' ? 'Videos' : tab === 'file' ? 'File' : 'Link'}
+                  {tab === 'photos' ? 'Photos' : tab === 'videos' ? 'Audio' : tab === 'file' ? 'File' : 'Link'}
                 </button>
               ))}
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              {mediaTab === 'photos' &&
-                photoMedia.map((p, i) => (
-                  <div key={i} className="aspect-square rounded-xl bg-muted overflow-hidden border border-border">
-                    <img src={p?.mediaUrl || p?.imageUrl} className="w-full h-full object-cover" alt="media" />
-                  </div>
-                ))}
-              {mediaTab === 'videos' &&
-                videoMedia.map((v, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl bg-muted overflow-hidden border border-border group cursor-pointer">
-                    <img src={v?.thumbnail || v?.videoThumbnail} className="w-full h-full object-cover" alt="video" />
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Play className="h-6 w-6 text-white fill-white" />
+            <div className="mt-4">
+              {mediaTab === 'photos' && (
+                <div className="grid grid-cols-3 gap-2">
+                  {photoMedia.map((p, i) => (
+                    <div key={i} className="aspect-square rounded-xl bg-muted overflow-hidden border border-border">
+                      <img
+                        src={getMediaUrl(p?.mediaUrl || p?.imageUrl)}
+                        className="w-full h-full object-cover"
+                        alt="media"
+                      />
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+              {mediaTab === 'videos' && (
+                <div className="space-y-2">
+                  {videoMedia.map((v, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-muted p-2 rounded-lg border border-border">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Mic className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold truncate mb-1">{v.fileName || 'Voice Note'}</p>
+                        <audio controls className="w-full h-8 scale-90 origin-left custom-audio-mini">
+                          <source src={getMediaUrl(v.mediaUrl || v.audioUrl || v.mediaUrl)} />
+                        </audio>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {mediaTab === 'file' && (
@@ -245,59 +267,6 @@ const ChatInfoPanel: React.FC<ChatInfoPanelProps> = ({
           </div>
         </div>
 
-        <div className="border-t border-border">
-          <div className="p-2 space-y-1">
-            {[
-              { icon: <Star className="h-4 w-4" />, label: 'Starred Messages', badge: starredMessagesList.length },
-              { icon: <VolumeX className="h-4 w-4" />, label: 'Mute Notifications' },
-              { icon: <UserX className="h-4 w-4" />, label: 'Block User' },
-              { icon: <Flag className="h-4 w-4" />, label: 'Report User' },
-              { icon: <Trash2 className="h-4 w-4" />, label: 'Delete Chat' },
-            ].map((item, i) => (
-              <React.Fragment key={i}>
-                <button
-                  onClick={() => setShowDetails(showDetails === item.label ? null : item.label)}
-                  className="w-full flex items-center justify-between p-3 hover:bg-muted rounded-xl transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground">{item.icon}</span>
-                    <span className="text-sm font-bold text-foreground">{item.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {item.badge && (
-                      <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
-                        {item.badge}
-                      </span>
-                    )}
-                    {showDetails === item.label ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-                  </div>
-                </button>
-                {showDetails === item.label && item.label === 'Starred Messages' && (
-                  <div className="mt-2 p-4 border border-border rounded-xl bg-muted/50 mx-2">
-                    <h4 className="text-sm font-bold text-foreground mb-3">Starred Messages</h4>
-                    {starredMessagesList.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No starred messages.</p>
-                    ) : (
-                      <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar">
-                        {starredMessagesList.map((msg) => (
-                          <div key={msg.id} className="p-3 bg-muted rounded-lg border border-border">
-                            {msg.type === 'text' ? (
-                              <p className="text-sm text-foreground">{msg.text}</p>
-                            ) : msg.type === 'image' ? (
-                              <img src={msg.imageUrl || msg.mediaUrl} alt="starred" className="max-w-full h-auto rounded-md" />
-                            ) : (
-                                <p className="text-sm text-foreground italic">{msg.type} message</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
       </div>
     </motion.aside>
   );
