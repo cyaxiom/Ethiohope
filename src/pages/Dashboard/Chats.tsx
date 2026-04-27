@@ -55,6 +55,16 @@ import {
 
 import { debounce } from '../../lib/utils';
 
+// --- Utilities ---
+const getMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  // Use the window/env variable safely
+  const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+  const serverRoot = apiBase.replace('/api/v1', '');
+  return `${serverRoot}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 // --- Components ---
 
 const Avatar = ({ src, name, isOnline, size = 'md' }) => {
@@ -324,7 +334,7 @@ const MessageBubble = ({
       <div
         className={`flex gap-3 group relative w-full ${isAnnouncement ? 'max-w-3xl' : (isSender ? 'max-w-[85%] flex-row-reverse' : 'max-w-[85%]')}`}
       >
-        {!isAnnouncement && !isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
+        {!isAnnouncement && !isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar)} name={actualSenderName} size="md" />}
         {isAnnouncement && (
           <div className="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center shadow-sm border border-blue-200 dark:border-blue-800">
             <Bell className="h-5 w-5 md:h-6 md:w-6" /> 
@@ -398,9 +408,9 @@ const MessageBubble = ({
                 <audio
                   controls
                   className="w-full outline-none bg-transparent"
-                  onClick={() => console.log('clicked audio')}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <source src={message.audioUrl} />
+                  <source src={getMediaUrl(message.mediaUrl || message.audioUrl)} />
                   Your browser does not support the audio element.
                 </audio>
               </div>
@@ -417,9 +427,14 @@ const MessageBubble = ({
                     </p>
                     <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
                       {message.fileSize} <span className="mx-1">|</span>{' '}
-                      <button className="text-primary font-bold hover:underline">
+                      <a 
+                        href={getMediaUrl(message.mediaUrl)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary font-bold hover:underline"
+                      >
                         Download
-                      </button>
+                      </a>
                     </p>
                   </div>
                 </div>
@@ -465,9 +480,9 @@ const MessageBubble = ({
                 className={`flex flex-col gap-2 relative 
                `}
               >
-                {message.imageUrl && (
+                {(message.mediaUrl || message.imageUrl) && (
                   <img
-                    src={message.imageUrl}
+                    src={getMediaUrl(message.mediaUrl || message.imageUrl)}
                     alt="message-img"
                     className="
                   max-w-xs md:max-w-sm lg:max-w-md rounded-lg object-cover
@@ -515,7 +530,7 @@ const MessageBubble = ({
             </div>
           )}
         </div>
-        {!isAnnouncement && isSender && <Avatar src={message.senderAvatar || message.senderId?.avatar} name={actualSenderName} size="md" />}
+        {!isAnnouncement && isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar)} name={actualSenderName} size="md" />}
       </div>
     </div>
   );
@@ -653,7 +668,7 @@ const AudioRecorder = ({ onSave, onClose }) => {
   };
 
   const handleSave = () => {
-    onSave(audioUrl);
+    onSave(audioUrl, new Date(seconds * 1000).toISOString().substring(14, 19));
     onClose();
   };
 
@@ -1328,102 +1343,119 @@ export default function Chats() {
     setInputText((prev) => prev + emoji);
   };
 
+  const uploadFile = async (file, category = 'chat') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/upload/${category}`,
+        formData,
+        {
+          headers: {
+            ...authHeader.headers,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return res.data.data.url;
+    } catch (err) {
+      toast.error('Failed to upload file');
+      throw err;
+    }
+  };
+
+  const handleMediaSend = async (file, type, previewUrl = null) => {
+    try {
+      setLoading(true);
+      const url = await uploadFile(file);
+      
+      const payload = {
+        text: inputText || (type === 'image' ? 'Image' : type === 'file' ? 'Document' : type === 'audio' ? 'Voice Note' : ''),
+        type: type,
+        mediaUrl: url,
+        fileName: file.name,
+        fileSize: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+        ...(replyingTo ? { replyTo: replyingTo.id || replyingTo._id } : {})
+      };
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
+        payload,
+        authHeader
+      );
+
+      const newMessage = {
+        ...res.data.data,
+        id: res.data.data._id,
+        isSender: true,
+        time: new Date(res.data.data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+      };
+
+      const updateChat = (prev) => prev.map(c => 
+        (c._id === activeId || c.id === activeId) ? { ...c, messages: [...(c.messages || []), newMessage] } : c
+      );
+
+      if (chatCategory === 'announcement') setProgramChats(updateChat);
+      else if (chatCategory === 'discussion') setBatchChats(updateChat);
+      else setContactslist(updateChat);
+
+      setReplyingTo(null);
+      setSharedImage(null);
+      setShowMediaPreview(false);
+      setInputText('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   function pickImage() {
-    console.log('picking image');
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.click();
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = e.target.files[0];
       if (file) {
+        // Show preview first
         const reader = new FileReader();
         reader.onload = () => {
-          setSharedImage(reader.result);
+          setSharedImage({ file, preview: reader.result });
           setShowMediaPreview(true);
         };
         reader.readAsDataURL(file);
       }
     };
-    //
+    input.click();
   }
 
-  //========================
-  //  Media Handler utility functions
-  //========================
-
   const openDocumentHandler = () => {
-    console.log('opening document');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        await handleMediaSend(file, 'file');
+      }
+    };
+    input.click();
   };
 
-  const shareLocationHandler = () => {
-    console.log('sharing location');
-  };
   const shareContactHandler = () => {
     console.log('sharing contact');
   };
-  const handleSendMedia = () => {
-    if (!sharedImage) return;
-    const newMessage = {
-      id: 'mt555',
-      text: inputText,
-      time: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      isSender: true,
-      senderName: 'Alex Smith',
-      type: 'text',
-      reactions: [
-        { emoji: '👍', count: 2 },
-        { emoji: '❤️', count: 2 },
-      ],
-      imageUrl: sharedImage,
-    };
-    setContactslist((prev) =>
-      prev.map((c) => {
-        if (c.id === activeId) {
-          return {
-            ...c,
-            messages: [...(c.messages || []), newMessage],
-          };
-        }
-        return c;
-      }),
-    );
 
-    setSharedImage(null);
-    setShowMediaPreview(false);
-    setInputText('');
+  const handleSendMedia = async () => {
+    if (!sharedImage?.file) return;
+    await handleMediaSend(sharedImage.file, 'image');
   };
 
   //send audio
-  const handleSendAudio = (audioUrl, duration) => {
-    const newMessage = {
-      id: 'mdfd2',
-      duration: duration,
-      time: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }),
-      isSender: true,
-      senderName: 'Alex Smith',
-      status: 'read',
-      type: 'audio',
-      audioUrl: audioUrl,
-    };
-    setContactslist((prev) =>
-      prev.map((c) => {
-        if (c.id === activeId) {
-          return {
-            ...c,
-            messages: [...(c.messages || []), newMessage],
-          };
-        }
-        return c;
-      }),
-    );
+  const handleSendAudio = async (blobUrl) => {
+    const blob = await fetch(blobUrl).then(r => r.blob());
+    const file = new File([blob], `voice_note_${Date.now()}.webm`, { type: 'audio/webm' });
+    await handleMediaSend(file, 'audio');
   };
 
   return (
@@ -1876,7 +1908,7 @@ export default function Chats() {
             activeContact.messages.map((m) => (
                 <MessageBubble
                   onReply={handleReply}
-                  key={m.id}
+                  key={m._id || m.id || Math.random().toString()}
                   message={m}
                   onOpenContext={() => { }}
                   onReact={handleReact}
@@ -1966,11 +1998,6 @@ export default function Chats() {
                       icon: <Mic className="h-4 w-4 text-yellow-500" />,
                       label: 'Audio',
                       onClick: () => setRecordAudioMode(true),
-                    },
-                    {
-                      icon: <MapPin className="h-4 w-4 text-purple-500" />,
-                      label: 'Location',
-                      onClick: () => shareLocationHandler(),
                     },
                     {
                       icon: <User className="h-4 w-4 text-orange-500" />,
@@ -2412,46 +2439,42 @@ export default function Chats() {
       {/* showMediaPreview */}
       {showMediaPreview && (
         <div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg p-6 w-full max-w-md">
-            <img
-              className="w-full h-auto rounded-md mb-4"
-              src={sharedImage}
-              alt="Preview"
-            />
-            <label
-              className="text-sm font-medium text-foreground"
-              htmlFor="caption"
-            >
-              caption
-            </label>
-            <input
-              type="text"
-              id="caption"
-              className="w-full border border-gray-300 rounded-md p-2 mt-2"
-              placeholder="Add a caption..."
-              onChange={(e) => setInputText(e.target.value)}
-            />
-            <div className="mt-4 flex justify-end gap-2">
+          <div className="flex-1 bg-background rounded-2xl overflow-hidden border border-border shadow-2xl flex flex-col w-full max-w-2xl">
+            <div className="bg-muted px-4 py-3 border-b border-border flex justify-between items-center">
+              <span className="text-sm font-bold">Media Preview</span>
               <button
                 onClick={() => {
                   setShowMediaPreview(false);
                   setSharedImage(null);
                 }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition"
+                className="text-muted-foreground hover:text-foreground"
               >
-                Cancel
+                <X className="h-4 w-4" />
               </button>
-              <button
-                onClick={() => {
-                  // Logic to send the image with caption
-                  handleSendMedia(sharedImage);
-                  setShowMediaPreview(false);
-                  setSharedImage(null);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-              >
-                Send
-              </button>
+            </div>
+            <div className="p-4 flex-1 flex items-center justify-center bg-muted/30">
+              <img
+                src={sharedImage?.preview || sharedImage}
+                alt="preview"
+                className="max-h-[60vh] rounded-lg shadow-md object-contain"
+              />
+            </div>
+            <div className="p-4 border-t border-border bg-card">
+              <div className="flex gap-2">
+                 <input 
+                   type="text" 
+                   placeholder="Add a caption..." 
+                   className="flex-1 bg-muted border-none rounded-xl px-4 py-2 text-sm focus:ring-1 focus:ring-primary"
+                   value={inputText}
+                   onChange={(e) => setInputText(e.target.value)}
+                 />
+                 <button
+                   onClick={handleSendMedia}
+                   className="h-10 w-10 flex items-center justify-center bg-primary text-primary-foreground rounded-lg shadow-lg hover:shadow-primary/20 transition active:scale-95"
+                 >
+                   <Send className="h-5 w-5" />
+                 </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2459,11 +2482,13 @@ export default function Chats() {
       {/* take picture mode */}
       {takePictureMode && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-lg p-6 w-full max-w-xl mx-auto mt-20 h-96">
+          <div className="w-full max-w-2xl aspect-video relative">
             <CameraComponent
-              onCapture={(imageData) => {
+              onCapture={async (imgData) => {
+                const blob = await fetch(imgData).then(r => r.blob());
+                const file = new File([blob], `camera_capture_${Date.now()}.png`, { type: 'image/png' });
+                setSharedImage({ file, preview: imgData });
                 setTakePictureMode(false);
-                setSharedImage(imageData);
                 setShowMediaPreview(true);
               }}
               onClose={() => setTakePictureMode(false)}
