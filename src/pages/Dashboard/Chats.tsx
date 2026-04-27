@@ -1429,6 +1429,19 @@ export default function Chats() {
     input.click();
   }
 
+  const pickAudioFile = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'audio/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        await handleMediaSend(file, 'audio');
+      }
+    };
+    input.click();
+  };
+
   const openDocumentHandler = () => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -1452,7 +1465,7 @@ export default function Chats() {
   };
 
   //send audio
-  const handleSendAudio = async (blobUrl) => {
+  const handleSendAudio = async (blobUrl: string, duration: string) => {
     const blob = await fetch(blobUrl).then(r => r.blob());
     const file = new File([blob], `voice_note_${Date.now()}.webm`, { type: 'audio/webm' });
     await handleMediaSend(file, 'audio');
@@ -1973,6 +1986,17 @@ export default function Chats() {
                   <MoreVertical className="h-5 w-5" />
                 </button>
 
+                {/* Quick Camera Shortcut */}
+                <button
+                  type="button"
+                  onClick={() => setTakePictureMode(true)}
+                  className="hidden md:flex h-11 w-11 items-center justify-center rounded-xl
+                       text-muted-foreground hover:bg-muted transition"
+                  title="Take Photo"
+                >
+                  <Camera className="h-5 w-5" />
+                </button>
+
 
             {attachmentMenuOpen && (
               <div className="absolute bottom-full left-0 mb-3">
@@ -1985,19 +2009,14 @@ export default function Chats() {
                       onClick: () => openDocumentHandler(),
                     },
                     {
-                      icon: <Camera className="h-4 w-4 text-red-500" />,
-                      label: 'Camera',
-                      onClick: () => setTakePictureMode(true),
-                    },
-                    {
                       icon: <ImageIcon className="h-4 w-4 text-green-500" />,
                       label: 'Gallery',
                       onClick: () => pickImage(),
                     },
                     {
                       icon: <Mic className="h-4 w-4 text-yellow-500" />,
-                      label: 'Audio',
-                      onClick: () => setRecordAudioMode(true),
+                      label: 'Upload Audio/MP3',
+                      onClick: () => pickAudioFile(),
                     },
                     {
                       icon: <User className="h-4 w-4 text-orange-500" />,
@@ -2014,6 +2033,7 @@ export default function Chats() {
                 onReact={pickAndSendEmoji}
               />
             )}
+            
             {/* Emoji */}
             <button
               onClick={() => setShowReactionPicker((prev) => !prev)}
@@ -2024,20 +2044,15 @@ export default function Chats() {
               <Smile className="h-5 w-5" />
             </button>
 
-            {/* Mute / Audio */}
+            {/* Voice Record Icon - Now after Emoji */}
             <button
-              onClick={() => setMuted((prev) => !prev)}
+              onClick={() => setRecordAudioMode(true)}
               type="button"
-              className={`flex h-11 w-11 items-center justify-center rounded-xl
-                 text-muted-foreground hover:bg-muted transition cursor-pointer
-                  ${muted ? 'bg-red-500/10 text-red-500' : ''}
-                 `}
+              className="flex h-11 w-11 items-center justify-center rounded-xl
+                 text-muted-foreground hover:bg-muted transition cursor-pointer"
+              title="Record Voice Message"
             >
-              {muted ? (
-                <VolumeX className="h-5 w-5" />
-              ) : (
-                <Mic className="h-5 w-5" />
-              )}
+              <Mic className="h-5 w-5" />
             </button>
 
             {/* Input */}
@@ -2484,7 +2499,7 @@ export default function Chats() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl aspect-video relative">
             <CameraComponent
-              onCapture={async (imgData) => {
+              onCapture={async (imgData: string) => {
                 const blob = await fetch(imgData).then(r => r.blob());
                 const file = new File([blob], `camera_capture_${Date.now()}.png`, { type: 'image/png' });
                 setSharedImage({ file, preview: imgData });
@@ -2501,7 +2516,7 @@ export default function Chats() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-card rounded-lg p-6 w-full max-w-md mx-auto mt-20 shadow-lg shadow-amber-300/20">
             <AudioRecorder
-              onSave={(audioData, duration) => {
+              onSave={(audioData: string, duration: string) => {
                 setRecordAudioMode(false);
                 handleSendAudio(audioData, duration);
               }}
