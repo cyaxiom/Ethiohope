@@ -353,7 +353,7 @@ const MessageBubble = ({
             {showReactions && (
               <ReactionPicker
                 onClose={() => setShowReactions(false)}
-                onReact={(e) => onReact(message.id, e)}
+                onReact={(e) => onReact(message._id || message.id, e)}
               />
             )}
             {/* Message being replied to */}
@@ -366,8 +366,16 @@ const MessageBubble = ({
                   }
     `}
               >
-                <div className="font-semibold text-[11px] opacity-80">
-                  Replying to {message.replyTo.senderName}
+                <div className="font-semibold text-[11px] opacity-80 flex items-center gap-1">
+                  <Reply className="h-2 w-2" />
+                  Replying to {
+                    message.replyTo.senderName || 
+                    (message.replyTo.senderId?.firstname 
+                      ? `${message.replyTo.senderId.firstname} ${message.replyTo.senderId.lastname || ''}` 
+                      : (message.replyTo.childId?.firstname 
+                        ? `${message.replyTo.childId.firstname} ${message.replyTo.childId.lastname || ''}` 
+                        : 'Unknown'))
+                  }
                 </div>
                 <div className="truncate text-[11px] opacity-70">
                   {message.replyTo.text
