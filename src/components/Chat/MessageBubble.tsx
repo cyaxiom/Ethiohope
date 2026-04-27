@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
 import {
   MoreHorizontal,
@@ -85,7 +86,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               {actualSenderName}
             </span>
             <span className="text-[10px] text-muted-foreground">
-              {message.time}
+              {message.time || (message.createdAt ? dayjs(message.createdAt).format('h:mm A') : '')}
             </span>
           </>
         )}

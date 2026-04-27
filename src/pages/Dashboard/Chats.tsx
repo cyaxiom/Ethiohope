@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, X, Send } from 'lucide-react';
+import { MessageSquare, X, Send, Search } from 'lucide-react';
 
 import { debounce } from '../../lib/utils';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
@@ -394,11 +394,14 @@ export default function Chats() {
   }, 300), []);
 
   const searchChatDebounce = useMemo(() => debounce((query: string) => {
-    if (!activeContact) return;
-    const filtered = activeContact.messages.filter((m: any) => m.text?.toLowerCase().includes(query.toLowerCase()));
-    setContactslist((prev) => prev.map((c: any) => c.id === activeId ? { ...c, messages: filtered } : c));
+    if (!activeContact || !query) return;
+    const match = activeContact.messages.find((m: any) => 
+      m.text?.toLowerCase().includes(query.toLowerCase())
+    );
+    if (match) {
+      scrollToMessage(match._id || match.id);
+    }
   }, 300), [activeContact, activeId]);
-
   const searchContactRef = useRef<any>(null);
 
   useEffect(() => {
@@ -604,15 +607,26 @@ export default function Chats() {
 
             {isSearchActive && (
               <motion.div 
-                initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                className="flex items-center gap-4 bg-muted shadow-sm px-6 py-2"
+                initial={{ opacity: 0, scaleY: 0 }} 
+                animate={{ opacity: 1, scaleY: 1 }}
+                exit={{ opacity: 0, scaleY: 0 }}
+                className="flex items-center gap-3 bg-muted/30 backdrop-blur-md border-b border-border px-6 py-3 origin-top z-40 sticky top-[73px]"
               >
-                <input 
-                  autoFocus onChange={(e) => searchChatDebounce(e.target.value)} 
-                  placeholder="Search Chats" 
-                  className="flex-1 bg-transparent border-none outline-none px-2 py-1 text-sm focus:outline-none"
-                />
-                <button onClick={() => setIsSearchActive(false)}><X className="h-5 w-5 text-muted-foreground" /></button>
+                <div className="relative flex-1 group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <input 
+                    autoFocus 
+                    onChange={(e) => searchChatDebounce(e.target.value)} 
+                    placeholder="Search messages..." 
+                    className="w-full bg-card/80 border border-border rounded-full pl-11 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/10 hover:border-border/80 transition-all shadow-sm"
+                  />
+                </div>
+                <button 
+                  onClick={() => setIsSearchActive(false)}
+                  className="p-2.5 hover:bg-card rounded-full text-muted-foreground hover:text-foreground transition-all shadow-sm active:scale-95"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </motion.div>
             )}
 
