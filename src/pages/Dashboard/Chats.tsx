@@ -54,6 +54,8 @@ export default function Chats() {
   const [batchChats, setBatchChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [isDirectChatEnabled, setIsDirectChatEnabled] = useState(true);
+
   const { user, roles: authRoles, permissions: authPermissions, token } = useSelector((state: any) => state.auth || {});
   
   const isAdmin = [...(authRoles || []), ...(user?.roles || [])].some(r => {
@@ -126,6 +128,13 @@ export default function Chats() {
       });
 
       socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
+      socket.on('added-to-conversation', (data: any) => {
+        const convId = data.conversation._id;
+        socket.emit('join-room', convId);
+        fetchMyChats();
+        toast.info("A new direct conversation has started.");
+      });
+
       socketRef.current = socket;
     });
 
@@ -144,10 +153,68 @@ export default function Chats() {
       const allChats = res.data.data;
       setProgramChats(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'));
       setBatchChats(allChats.filter((c: any) => c.type === 'GROUP'));
+      
+      // Use the names and avatars pre-formatted by the backend for DIRECT chats
+      const directChats = allChats.filter((c: any) => c.type === 'DIRECT').map((c: any) => ({
+        ...c,
+        id: c._id,
+        // The backend now determines the correct target name and avatar
+      }));
+      setContactslist(directChats);
     } catch (err) {
       console.error('Error fetching my chats:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/settings`, authHeader);
+        setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
+      } catch (err) {
+        console.error("Error fetching chat settings:", err);
+      }
+    };
+    if (token) fetchSettings();
+  }, [token]);
+
+  const toggleDirectChat = async () => {
+    try {
+      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings`, { 
+        isDirectChatEnabled: !isDirectChatEnabled 
+      }, authHeader);
+      setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
+      toast.success(`Direct chatting is now ${!isDirectChatEnabled ? 'enabled' : 'disabled'}`);
+    } catch (err) {
+      toast.error("Failed to update settings");
+    }
+  };
+
+  const findUsers = async (query: string) => {
+    if (!query) return [];
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/search-users?query=${query}`, authHeader);
+      return res.data.data;
+    } catch (err) {
+      return [];
+    }
+  };
+
+  const startDirectChat = async (targetUserId: string) => {
+    try {
+      if (!isDirectChatEnabled && !isAdmin) {
+        toast.warning("Direct chatting is currently disabled");
+        return;
+      }
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/direct`, { targetUserId }, authHeader);
+      fetchMyChats();
+      setActiveId(res.data.data._id);
+      setChatCategory('direct');
+      toast.success("Conversation started");
+    } catch (err) {
+      toast.error("Failed to start direct chat");
     }
   };
 
@@ -572,15 +639,19 @@ export default function Chats() {
         loading={loading}
         isAdmin={isAdmin}
         handleGlobalSync={handleGlobalSync}
-        debouncedSearch={debouncedSearch}
         showTopSearchInput={showTopSearchInput}
         setShowSearchInput={setShowSearchInput}
-        showAllOnline={showAllOnline}
-        setShowAllOnline={setShowAllOnline}
-        sidebarMenuOpen={sidebarMenuOpen}
-        setSidebarMenuOpen={setSidebarMenuOpen}
         fetchProgramChats={fetchProgramChats}
         fetchBatchChats={fetchBatchChats}
+        isDirectChatEnabled={isDirectChatEnabled}
+        toggleDirectChat={toggleDirectChat}
+        findUsers={findUsers}
+        startDirectChat={startDirectChat}
+        sidebarMenuOpen={sidebarMenuOpen}
+        setSidebarMenuOpen={setSidebarMenuOpen}
+        showAllOnline={showAllOnline}
+        setShowAllOnline={setShowAllOnline}
+        debouncedSearch={debouncedSearch}
       />
 
       <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background min-w-0 overflow-hidden w-full`}>

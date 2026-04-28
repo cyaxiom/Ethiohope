@@ -9,6 +9,9 @@ import {
   RefreshCw,
   CheckCheck,
   Pin,
+  X,
+  MessageSquare,
+  Loader2,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -37,7 +40,13 @@ interface ChatSidebarProps {
   activeId: string | null;
   programChats: any[];
   batchChats: any[];
+  isDirectChatEnabled: boolean;
+  toggleDirectChat: () => void;
+  findUsers: (query: string) => Promise<any[]>;
+  startDirectChat: (targetId: string) => void;
 }
+
+import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
   isMobileSidebarOpen,
@@ -61,36 +70,65 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   activeId,
   programChats,
   batchChats,
+  isDirectChatEnabled,
+  toggleDirectChat,
+  findUsers,
+  startDirectChat,
 }) => {
+  const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
+  const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
+  const [userSearchQuery, setUserSearchQuery] = React.useState('');
+  const [isLoadingResults, setIsLoadingResults] = React.useState(false);
+
+  const handleUserSearch = async (query: string) => {
+    setUserSearchQuery(query);
+    if (query.trim().length > 0) {
+      setIsLoadingResults(true);
+      const results = await findUsers(query);
+      setUserSearchResults(results);
+      setIsLoadingResults(false);
+      setIsSearchingUsers(true);
+    } else {
+      setUserSearchResults([]);
+      setIsSearchingUsers(false);
+      setIsLoadingResults(false);
+    }
+  };
   return (
     <aside
       className={`${isMobileSidebarOpen ? 'block w-full' : 'hidden'} md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
     >
       <div className="p-5 flex items-center justify-between">
-        {!showTopSearchInput && (
-          <h1 className="text-xl font-bold text-foreground">Message</h1>
-        )}
-        {showTopSearchInput && (
+        {showTopSearchInput ? (
           <motion.input
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             onChange={(e) => debouncedSearch(e.target.value)}
-            className="ring-1 ring-gray-500 focus:ring-blue-500 focus:border-none focus:outline-none focus:ring-1 rounded-md px-4 py-1 w-full"
+            className="ring-1 ring-gray-400 focus:ring-blue-500 focus:outline-none rounded-md px-4 py-1.5 w-full bg-muted"
             type="text"
-            placeholder="search"
+            placeholder="Search conversations..."
           />
+        ) : (
+          <h1 className="text-xl font-bold text-foreground">Messaging</h1>
         )}
-        <div className="flex items-center gap-2">
-          {!showTopSearchInput && isAdmin && (
+        <div className="flex items-center gap-1">
+          {isAdmin && chatCategory === 'direct' && (
             <button
-              onClick={handleGlobalSync}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20"
-              title="Sync All Chat Groups"
-              disabled={loading}
+               onClick={toggleDirectChat}
+               className={`p-2 rounded-lg transition-colors ${!isDirectChatEnabled ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:bg-muted'}`}
+               title={isDirectChatEnabled ? "Disable Direct Chat for everyone" : "Enable Direct Chat"}
             >
-              <CheckCheck className={`h-4 w-4 ${loading ? 'animate-pulse' : ''}`} />
-              <span className="text-[10px] font-bold uppercase tracking-tight">Sync All</span>
+               {isDirectChatEnabled ? <MessageSquare className="h-5 w-5" /> : <MessageSquareOff className="h-5 w-5" />}
+            </button>
+          )}
+
+          {!showTopSearchInput && (
+            <button
+              onClick={() => setShowSearchInput(true)}
+              className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+            >
+              <Search className="h-5 w-5" />
             </button>
           )}
 
@@ -148,7 +186,70 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       </div>
 
       <div className="px-5 mb-4">
-        <div className="flex bg-muted p-1 rounded-xl gap-1">
+        <div className="flex flex-col gap-3">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <input
+              type="text"
+              placeholder="Find people to chat..."
+              value={userSearchQuery}
+              onChange={(e) => handleUserSearch(e.target.value)}
+              className="w-full bg-muted/60 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+            />
+            {userSearchQuery && (
+               <button 
+                  onClick={() => handleUserSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+               >
+                  <X className="h-4 w-4" />
+               </button>
+            )}
+          </div>
+          
+          {isSearchingUsers && (
+            <div className="absolute left-5 right-5 top-[165px] bg-card border border-border rounded-2xl shadow-2xl z-50 max-h-[400px] overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="p-3 border-b border-border bg-muted/30 flex justify-between items-center">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Search Results</span>
+                {isLoadingResults && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+              </div>
+              {isLoadingResults ? (
+                <div className="p-8 text-center flex flex-col items-center gap-2">
+                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                   <p className="text-xs text-muted-foreground italic">Searching program members...</p>
+                </div>
+              ) : userSearchResults.length > 0 ? (
+                 userSearchResults.map((u) => (
+                   <button
+                     key={u.id}
+                     onClick={() => {
+                        startDirectChat(u.id);
+                        setUserSearchQuery('');
+                        setIsSearchingUsers(false);
+                     }}
+                     className="w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors text-left group"
+                   >
+                     <Avatar src={u.avatar} name={u.firstname} size="md" />
+                     <div className="flex-1 min-w-0">
+                       <h5 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                         {u.firstname} {u.lastname}
+                       </h5>
+                       <p className="text-[10px] text-muted-foreground flex items-center gap-1 uppercase tracking-tighter">
+                          {u.type === 'staff' ? <UserCircle className="h-3 w-3" /> : <UserCircle className="h-3 w-3 text-blue-500" />}
+                          {u.type}
+                       </p>
+                     </div>
+                     <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-110" />
+                   </button>
+                 ))
+              ) : (
+                <div className="p-8 text-center text-sm text-muted-foreground italic">
+                   No people found matching "{userSearchQuery}"
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex p-1 bg-muted/60 rounded-xl">
           <button
             onClick={() => setChatCategory('direct')}
             className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
@@ -167,6 +268,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           >
             Programs
           </button>
+          </div>
         </div>
       </div>
 
