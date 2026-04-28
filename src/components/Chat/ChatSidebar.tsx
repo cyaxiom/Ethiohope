@@ -22,27 +22,18 @@ const ICON_BTN = "inline-flex items-center justify-center rounded-md font-medium
 interface ChatSidebarProps {
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (open: boolean) => void;
-  showTopSearchInput: boolean;
-  setShowSearchInput: (show: boolean) => void;
-  debouncedSearch: (query: string) => void;
-  isAdmin: boolean;
-  handleGlobalSync: () => void;
   loading: boolean;
-  fetchProgramChats: () => void;
-  fetchBatchChats: () => void;
   chatCategory: string;
   setChatCategory: (cat: 'direct' | 'discussion' | 'announcement') => void;
-  sidebarMenuOpen: boolean;
-  setSidebarMenuOpen: (open: boolean) => void;
-  showAllOnline: boolean;
-  setShowAllOnline: (show: any) => void;
   contactslist: any[];
   setActiveId: (id: string) => void;
   activeId: string | null;
   programChats: any[];
   batchChats: any[];
-  isDirectChatEnabled: boolean;
-  toggleDirectChat: () => void;
+  isAdmin: boolean;
+  handleGlobalSync: () => void;
+  fetchProgramChats: () => void;
+  fetchBatchChats: () => void;
   findUsers: (query: string) => Promise<any[]>;
   startDirectChat: (targetId: string) => void;
   onRemoveChat: (conversationId: string) => void;
@@ -55,27 +46,18 @@ import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
   isMobileSidebarOpen,
   setIsMobileSidebarOpen,
-  showTopSearchInput,
-  setShowSearchInput,
-  debouncedSearch,
-  isAdmin,
-  handleGlobalSync,
   loading,
-  fetchProgramChats,
-  fetchBatchChats,
   chatCategory,
   setChatCategory,
-  sidebarMenuOpen,
-  setSidebarMenuOpen,
-  showAllOnline,
-  setShowAllOnline,
   contactslist,
   setActiveId,
   activeId,
   programChats,
   batchChats,
-  isDirectChatEnabled,
-  toggleDirectChat,
+  isAdmin,
+  handleGlobalSync,
+  fetchProgramChats,
+  fetchBatchChats,
   findUsers,
   startDirectChat,
   onRemoveChat,
@@ -101,6 +83,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       setIsLoadingResults(false);
     }
   };
+
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -112,90 +95,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+
   return (
     <aside
       className={`${isMobileSidebarOpen ? 'block w-full' : 'hidden'} md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
     >
       <div className="p-5 flex items-center justify-between">
-        {showTopSearchInput ? (
-          <motion.input
-            initial={{ x: 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            onChange={(e) => debouncedSearch(e.target.value)}
-            className="ring-1 ring-gray-400 focus:ring-blue-500 focus:outline-none rounded-md px-4 py-1.5 w-full bg-muted"
-            type="text"
-            placeholder="Search conversations..."
-          />
-        ) : (
-          <h1 className="text-xl font-bold text-foreground">Messaging</h1>
-        )}
+        <h1 className="text-xl font-bold text-foreground">Messaging</h1>
         <div className="flex items-center gap-1">
-          {isAdmin && chatCategory === 'direct' && (
-            <button
-               onClick={toggleDirectChat}
-               className={`p-2 rounded-lg transition-colors ${!isDirectChatEnabled ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:bg-muted'}`}
-               title={isDirectChatEnabled ? "Disable Direct Chat for everyone" : "Enable Direct Chat"}
-            >
-               {isDirectChatEnabled ? <MessageSquare className="h-5 w-5" /> : <MessageSquareOff className="h-5 w-5" />}
-            </button>
-          )}
-
-
-          {!showTopSearchInput && (
-            <button
-              onClick={() => {
-                if (chatCategory === 'announcement') fetchProgramChats();
-                else if (chatCategory === 'discussion') fetchBatchChats();
-                else fetchMyChats();
-              }}
-              className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
-              title="Refresh Chat List"
-            >
-              <RefreshCw className="h-5 w-5" />
-            </button>
-          )}
-
-          {!showTopSearchInput && (
-            <button
-              onClick={() => setShowSearchInput(true)}
-              className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-          )}
-
-          <div className="relative">
-            <button
-              onClick={() => setSidebarMenuOpen(!sidebarMenuOpen)}
-              className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
-            >
-              <MoreVertical className="h-5 w-5" />
-            </button>
-            <div className="absolute top-0 right-0 z-50 translate-y-6">
-              {sidebarMenuOpen && (
-                <Dropdown
-                  onClose={() => setSidebarMenuOpen(false)}
-                  items={[
-                    {
-                      icon: <MessageSquarePlus className="h-4 w-4" />,
-                      label: 'New Chat',
-                    },
-                    {
-                      icon: <UserCircle className="h-4 w-4" />,
-                      label: 'Create Group',
-                    },
-                    {
-                      icon: <UserPlus className="h-4 w-4" />,
-                      label: 'Invite Others',
-                    },
-                  ]}
-                />
-              )}
-            </div>
-          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
+            title="Refresh Page"
+          >
+            <RefreshCw className="h-5 w-5" />
+          </button>
         </div>
       </div>
+
 
       <div className="px-5 mb-4">
         <div className="flex flex-col gap-3">
@@ -311,24 +228,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
 
           <div className="flex p-1 bg-muted/60 rounded-xl">
-          <button
-            onClick={() => setChatCategory('direct')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-          >
-            Direct
-          </button>
-          <button
-            onClick={() => setChatCategory('discussion')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-          >
-            Groups
-          </button>
-          <button
-            onClick={() => setChatCategory('announcement')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-          >
-            Programs
-          </button>
+            <button
+              onClick={() => setChatCategory('direct')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              Direct
+            </button>
+            <button
+              onClick={() => setChatCategory('discussion')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              Groups
+            </button>
+            <button
+              onClick={() => setChatCategory('announcement')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              Programs
+            </button>
           </div>
         </div>
       </div>

@@ -691,34 +691,25 @@ export default function Chats() {
   return (
     <div className="flex pt-16 h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
       <ChatSidebar 
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         activeId={activeId}
         setActiveId={setActiveId}
         chatCategory={chatCategory}
         setChatCategory={setChatCategory}
         contactslist={contactslist}
-        isMobileSidebarOpen={isMobileSidebarOpen}
-        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         programChats={programChats}
         batchChats={batchChats}
         loading={loading}
         isAdmin={isAdmin}
         handleGlobalSync={handleGlobalSync}
-        showTopSearchInput={showTopSearchInput}
-        setShowSearchInput={setShowSearchInput}
         fetchProgramChats={fetchProgramChats}
         fetchBatchChats={fetchBatchChats}
-        isDirectChatEnabled={isDirectChatEnabled}
         onRemoveChat={handleRemoveChat}
         onTogglePin={handleTogglePin}
-        toggleDirectChat={toggleDirectChat}
         findUsers={findUsers}
         startDirectChat={startDirectChat}
         fetchMyChats={fetchMyChats}
-        sidebarMenuOpen={sidebarMenuOpen}
-        setSidebarMenuOpen={setSidebarMenuOpen}
-        showAllOnline={showAllOnline}
-        setShowAllOnline={setShowAllOnline}
-        debouncedSearch={debouncedSearch}
       />
 
       <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background min-w-0 overflow-hidden w-full`}>
