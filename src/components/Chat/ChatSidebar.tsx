@@ -94,6 +94,17 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       setIsLoadingResults(false);
     }
   };
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSearchingUsers(false);
+        setUserSearchQuery('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <aside
       className={`${isMobileSidebarOpen ? 'block w-full' : 'hidden'} md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
@@ -206,48 +217,97 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             )}
           </div>
           
-          {isSearchingUsers && (
-            <div className="absolute left-5 right-5 top-[165px] bg-card border border-border rounded-2xl shadow-2xl z-50 max-h-[400px] overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="p-3 border-b border-border bg-muted/30 flex justify-between items-center">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Search Results</span>
-                {isLoadingResults && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
-              </div>
-              {isLoadingResults ? (
-                <div className="p-8 text-center flex flex-col items-center gap-2">
-                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                   <p className="text-xs text-muted-foreground italic">Searching program members...</p>
+          <div className="relative">
+            {isSearchingUsers && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="absolute left-0 right-0 top-1 bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[100] max-h-[420px] overflow-hidden flex flex-col"
+              >
+                <div className="p-4 border-b border-border/50 bg-muted/20 flex justify-between items-center backdrop-blur-md">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Program Members Found</span>
+                  {isLoadingResults && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
                 </div>
-              ) : userSearchResults.length > 0 ? (
-                 userSearchResults.map((u) => (
-                   <button
-                     key={u.id}
-                     onClick={() => {
-                        startDirectChat(u.id);
-                        setUserSearchQuery('');
-                        setIsSearchingUsers(false);
-                     }}
-                     className="w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors text-left group"
-                   >
-                     <Avatar src={u.avatar} name={u.firstname} size="md" />
-                     <div className="flex-1 min-w-0">
-                       <h5 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                         {u.firstname} {u.lastname}
-                       </h5>
-                       <p className="text-[10px] text-muted-foreground flex items-center gap-1 uppercase tracking-tighter">
-                          {u.type === 'staff' ? <UserCircle className="h-3 w-3" /> : <UserCircle className="h-3 w-3 text-blue-500" />}
-                          {u.type}
-                       </p>
-                     </div>
-                     <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-110" />
-                   </button>
-                 ))
-              ) : (
-                <div className="p-8 text-center text-sm text-muted-foreground italic">
-                   No people found matching "{userSearchQuery}"
+
+                <div className="overflow-y-auto custom-scrollbar flex-1">
+                  {isLoadingResults ? (
+                    <div className="p-12 text-center flex flex-col items-center gap-4">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
+                        <Loader2 className="h-8 w-8 animate-spin text-primary relative z-10" />
+                      </div>
+                      <div>
+                         <p className="text-sm font-bold text-foreground">Searching Directory</p>
+                         <p className="text-[10px] text-muted-foreground italic mt-1">Filtering colleagues and peers...</p>
+                      </div>
+                    </div>
+                  ) : userSearchResults.length > 0 ? (
+                    <div className="p-2 space-y-1">
+                      {userSearchResults.map((u, i) => (
+                        <motion.button
+                          key={u.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          onClick={() => {
+                            startDirectChat(u.id);
+                            setUserSearchQuery('');
+                            setIsSearchingUsers(false);
+                          }}
+                          className="w-full flex items-center gap-3 p-3 hover:bg-primary/5 rounded-xl transition-all text-left group relative overflow-hidden"
+                        >
+                          <div className="absolute inset-y-0 left-0 w-1 bg-primary scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
+                          
+                          <div className="relative">
+                            <Avatar src={u.avatar} name={u.firstname} size="md" />
+                            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-card rounded-full flex items-center justify-center p-0.5 shadow-sm">
+                               <div className={`h-full w-full rounded-full ${u.type === 'staff' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                              {u.firstname} {u.lastname}
+                              {u.id === activeId && (
+                                 <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                              )}
+                            </h5>
+                            <div className="flex items-center gap-2">
+                               <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
+                                  {u.type === 'staff' ? <UserCircle className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                                  {u.type}
+                               </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                             <div className="text-[10px] font-bold text-primary mr-1">Message</div>
+                             <MessageSquare className="h-4 w-4 text-primary" />
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-12 text-center flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                         <Search className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">No matches found</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 px-4">
+                          Try searching for a different name or program member.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+                
+                <div className="p-3 bg-muted/20 border-t border-border/50 text-center">
+                   <p className="text-[9px] text-muted-foreground italic">Press ESC to cancel search</p>
+                </div>
+              </motion.div>
+            )}
+          </div>
 
           <div className="flex p-1 bg-muted/60 rounded-xl">
           <button
