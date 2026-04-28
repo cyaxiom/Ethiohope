@@ -46,6 +46,7 @@ interface ChatSidebarProps {
   findUsers: (query: string) => Promise<any[]>;
   startDirectChat: (targetId: string) => void;
   onRemoveChat: (conversationId: string) => void;
+  onTogglePin: (conversationId: string) => void;
 }
 
 import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
@@ -77,6 +78,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   findUsers,
   startDirectChat,
   onRemoveChat,
+  onTogglePin,
 }) => {
   const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
@@ -335,37 +337,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </div>
       </div>
 
-      <div className="px-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-foreground">Online Now</h2>
-          <button
-            onClick={() => setShowAllOnline((prev: boolean) => !prev)}
-            className="text-xs font-bold text-primary hover:underline uppercase tracking-wider"
-          >
-            {showAllOnline ? 'Show Less' : 'View All'}
-          </button>
-        </div>
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
-          {(showAllOnline
-            ? contactslist.filter((c) => c.isOnline)
-            : contactslist.filter((c) => c.isOnline).slice(0, 3)
-          ).map((contact) => (
-            <button
-              key={contact.id}
-              onClick={() => {
-                setActiveId(contact.id);
-                setIsMobileSidebarOpen(false);
-              }}
-              className="flex flex-col items-center gap-2"
-            >
-              <Avatar src={contact.avatar} name={contact.name} isOnline={contact.isOnline} />
-              <span className="text-xs font-medium text-foreground truncate w-16 text-center">
-                {contact.name}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+
 
       <div className="flex-1 h-full px-2 space-y-6 pb-4 overflow-y-auto custom-scrollbar">
         {chatCategory === 'announcement' || chatCategory === 'discussion' ? (
@@ -430,20 +402,23 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
         ) : (
           <>
-            <div className="relative">
-              <h3 className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sticky top-0 left-0 w-full py-2 bg-background z-10">
-                Pinned Chat
-              </h3>
+            <div className="relative mb-6">
+              <div className="px-4 py-2 bg-primary/5 border-l-4 border-primary mb-2 sticky top-0 z-10 backdrop-blur-md flex items-center gap-2">
+                <Pin className="h-3 w-3 text-primary fill-primary" />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                  Pinned Favorites
+                </h3>
+              </div>
               {contactslist
                 .filter((c) => c.isPinned)
                 .map((c) => (
-                  <button
+                  <div
                     key={c.id}
                     onClick={() => {
                       setActiveId(c.id);
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'}`}
+                    className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left cursor-pointer ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'}`}
                   >
                     <Avatar src={c.avatar} name={c.name} isOnline={c.isOnline} />
                     <div className="flex-1 min-w-0">
@@ -456,10 +431,20 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <p className={`text-xs truncate ${c.isTyping ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                        <p className={`text-[11px] truncate ${c.isTyping ? 'text-primary font-bold animate-pulse' : 'text-muted-foreground'}`}>
                           {c.lastMessage}
                         </p>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex items-center gap-1.5 opacity-100 transition-all">
+                           <button 
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               onTogglePin(c.id);
+                             }}
+                             className={`p-1.5 rounded-lg transition-all ${c.isPinned ? 'text-primary bg-primary/20 scale-110 shadow-md' : 'text-muted-foreground/60 hover:text-primary hover:bg-primary/10'}`}
+                             title={c.isPinned ? "Unpin Chat" : "Pin Chat"}
+                           >
+                              <Pin className={`h-4 w-4 ${c.isPinned ? 'fill-primary' : ''}`} />
+                           </button>
                            <button 
                              onClick={(e) => {
                                e.stopPropagation();
@@ -467,34 +452,35 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                  onRemoveChat(c.id);
                                }
                              }}
-                             className="p-1 hover:text-destructive transition-colors"
+                             className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all"
                              title="Remove Chat"
                            >
                               <Trash2 className="h-3.5 w-3.5" />
                            </button>
-                           <Pin className="h-3 w-3 text-muted-foreground" />
-                           <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                           <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
             </div>
 
             <div className="relative">
-              <h3 className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sticky top-0 left-0 w-full py-2 bg-background z-10">
-                Recent Chat
-              </h3>
+              <div className="px-4 py-2 mb-2 sticky top-0 z-10 backdrop-blur-md">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                  Recent Activity
+                </h3>
+              </div>
               {contactslist
                 .filter((c) => !c.isPinned)
                 .map((c) => (
-                  <button
+                  <div
                     key={c.id}
                     onClick={() => {
                       setActiveId(c.id);
                       setIsMobileSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'}`}
+                    className={`w-full flex items-center gap-3 p-4 transition-all rounded-2xl mb-1 group text-left cursor-pointer ${activeId === c.id ? 'bg-muted' : 'hover:bg-muted'}`}
                   >
                     <Avatar src={c.avatar} name={c.name} isOnline={c.isOnline} />
                     <div className="flex-1 min-w-0">
@@ -510,7 +496,17 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         <p className="text-xs truncate text-muted-foreground">
                           {c.lastMessage}
                         </p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                           <button 
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               onTogglePin(c.id);
+                             }}
+                             className={`p-1.5 rounded-lg transition-all ${c.isPinned ? 'text-primary bg-primary/20 scale-110 shadow-md' : 'text-muted-foreground/50 hover:text-primary hover:bg-primary/10'}`}
+                             title={c.isPinned ? "Unpin Chat" : "Pin Chat"}
+                           >
+                              <Pin className={`h-4 w-4 ${c.isPinned ? 'fill-primary' : ''}`} />
+                           </button>
                            <button 
                              onClick={(e) => {
                                e.stopPropagation();
@@ -518,7 +514,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                  onRemoveChat(c.id);
                                }
                              }}
-                             className="p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
+                             className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-all"
                              title="Remove Chat"
                            >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -531,7 +527,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
             </div>
           </>

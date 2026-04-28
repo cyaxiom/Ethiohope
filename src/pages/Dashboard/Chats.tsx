@@ -166,16 +166,21 @@ export default function Chats() {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/my-chats`, authHeader);
       const allChats = res.data.data;
-      setProgramChats(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'));
-      setBatchChats(allChats.filter((c: any) => c.type === 'GROUP'));
-      
-      // Use the names and avatars pre-formatted by the backend for DIRECT chats
-      const directChats = allChats.filter((c: any) => c.type === 'DIRECT').map((c: any) => ({
-        ...c,
-        id: c._id,
-        // The backend now determines the correct target name and avatar
-      }));
-      setContactslist(directChats);
+
+      const mergeMessages = (newChats: any[], currentChats: any[]) => {
+        return newChats.map(nc => {
+          const existing = currentChats.find(ec => ec._id === nc._id || ec.id === nc.id);
+          return {
+            ...nc,
+            id: nc._id,
+            messages: existing?.messages || nc.messages || []
+          };
+        });
+      };
+
+      setProgramChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'), prev));
+      setBatchChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'GROUP'), prev));
+      setContactslist(prev => mergeMessages(allChats.filter((c: any) => c.type === 'DIRECT'), prev));
     } catch (err) {
       console.error('Error fetching my chats:', err);
     } finally {
@@ -247,6 +252,20 @@ export default function Chats() {
       toast.success("Conversation removed");
     } catch (err) {
       toast.error("Failed to remove conversation");
+    }
+  };
+
+  const handleTogglePin = async (conversationId: string) => {
+    try {
+      const url = `${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}/pin`;
+      console.log('🔗 Pinning URL:', url);
+      const res = await axios.patch(url, {}, authHeader);
+      toast.success(res.data.message);
+      fetchMyChats(); // Refresh to apply sorting
+    } catch (err: any) {
+      const msg = err.response?.data?.message || "Failed to toggle pin";
+      toast.error(msg);
+      console.error('❌ Pin toggle error:', err.response?.data || err.message);
     }
   };
 
@@ -685,6 +704,7 @@ export default function Chats() {
         fetchBatchChats={fetchBatchChats}
         isDirectChatEnabled={isDirectChatEnabled}
         onRemoveChat={handleRemoveChat}
+        onTogglePin={handleTogglePin}
         toggleDirectChat={toggleDirectChat}
         findUsers={findUsers}
         startDirectChat={startDirectChat}
