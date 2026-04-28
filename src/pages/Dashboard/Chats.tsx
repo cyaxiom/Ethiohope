@@ -105,8 +105,18 @@ export default function Chats() {
       socket.on('connect', () => console.log('🔌 Socket connected:', socket.id));
 
       socket.on('new-message', ({ conversationId, message }: any) => {
-        const senderId = message.senderId?._id || message.senderId;
-        const myId = user?.id || user?._id;
+        const senderId = (message.senderId?._id || message.senderId || message.childId?._id || message.childId || '').toString();
+        const myId = (user?.id || user?._id || user?.attributes?.id || '').toString();
+        
+        console.log('📩 Real-time Message:', { 
+          conversationId, 
+          msgId: message._id, 
+          senderId, 
+          myId, 
+          isMe: senderId === myId 
+        });
+
+        // Don't duplicate our own sent messages (handled by handleSend)
         if (senderId === myId) return;
 
         const formattedMsg = {
@@ -117,16 +127,19 @@ export default function Chats() {
         };
 
         const updateWithDedupe = (prev: any[]) => prev.map(c => {
-          if (c._id === conversationId) {
-            const alreadyExists = (c.messages || []).some((m: any) => m.id === formattedMsg.id || m._id === formattedMsg.id);
+          if (c._id === conversationId || c.id === conversationId) {
+            console.log('✨ Updating history for chat:', c.name || conversationId);
+            const currentMessages = c.messages || [];
+            const alreadyExists = currentMessages.some((m: any) => m.id === formattedMsg.id || m._id === formattedMsg.id);
             if (alreadyExists) return c;
-            return { ...c, messages: [...(c.messages || []), formattedMsg] };
+            return { ...c, messages: [...currentMessages, formattedMsg] };
           }
           return c;
         });
 
         setProgramChats(updateWithDedupe);
         setBatchChats(updateWithDedupe);
+        setContactslist(updateWithDedupe);
       });
 
       socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
@@ -211,8 +224,12 @@ export default function Chats() {
         return;
       }
       const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/direct`, { targetUserId }, authHeader);
+      const newConv = res.data.data;
+      if (socketRef.current) {
+        socketRef.current.emit('join-room', newConv._id || newConv.id);
+      }
       fetchMyChats();
-      setActiveId(res.data.data._id);
+      setActiveId(newConv._id || newConv.id);
       setChatCategory('direct');
       toast.success("Conversation started");
     } catch (err) {
@@ -335,12 +352,20 @@ export default function Chats() {
 
         try {
            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`, authHeader);
+           const messages = res.data.data.reverse().map((m: any) => ({
+             ...m,
+             id: m._id,
+             isSender: (m.senderId?._id || m.senderId || m.childId?._id || m.childId) === (user?.id || user?._id),
+             time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+           }));
+
            const updateMsg = (prev: any[]) => prev.map(c => 
-             c._id === activeId ? { ...c, messages: res.data.data.reverse() } : c
+             (c._id === activeId || c.id === activeId) ? { ...c, messages } : c
            );
            
            if (chatCategory === 'announcement') setProgramChats(updateMsg);
            else if (chatCategory === 'discussion') setBatchChats(updateMsg);
+           else setContactslist(updateMsg);
         } catch (err) {
            console.error("Error fetching messages:", err);
         }
