@@ -8,7 +8,8 @@ import {
   Lock,
   FileText,
   ImageIcon,
-  User
+  User,
+  Edit3
 } from 'lucide-react';
 import Dropdown from './Dropdown';
 import ReactionPicker from './ReactionPicker';
@@ -18,6 +19,8 @@ interface MessageInputProps {
   hasBroadcastPermission: boolean;
   replyingTo: any;
   setReplyingTo: (msg: any) => void;
+  editingMessage: any;
+  setEditingMessage: (msg: any) => void;
   handleSend: (e?: React.FormEvent) => void;
   inputText: string;
   setInputText: (text: string) => void;
@@ -39,6 +42,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   hasBroadcastPermission,
   replyingTo,
   setReplyingTo,
+  editingMessage,
+  setEditingMessage,
   handleSend,
   inputText,
   setInputText,
@@ -64,7 +69,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       ) : (
         <>
           {replyingTo && (
-            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/60 px-4 py-2.5">
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/60 px-4 py-2.5 animate-in fade-in slide-in-from-bottom-2">
               <div className="flex flex-col text-sm">
                 <span className="text-xs font-semibold text-primary">
                   Replying to
@@ -76,6 +81,32 @@ const MessageInput: React.FC<MessageInputProps> = ({
               <button
                 type="button"
                 onClick={() => setReplyingTo(null)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {editingMessage && (
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800 px-4 py-2.5 animate-in fade-in slide-in-from-bottom-2">
+              <div className="flex flex-col text-sm">
+                <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                  <Edit3 className="w-3 h-3" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">
+                    Editing message
+                  </span>
+                </div>
+                <span className="truncate text-muted-foreground italic">
+                  {editingMessage.text}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingMessage(null);
+                  setInputText('');
+                }}
                 className="rounded-lg p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition"
               >
                 ✕

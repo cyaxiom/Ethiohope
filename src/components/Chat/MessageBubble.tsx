@@ -10,6 +10,7 @@ import {
   Star,
   Flag,
   Trash2,
+  Edit3,
   Bell,
   FileText,
   Download
@@ -37,6 +38,8 @@ interface MessageBubbleProps {
   message: any;
   onReact: (id: string, emoji: string) => void;
   onReply: (message: any) => void;
+  onEdit: (message: any) => void;
+  onDelete: (id: string) => void;
   onStarMessage: (id: string) => void;
   currentUser: any;
   isAnnouncement?: boolean;
@@ -46,6 +49,8 @@ interface MessageBubbleProps {
     canDelete: boolean;
     canReport: boolean;
     canForward: boolean;
+    canEditOwn: boolean;
+    canEditAll: boolean;
   };
 }
 
@@ -53,6 +58,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   onReact,
   onReply,
+  onEdit,
+  onDelete,
   onStarMessage,
   currentUser,
   isAnnouncement,
@@ -62,6 +69,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     canDelete: false,
     canReport: true,
     canForward: true,
+    canEditOwn: true,
+    canEditAll: false,
   }
 }) => {
   const isSender = message.isSender;
@@ -110,13 +119,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                 width="w-48"
                 onClose={() => setIsMenuOpen(false)}
                 items={[
-                  !isAnnouncement && {
-                    icon: <Info className="h-4 w-4" />,
-                    label: 'Message Info',
-                    onClick: () => {
-                      console.log('Message Info clicked');
-                    },
-                  },
                   chatPermissions.canReply && {
                     icon: <Reply className="h-4 w-4" />,
                     label: 'Reply',
@@ -130,25 +132,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                       setIsMenuOpen(false);
                     },
                   },
-                  chatPermissions.canForward && {
-                    icon: <Forward className="h-4 w-4" />,
-                    label: 'Forward',
+                  (chatPermissions.canEditAll || (chatPermissions.canEditOwn && isSender)) && {
+                    icon: <Edit3 className="h-4 w-4 text-blue-500" />,
+                    label: 'Edit',
                     onClick: () => {
-                      console.log('Forward clicked');
-                    },
-                  },
-                  !isAnnouncement && {
-                    icon: <Star className="h-4 w-4" />,
-                    label: 'Star Message',
-                    onClick: () => {
-                      onStarMessage(message.id);
-                    },
-                  },
-                  chatPermissions.canReport && !isAnnouncement && {
-                    icon: <Flag className="h-4 w-4" />,
-                    label: 'Report',
-                    onClick: () => {
-                      console.log('Report clicked');
+                      onEdit(message);
                     },
                   },
                   (chatPermissions.canDelete || isSender) && {
@@ -156,7 +144,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                     label: 'Delete',
                     destructive: true,
                     onClick: () => {
-                      console.log('Delete clicked');
+                      onDelete(message._id || message.id);
                     },
                   },
                 ].filter(Boolean) as any}

@@ -33,6 +33,7 @@ export default function Chats() {
   const [showAllOnline, setShowAllOnline] = useState(false);
   const [contactslist, setContactslist] = useState<any[]>([]);
   const [replyingTo, setReplyingTo] = useState<any>(null);
+  const [editingMessage, setEditingMessage] = useState<any>(null);
 
   // State for menus
   const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
@@ -140,6 +141,38 @@ export default function Chats() {
         setProgramChats(updateWithDedupe);
         setBatchChats(updateWithDedupe);
         setContactslist(updateWithDedupe);
+      });
+
+      socket.on('message-updated', ({ conversationId, message }: any) => {
+        const update = (prev: any[]) => prev.map(c => {
+          if (c._id === conversationId || c.id === conversationId) {
+            return {
+              ...c,
+              messages: (c.messages || []).map((m: any) => 
+                (m._id === message._id || m.id === message._id) ? { ...message, id: message._id, isSender: (message.senderId?._id || message.senderId) === (user?.id || user?._id) } : m
+              )
+            };
+          }
+          return c;
+        });
+        setProgramChats(update);
+        setBatchChats(update);
+        setContactslist(update);
+      });
+
+      socket.on('message-deleted', ({ conversationId, messageId }: any) => {
+        const update = (prev: any[]) => prev.map(c => {
+          if (c._id === conversationId || c.id === conversationId) {
+            return {
+              ...c,
+              messages: (c.messages || []).filter((m: any) => m._id !== messageId && m.id !== messageId)
+            };
+          }
+          return c;
+        });
+        setProgramChats(update);
+        setBatchChats(update);
+        setContactslist(update);
       });
 
       socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
@@ -421,15 +454,21 @@ export default function Chats() {
 
     if (isRealId) {
       try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
-          { 
-            text: inputText, 
-            type: 'text',
-            ...(replyingTo ? { replyTo: replyingTo.id || replyingTo._id } : {})
-          },
-          authHeader
-        );
+        const res = editingMessage 
+          ? await axios.patch(
+              `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages/${editingMessage._id || editingMessage.id}`,
+              { text: inputText },
+              authHeader
+            )
+          : await axios.post(
+              `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
+              { 
+                text: inputText, 
+                type: 'text',
+                ...(replyingTo ? { replyTo: replyingTo.id || replyingTo._id } : {})
+              },
+              authHeader
+            );
 
         const newMessage = {
           ...res.data.data,
@@ -438,9 +477,20 @@ export default function Chats() {
           time: new Date(res.data.data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
         };
 
-        const updateChat = (prev: any[]) => prev.map(c => 
-          (c._id === activeId || c.id === activeId) ? { ...c, messages: [...(c.messages || []), newMessage] } : c
-        );
+        const updateChat = (prev: any[]) => prev.map(c => {
+          if (c._id === activeId || c.id === activeId) {
+            if (editingMessage) {
+              return { 
+                ...c, 
+                messages: (c.messages || []).map((m: any) => 
+                  (m._id === (editingMessage._id || editingMessage.id) || m.id === (editingMessage._id || editingMessage.id)) ? newMessage : m
+                ) 
+              };
+            }
+            return { ...c, messages: [...(c.messages || []), newMessage] };
+          }
+          return c;
+        });
 
         if (chatCategory === 'announcement') setProgramChats(updateChat);
         else if (chatCategory === 'discussion') setBatchChats(updateChat);
@@ -448,8 +498,9 @@ export default function Chats() {
         
         setInputText('');
         setReplyingTo(null);
+        setEditingMessage(null);
       } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to send message");
+        toast.error(err.response?.data?.message || "Failed to process message");
       }
       return;
     }
@@ -546,7 +597,40 @@ export default function Chats() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleReply = (message: any) => setReplyingTo(message);
+  const handleReply = (message: any) => {
+    setReplyingTo(message);
+    setEditingMessage(null);
+  }
+
+  const handleEdit = (message: any) => {
+    setEditingMessage(message);
+    setInputText(message.text || '');
+    setReplyingTo(null);
+  }
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!activeId) return;
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages/${messageId}`, authHeader);
+      
+      const update = (prev: any[]) => prev.map((c) => {
+        if (c.id === activeId || c._id === activeId) {
+          return {
+            ...c,
+            messages: (c.messages || []).filter((m: any) => m.id !== messageId && m._id !== messageId),
+          };
+        }
+        return c;
+      });
+      
+      setContactslist(update);
+      setProgramChats(update);
+      setBatchChats(update);
+      toast.success("Message deleted");
+    } catch (err) {
+      toast.error("Failed to delete message");
+    }
+  };
 
   const handleStarMessage = (messageId: string) => {
     if (!activeId) return;
@@ -763,6 +847,8 @@ export default function Chats() {
               scrollRef={scrollRef}
               activeContact={activeContact}
               handleReply={handleReply}
+              handleEdit={handleEdit}
+              handleDelete={handleDeleteMessage}
               handleReact={handleReact}
               handleStarMessage={handleStarMessage}
               user={user}
@@ -774,6 +860,8 @@ export default function Chats() {
               hasBroadcastPermission={hasBroadcastPermission}
               replyingTo={replyingTo}
               setReplyingTo={setReplyingTo}
+              editingMessage={editingMessage}
+              setEditingMessage={setEditingMessage}
               handleSend={handleSend}
               inputText={inputText}
               setInputText={setInputText}

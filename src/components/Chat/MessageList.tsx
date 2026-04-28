@@ -7,6 +7,8 @@ interface MessageListProps {
   scrollRef: React.RefObject<HTMLDivElement | null>;
   activeContact: any;
   handleReply: (message: any) => void;
+  handleEdit: (message: any) => void;
+  handleDelete: (id: string) => void;
   handleReact: (id: string, emoji: string) => void;
   handleStarMessage: (id: string) => void;
   user: any;
@@ -17,6 +19,8 @@ const MessageList: React.FC<MessageListProps> = ({
   scrollRef,
   activeContact,
   handleReply,
+  handleEdit,
+  handleDelete,
   handleReact,
   handleStarMessage,
   user,
@@ -63,6 +67,8 @@ const MessageList: React.FC<MessageListProps> = ({
             {msgs.map((m: any) => (
               <MessageBubble
                 onReply={handleReply}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
                 key={m._id || m.id || Math.random().toString()}
                 message={m}
                 onReact={handleReact}
