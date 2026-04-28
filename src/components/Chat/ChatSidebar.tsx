@@ -47,6 +47,7 @@ interface ChatSidebarProps {
   startDirectChat: (targetId: string) => void;
   onRemoveChat: (conversationId: string) => void;
   onTogglePin: (conversationId: string) => void;
+  fetchMyChats: () => void;
 }
 
 import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
@@ -79,6 +80,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   startDirectChat,
   onRemoveChat,
   onTogglePin,
+  fetchMyChats,
 }) => {
   const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
@@ -139,22 +141,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </button>
           )}
 
-          {!showTopSearchInput && (
-            <button
-              onClick={() => setShowSearchInput(true)}
-              className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-          )}
 
-          {!showTopSearchInput && !isAdmin && (
+          {!showTopSearchInput && (
             <button
               onClick={() => {
                 if (chatCategory === 'announcement') fetchProgramChats();
-                if (chatCategory === 'discussion') fetchBatchChats();
+                else if (chatCategory === 'discussion') fetchBatchChats();
+                else fetchMyChats();
               }}
               className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
+              title="Refresh Chat List"
             >
               <RefreshCw className="h-5 w-5" />
             </button>
@@ -162,8 +158,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
           {!showTopSearchInput && (
             <button
-              onClick={() => setShowSearchInput(!showTopSearchInput)}
-              className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
+              onClick={() => setShowSearchInput(true)}
+              className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
             >
               <Search className="h-5 w-5" />
             </button>

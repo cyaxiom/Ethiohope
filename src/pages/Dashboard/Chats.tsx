@@ -161,26 +161,30 @@ export default function Chats() {
     };
   }, [token, user?.id, user?._id]);
 
+  const mergeMessages = (newChats: any[], currentChats: any[]) => {
+    return newChats.map(nc => {
+      const existing = currentChats.find(ec => ec._id === nc._id || ec.id === nc.id);
+      return {
+        ...nc,
+        id: nc._id,
+        messages: existing?.messages || nc.messages || []
+      };
+    });
+  };
+
   const fetchMyChats = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/my-chats`, authHeader);
       const allChats = res.data.data;
 
-      const mergeMessages = (newChats: any[], currentChats: any[]) => {
-        return newChats.map(nc => {
-          const existing = currentChats.find(ec => ec._id === nc._id || ec.id === nc.id);
-          return {
-            ...nc,
-            id: nc._id,
-            messages: existing?.messages || nc.messages || []
-          };
-        });
-      };
-
-      setProgramChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'), prev));
-      setBatchChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'GROUP'), prev));
       setContactslist(prev => mergeMessages(allChats.filter((c: any) => c.type === 'DIRECT'), prev));
+      
+      // For non-admins, these are also populated from my-chats memberships
+      if (!isAdmin) {
+        setProgramChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'), prev));
+        setBatchChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'GROUP'), prev));
+      }
     } catch (err) {
       console.error('Error fetching my chats:', err);
     } finally {
@@ -274,7 +278,7 @@ export default function Chats() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/programs`, authHeader);
-      setProgramChats(res.data.data);
+      setProgramChats(prev => mergeMessages(res.data.data, prev));
     } catch (err) {
       console.error('Error fetching program chats:', err);
     } finally {
@@ -287,7 +291,7 @@ export default function Chats() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/batches`, authHeader);
-      setBatchChats(res.data.data);
+      setBatchChats(prev => mergeMessages(res.data.data, prev));
     } catch (err) {
       console.error('Error fetching batch chats:', err);
     } finally {
@@ -300,6 +304,7 @@ export default function Chats() {
     if (isAdmin) {
       if (chatCategory === 'announcement') fetchProgramChats();
       else if (chatCategory === 'discussion') fetchBatchChats();
+      else fetchMyChats(); // Fetches recent/pinned direct chats for Admin
     } else {
       fetchMyChats();
     }
@@ -708,6 +713,7 @@ export default function Chats() {
         toggleDirectChat={toggleDirectChat}
         findUsers={findUsers}
         startDirectChat={startDirectChat}
+        fetchMyChats={fetchMyChats}
         sidebarMenuOpen={sidebarMenuOpen}
         setSidebarMenuOpen={setSidebarMenuOpen}
         showAllOnline={showAllOnline}
