@@ -276,7 +276,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       {chat.name}
                     </h4>
                     <p className="text-[10px] text-muted-foreground">
-                      {chat.programId?.title || chat.batchId?.batchName || 'Group Chat'}
+                      {chat.scheduleId 
+                        ? `${chat.scheduleId.dayOfWeek} | ${chat.scheduleId.startTime} - ${chat.scheduleId.endTime} ${chat.ageGroup ? `[${chat.ageGroup}]` : ''}`
+                        : (chat.programId?.title || chat.batchId?.batchName || 'Group Chat')}
                     </p>
                   </div>
                 </button>
