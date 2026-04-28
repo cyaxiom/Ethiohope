@@ -12,6 +12,7 @@ import {
   X,
   MessageSquare,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -44,6 +45,7 @@ interface ChatSidebarProps {
   toggleDirectChat: () => void;
   findUsers: (query: string) => Promise<any[]>;
   startDirectChat: (targetId: string) => void;
+  onRemoveChat: (conversationId: string) => void;
 }
 
 import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
@@ -74,6 +76,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   toggleDirectChat,
   findUsers,
   startDirectChat,
+  onRemoveChat,
 }) => {
   const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
@@ -456,9 +459,21 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         <p className={`text-xs truncate ${c.isTyping ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                           {c.lastMessage}
                         </p>
-                        <div className="flex items-center gap-1.5 ml-2">
-                          <Pin className="h-3 w-3 text-muted-foreground" />
-                          <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                           <button 
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               if (window.confirm("Remove this chat from your list?")) {
+                                 onRemoveChat(c.id);
+                               }
+                             }}
+                             className="p-1 hover:text-destructive transition-colors"
+                             title="Remove Chat"
+                           >
+                              <Trash2 className="h-3.5 w-3.5" />
+                           </button>
+                           <Pin className="h-3 w-3 text-muted-foreground" />
+                           <CheckCheck className="h-3.5 w-3.5 text-primary" />
                         </div>
                       </div>
                     </div>
@@ -495,11 +510,25 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         <p className="text-xs truncate text-muted-foreground">
                           {c.lastMessage}
                         </p>
-                        {c.unreadCount && (
-                          <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                            {c.unreadCount}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                           <button 
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               if (window.confirm("Remove this chat from your list?")) {
+                                 onRemoveChat(c.id);
+                               }
+                             }}
+                             className="p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
+                             title="Remove Chat"
+                           >
+                              <Trash2 className="h-3.5 w-3.5" />
+                           </button>
+                           {c.unreadCount && (
+                             <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                                {c.unreadCount}
+                             </span>
+                           )}
+                        </div>
                       </div>
                     </div>
                   </button>

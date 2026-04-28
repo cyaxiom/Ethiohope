@@ -84,6 +84,8 @@ export default function Chats() {
     canDelete: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete'),
     canReport: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
     canForward: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
+    canEditOwn: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.edit.own'),
+    canEditAll: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.edit.all'),
   };
 
   const socketRef = useRef<any>(null);
@@ -215,6 +217,19 @@ export default function Chats() {
       toast.success("Conversation started");
     } catch (err) {
       toast.error("Failed to start direct chat");
+    }
+  };
+
+  const handleRemoveChat = async (conversationId: string) => {
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}`, authHeader);
+      setContactslist(prev => prev.filter(c => c.id !== conversationId));
+      if (activeId === conversationId) {
+        setActiveId(null);
+      }
+      toast.success("Conversation removed");
+    } catch (err) {
+      toast.error("Failed to remove conversation");
     }
   };
 
@@ -644,6 +659,7 @@ export default function Chats() {
         fetchProgramChats={fetchProgramChats}
         fetchBatchChats={fetchBatchChats}
         isDirectChatEnabled={isDirectChatEnabled}
+        onRemoveChat={handleRemoveChat}
         toggleDirectChat={toggleDirectChat}
         findUsers={findUsers}
         startDirectChat={startDirectChat}
