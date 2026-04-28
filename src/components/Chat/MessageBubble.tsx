@@ -67,7 +67,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const isSender = message.isSender;
   const actualSenderName = isSender 
     ? (message.senderName || (currentUser?.firstname || currentUser?.firstName ? (currentUser.firstname || currentUser.firstName) + " " + (currentUser?.lastname || currentUser?.lastName || "") : currentUser?.name) || 'You').trim() 
-    : (message.senderName || (message.senderId?.firstname ? message.senderId.firstname + " " + (message.senderId.lastname || "") : null) || 'Unknown').trim();
+    : (message.senderName || 
+      (message.senderId?.firstname ? message.senderId.firstname + " " + (message.senderId.lastname || "") : 
+       (message.childId?.firstname ? message.childId.firstname + " " + (message.childId.lastname || "") : null)) || 
+      'Unknown'
+    ).trim();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
@@ -165,7 +169,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       <div
         className={`flex gap-3 group relative w-full ${isAnnouncement ? 'max-w-3xl' : (isSender ? 'max-w-[85%] flex-row-reverse' : 'max-w-[85%]')}`}
       >
-        {!isAnnouncement && !isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar)} name={actualSenderName} size="md" />}
+        {!isAnnouncement && !isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar || message.childId?.avatar)} name={actualSenderName} size="md" />}
         {isAnnouncement && (
           <div className="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center shadow-sm border border-blue-200 dark:border-blue-800">
             <Bell className="h-5 w-5 md:h-6 md:w-6" /> 
@@ -346,7 +350,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             </div>
           )}
         </div>
-        {!isAnnouncement && isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar)} name={actualSenderName} size="md" />}
+        {!isAnnouncement && isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar || message.childId?.avatar)} name={actualSenderName} size="md" />}
       </div>
     </div>
   );
