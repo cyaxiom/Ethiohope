@@ -112,6 +112,11 @@ export const RoleManagement: React.FC = () => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  // Filter out deprecated permissions
+  const cleanedAllPermissions = React.useMemo(() => 
+    allPermissions.filter(p => p.key !== 'chat.delete'),
+  [allPermissions]);
+
   // Filter roles by search
   const filteredRoles = roles.filter(
     (role) =>
@@ -330,7 +335,7 @@ export const RoleManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 font-medium">Total Permissions</p>
-              <p className="text-2xl font-bold text-gray-800 mt-1">{allPermissions.length}</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{cleanedAllPermissions.length}</p>
             </div>
             <div className="p-3 bg-emerald-50 rounded-xl">
               <ShieldAlert className="w-5 h-5 text-emerald-600" />
@@ -433,7 +438,7 @@ export const RoleManagement: React.FC = () => {
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700
                                        bg-blue-50 px-2.5 py-1 rounded-full">
                         <ShieldAlert className="w-3.5 h-3.5" />
-                        {role.permissions?.length ?? 0}
+                        {role.permissions?.filter(p => (typeof p === 'string' ? p : p.key) !== 'chat.delete').length ?? 0}
                       </span>
                     </td>
 
@@ -498,7 +503,7 @@ export const RoleManagement: React.FC = () => {
         onClose={handleCloseModal}
         onSubmit={handleSubmitRole}
         role={editingRole}
-        allPermissions={allPermissions}
+        allPermissions={cleanedAllPermissions}
         isPermissionsLoading={permissionsLoading}
         isSubmitting={isCreating || isUpdating}
       />

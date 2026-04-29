@@ -39,6 +39,7 @@ interface ChatSidebarProps {
   onRemoveChat: (conversationId: string) => void;
   onTogglePin: (conversationId: string) => void;
   fetchMyChats: () => void;
+  canStartDirectChat: boolean;
 }
 
 import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
@@ -63,6 +64,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onRemoveChat,
   onTogglePin,
   fetchMyChats,
+  canStartDirectChat,
 }) => {
   const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
@@ -116,24 +118,26 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       <div className="px-5 mb-4">
         <div className="flex flex-col gap-3">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <input
-              type="text"
-              placeholder="Find people to chat..."
-              value={userSearchQuery}
-              onChange={(e) => handleUserSearch(e.target.value)}
-              className="w-full bg-muted/60 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-            />
-            {userSearchQuery && (
-               <button 
-                  onClick={() => handleUserSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-               >
-                  <X className="h-4 w-4" />
-               </button>
-            )}
-          </div>
+          {canStartDirectChat && (
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <input
+                type="text"
+                placeholder="Find people to chat..."
+                value={userSearchQuery}
+                onChange={(e) => handleUserSearch(e.target.value)}
+                className="w-full bg-muted/60 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+              {userSearchQuery && (
+                 <button 
+                    onClick={() => handleUserSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                 >
+                    <X className="h-4 w-4" />
+                 </button>
+              )}
+            </div>
+          )}
           
           <div className="relative">
             {isSearchingUsers && (

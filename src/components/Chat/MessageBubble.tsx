@@ -47,7 +47,8 @@ interface MessageBubbleProps {
   chatPermissions?: {
     canReply: boolean;
     canReact: boolean;
-    canDelete: boolean;
+    canDeleteOwn: boolean;
+    canDeleteAll: boolean;
     canReport: boolean;
     canForward: boolean;
     canEditOwn: boolean;
@@ -67,7 +68,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   chatPermissions = {
     canReply: true,
     canReact: true,
-    canDelete: false,
+    canDeleteOwn: true,
+    canDeleteAll: false,
     canReport: true,
     canForward: true,
     canEditOwn: true,
@@ -107,15 +109,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </>
         )}
         <div className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
-            }}
-            className="p-1"
-          >
-            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-          </button>
+          {!message.isDeleted && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              className="p-1"
+            >
+              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
           {isMenuOpen && (
             <div className="absolute top-0 left-0 z-50 translate-y-6">
               <Dropdown
@@ -142,7 +146,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                       onEdit(message);
                     },
                   },
-                  (chatPermissions.canDelete || isSender) && {
+                  (chatPermissions.canDeleteAll || (chatPermissions.canDeleteOwn && isSender)) && {
                     icon: <Trash2 className="h-4 w-4 text-red-500" />,
                     label: 'Delete',
                     destructive: true,
@@ -229,7 +233,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               </div>
             )}
 
-            {message.type === 'audio' ? (
+            {message.isDeleted ? (
+              <div className="flex items-center gap-2 text-muted-foreground italic opacity-70 py-1">
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="text-sm">This message was deleted</span>
+              </div>
+            ) : message.type === 'audio' ? (
               <div className="flex items-center gap-3 min-w-[220px]">
                 <audio
                   controls
@@ -302,9 +311,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                   </div>
                 )}
                 {message.text && (
-                  <p className="text-sm leading-relaxed text-card-foreground whitespace-pre-wrap break-words max-w-xs md:max-w-sm lg:max-w-md">
-                    {message.text.trim()}
-                  </p>
+                  <div className="flex flex-col">
+                    <p className="text-sm leading-relaxed text-card-foreground whitespace-pre-wrap break-words max-w-xs md:max-w-sm lg:max-w-md">
+                      {message.text.trim()}
+                    </p>
+                    {message.isEdited && (
+                      <span className={`text-[10px] mt-1 italic font-medium opacity-60 ${isSender ? 'text-primary-foreground text-right' : 'text-muted-foreground text-left'}`}>
+                        (edited)
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             )}

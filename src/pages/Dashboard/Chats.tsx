@@ -74,19 +74,31 @@ export default function Chats() {
     return key === 'chat.broadcast';
   });
 
+  const hasWritePermission = isAdmin || allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.write';
+  });
+
+  const canStartDirectChat = isAdmin || allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.direct.start';
+  });
+
   const authHeader = {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true
   };
 
   const chatPermissions = {
+    canWrite: hasWritePermission,
     canReply: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.reply'),
     canReact: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.react'),
-    canDelete: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete'),
-    canReport: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
-    canForward: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
+    canDeleteOwn: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete.own'),
+    canDeleteAll: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete.all'),
     canEditOwn: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.edit.own'),
     canEditAll: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.edit.all'),
+    canReport: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
+    canForward: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
   };
 
   const socketRef = useRef<any>(null);
@@ -794,6 +806,7 @@ export default function Chats() {
         findUsers={findUsers}
         startDirectChat={startDirectChat}
         fetchMyChats={fetchMyChats}
+        canStartDirectChat={canStartDirectChat}
       />
 
       <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background min-w-0 overflow-hidden w-full`}>
@@ -858,6 +871,7 @@ export default function Chats() {
             <MessageInput 
               activeContact={activeContact}
               hasBroadcastPermission={hasBroadcastPermission}
+              hasWritePermission={hasWritePermission}
               replyingTo={replyingTo}
               setReplyingTo={setReplyingTo}
               editingMessage={editingMessage}
