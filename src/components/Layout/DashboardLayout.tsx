@@ -3,19 +3,28 @@ import { Outlet, NavLink } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { twMerge } from 'tailwind-merge';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { 
   LayoutDashboard, Users, Shield, BookOpen, FileText, Home, GraduationCap,
-  CreditCard, Activity
+  CreditCard, Activity, Library, Calendar, MessageCircle, Video, LogOut
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { logout } from '../../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 export const DashboardLayout: React.FC = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed for better mobile UX
   const { roles } = useSelector((state: any) => state.auth);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
   };
 
   // Sync nav items with Sidebar items for the mobile horizontal bar
@@ -25,6 +34,12 @@ export const DashboardLayout: React.FC = () => {
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
         { path: '/admin/users', icon: Users, label: 'Users' },
+        { path: '/admin/programs', icon: Library, label: 'Programs' },
+        { path: '/admin/batches', icon: Users, label: 'Batches' },
+        { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
+        { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
+        { path: '/admin/chat', icon: MessageCircle, label: 'Chat' },
+        { path: '/admin/sessions', icon: Video, label: 'Sessions' },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
       ];
     }
@@ -41,9 +56,10 @@ export const DashboardLayout: React.FC = () => {
     if (roles.includes('parent')) {
       return [
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+        { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
         { path: '/parent/children', icon: Users, label: 'Children' },
-        { path: '/training', icon: BookOpen, label: 'Training' },
-        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
+        { path: '/parent/chat', icon: MessageCircle, label: 'Chat' },
+        { path: '/parent/payments', icon: CreditCard, label: 'Payments' },
       ];
     }
 
@@ -51,14 +67,16 @@ export const DashboardLayout: React.FC = () => {
       return [
         { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/training', icon: BookOpen, label: 'Training' },
+        { path: '/exams', icon: FileText, label: 'Exams' },
         { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
       ];
     }
 
     return [
       { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { path: '/training', icon: BookOpen, label: 'Training' },
-      { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
+      { path: '/student/courses', icon: BookOpen, label: 'Courses' },
+      { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
+      { path: '/student/sessions', icon: Video, label: 'Live Classes' },
       { path: '/my-progress', icon: Activity, label: 'Progress' },
     ];
   };
@@ -82,7 +100,7 @@ export const DashboardLayout: React.FC = () => {
           {navItems.map((item) => (
             <NavLink
               key={item.path}
-              to={item.path}
+              to={item.path!}
               className={({ isActive }) =>
                 clsx(
                   "flex items-center gap-2 px-4 py-1.5 rounded-full whitespace-nowrap text-xs font-bold transition-all",
@@ -96,6 +114,14 @@ export const DashboardLayout: React.FC = () => {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full whitespace-nowrap text-xs font-bold transition-all bg-red-50 text-red-500 border border-red-100 hover:bg-red-100"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Logout</span>
+          </button>
         </nav>
 
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto w-full max-w-full">
