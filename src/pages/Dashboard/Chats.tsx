@@ -871,7 +871,6 @@ export default function Chats() {
               openDocumentHandler={openDocumentHandler}
               pickImage={pickImage}
               pickAudioFile={pickAudioFile}
-              shareContactHandler={() => {}}
               showReactionPicker={showReactionPicker}
               setShowReactionPicker={setShowReactionPicker}
               pickAndSendEmoji={pickAndSendEmoji}

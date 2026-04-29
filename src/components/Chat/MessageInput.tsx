@@ -8,7 +8,6 @@ import {
   Lock,
   FileText,
   ImageIcon,
-  User,
   Edit3
 } from 'lucide-react';
 import Dropdown from './Dropdown';
@@ -30,7 +29,6 @@ interface MessageInputProps {
   openDocumentHandler: () => void;
   pickImage: () => void;
   pickAudioFile: () => void;
-  shareContactHandler: () => void;
   showReactionPicker: boolean;
   setShowReactionPicker: (show: any) => void;
   pickAndSendEmoji: (emoji: string) => void;
@@ -53,7 +51,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
   openDocumentHandler,
   pickImage,
   pickAudioFile,
-  shareContactHandler,
   showReactionPicker,
   setShowReactionPicker,
   pickAndSendEmoji,
@@ -151,11 +148,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
                       icon: <Mic className="h-4 w-4 text-yellow-500" />,
                       label: 'Upload Audio/MP3',
                       onClick: pickAudioFile,
-                    },
-                    {
-                      icon: <User className="h-4 w-4 text-orange-500" />,
-                      label: 'Contact',
-                      onClick: shareContactHandler,
                     },
                   ]}
                 />
