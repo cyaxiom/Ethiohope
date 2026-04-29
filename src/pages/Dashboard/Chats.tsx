@@ -64,10 +64,15 @@ export default function Chats() {
     return ['admin', 'super_admin', 'superadmin', 'administrator'].includes(code?.toLowerCase());
   });
 
-  const allPermissions = [
-    ...(authPermissions || []),
-    ...(user?.permissions || [])
-  ];
+  // Detect if current user is a child/student (not staff)
+  const isChild = user?.type === 'child' || [...(authRoles || [])].some(r => {
+    const code = typeof r === 'string' ? r : r?.code;
+    return code?.toLowerCase() === 'child';
+  });
+
+  // Only use authPermissions from the login response — don't merge user object
+  // properties which may contain stale or unintended data
+  const allPermissions = [...(authPermissions || [])];
 
   const hasBroadcastPermission = isAdmin || allPermissions.some(p => {
     const key = typeof p === 'string' ? p : p?.key;
@@ -79,10 +84,16 @@ export default function Chats() {
     return key === 'chat.write';
   });
 
-  const canStartDirectChat = isAdmin || allPermissions.some(p => {
+  // Check if user has the explicit chat.direct.start permission from their role
+  const hasDirectStartPermission = allPermissions.some(p => {
     const key = typeof p === 'string' ? p : p?.key;
     return key === 'chat.direct.start';
   });
+  // Admins always can start direct chats; others need the explicit permission
+  const canStartDirectChat = isAdmin || hasDirectStartPermission;
+
+  // Debug: log permission state so issues can be diagnosed
+  console.log('🔑 Chat permissions debug:', { isAdmin, isChild, hasDirectStartPermission, canStartDirectChat, allPermissions });
 
   const authHeader = {
     headers: { Authorization: `Bearer ${token}` },
