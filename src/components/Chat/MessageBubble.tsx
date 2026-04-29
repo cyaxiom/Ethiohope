@@ -13,7 +13,8 @@ import {
   Edit3,
   Bell,
   FileText,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -84,9 +85,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   return (
-    <div
+    <>
+      <div
       id={`msg-${message._id || message.id}`}
       className={`flex flex-col mb-6 w-full ${isAnnouncement ? 'items-center px-2 md:px-6' : (isSender ? 'items-end pl-10' : 'items-start pr-10')}`}
     >
@@ -283,7 +286,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                     <img
                       src={getMediaUrl(message.mediaUrl || message.imageUrl)}
                       alt="message-img"
-                      className="max-w-xs md:max-w-sm lg:max-w-md rounded-lg object-cover"
+                      className="max-w-xs md:max-w-sm lg:max-w-md rounded-lg object-cover cursor-zoom-in"
+                      onClick={() => setIsFullscreen(true)}
                     />
                     <a 
                       href={getMediaUrl(message.mediaUrl || message.imageUrl)}
@@ -341,6 +345,53 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {!isAnnouncement && isSender && <Avatar src={getMediaUrl(message.senderAvatar || message.senderId?.avatar || message.childId?.avatar)} name={actualSenderName} size="md" />}
       </div>
     </div>
+
+      {isFullscreen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4 cursor-zoom-out backdrop-blur-sm"
+          onClick={(e) => {
+             e.preventDefault();
+             e.stopPropagation();
+             setIsFullscreen(false);
+          }}
+        >
+          <div className="absolute top-4 right-4 flex gap-4">
+            <a
+              href={getMediaUrl(message.mediaUrl || message.imageUrl)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+              onClick={(e) => e.stopPropagation()}
+              title="Download Full Image"
+            >
+              <Download className="h-6 w-6" />
+            </a>
+            <button 
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFullscreen(false);
+              }}
+              title="Close"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          <motion.img
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            src={getMediaUrl(message.mediaUrl || message.imageUrl)}
+            alt="message-img-fullscreen"
+            className="max-w-full max-h-[90vh] object-contain select-none shadow-2xl rounded-sm md:rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </motion.div>
+      )}
+    </>
   );
 };
 
