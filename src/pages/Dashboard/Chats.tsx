@@ -773,7 +773,7 @@ export default function Chats() {
   };
 
   return (
-    <div className="flex pt-16 h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
+    <div className="flex pt-16 h-[calc(100vh-64px)] overflow-hidden font-sans antialiased bg-background text-foreground">
       <ChatSidebar 
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}

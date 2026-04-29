@@ -98,7 +98,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   return (
     <aside
-      className={`${isMobileSidebarOpen ? 'block w-full' : 'hidden'} md:block shrink-0 w-full md:w-[350px] border-r flex flex-col z-20`}
+      className={`${isMobileSidebarOpen ? 'flex w-full' : 'hidden'} md:flex shrink-0 w-full md:w-[350px] border-r flex-col z-20 h-full overflow-hidden`}
     >
       <div className="p-5 flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Messaging</h1>
@@ -252,7 +252,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
 
 
-      <div className="flex-1 h-full px-2 space-y-6 pb-4 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 min-h-0 px-2 space-y-6 pb-4 overflow-y-auto custom-scrollbar">
         {chatCategory === 'announcement' || chatCategory === 'discussion' ? (
           <div className="space-y-2">
             <h3 className="px-4 mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sticky top-0 left-0 w-full py-2 bg-background z-50">
