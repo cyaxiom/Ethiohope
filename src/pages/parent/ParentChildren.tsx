@@ -266,6 +266,19 @@ export const ParentChildren: React.FC = () => {
                             </span>
                           </div>
 
+                          {/* Quick Schedule Summary */}
+                          {enrollment.selectedSchedules && enrollment.selectedSchedules.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {enrollment.selectedSchedules.map((s: any, i: number) => (
+                                <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-100 rounded-lg shadow-sm">
+                                  <Clock className="w-3 h-3 text-blue-500" />
+                                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{s.sessionLabel}:</span>
+                                  <span className="text-[10px] font-bold text-gray-700">{s.dayOfWeek?.substring(0, 3)} {s.startTime}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           {/* Progress Indicator */}
                           <div className="space-y-2 mt-6">
                             <div className="flex justify-between items-center px-1">

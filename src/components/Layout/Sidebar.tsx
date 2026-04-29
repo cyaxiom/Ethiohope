@@ -47,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/admin/batches', icon: Users, label: 'Batches' },
         { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
         { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
+        { path: '/admin/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/admin/sessions', icon: Video, label: 'Sessions' },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
       ];
@@ -57,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
         { path: '/parent/children', icon: Users, label: 'Children' },
+        { path: '/parent/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/parent/payments', icon: CreditCard, label: 'Payments' },
       ];
     }
@@ -102,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </div>
           {isOpen && (
             <span className="font-black text-xl text-blue-900 whitespace-nowrap tracking-tighter">
-              SSM Quiz
+              Ethiohope
             </span>
           )}
         </Link>
@@ -241,54 +243,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <div className="h-px bg-gray-100 w-full" />
         </div>
 
-        <h3 className={twMerge("text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 pl-4 transition-opacity duration-300", 
-            !isOpen && "opacity-0 h-0 my-0 overflow-hidden" 
-        )}>
-           Settings
-        </h3>
-
-        <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              clsx(
-                "group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm",
-                "hover:bg-blue-50/50 text-gray-500 hover:text-blue-600",
-                isActive ? "bg-blue-50 text-blue-600 shadow-sm" : ""
-              )
-            }
-          >
-            <motion.div whileHover={{ scale: 1.2 }}>
-              <UserIcon className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-blue-500" />
-            </motion.div>
-            {isOpen && <span className="whitespace-nowrap">Profile</span>}
-            {!isOpen && (
-              <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
-                Profile
-              </div>
-            )}
-        </NavLink>
-
-        <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              clsx(
-                "group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm",
-                "hover:bg-blue-50/50 text-gray-500 hover:text-blue-600",
-                isActive ? "bg-blue-50 text-blue-600 shadow-sm" : ""
-              )
-            }
-          >
-            <motion.div whileHover={{ scale: 1.2 }}>
-              <Settings className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-blue-500" />
-            </motion.div>
-            {isOpen && <span className="whitespace-nowrap">Settings</span>}
-            {!isOpen && (
-              <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
-                Settings
-              </div>
-            )}
-        </NavLink>
-
         <button
             onClick={handleLogout}
             className="w-full group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm text-gray-500 hover:text-red-500 hover:bg-red-50"
@@ -305,19 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         </button>
       </nav>
 
-      <div className="p-4 border-t border-gray-100 mt-auto">
-         <div className={clsx("flex items-center gap-3 p-2 bg-gray-50/50 rounded-2xl", !isOpen && "justify-center")}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 text-white flex items-center justify-center font-black flex-shrink-0 shadow-lg shadow-blue-100">
-               {user?.firstname?.charAt(0) || 'U'}
-            </div>
-            {isOpen && (
-              <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-black text-blue-900 truncate tracking-tight">{user?.firstname} {user?.lastname}</span>
-                <span className="text-[10px] font-bold text-gray-400 truncate tracking-widest uppercase">{roles[0]}</span>
-              </div>
-            )}
-         </div>
-      </div>
+      {/* User profile footer removed per request */}
     </aside>
   );
 };

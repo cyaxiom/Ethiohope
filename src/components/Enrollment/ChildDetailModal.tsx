@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGetChildDetailsQuery } from '../../features/user/userApi';
 import Loading from '../../ui/Loading';
 import { getImageUrl } from '../../lib/utils';
+import EditScheduleModal from './EditScheduleModal';
 
 interface ChildDetailModalProps {
   isOpen: boolean;
@@ -13,6 +14,13 @@ interface ChildDetailModalProps {
 
 const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, childId }) => {
   const { data: response, isLoading, error } = useGetChildDetailsQuery(childId!, { skip: !childId });
+  const [selectedEnrollmentForEdit, setSelectedEnrollmentForEdit] = React.useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+
+  const handleEditSchedule = (enrollment: any) => {
+    setSelectedEnrollmentForEdit(enrollment);
+    setIsEditModalOpen(true);
+  };
 
   if (!isOpen) return null;
 
@@ -184,6 +192,32 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                                   </span>
                                 </div>
                               </div>
+
+                              {/* Selected Schedules */}
+                              {enrollment.selectedSchedules && (
+                                <div className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100/50 space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Selected Sessions</span>
+                                    <button 
+                                      onClick={() => handleEditSchedule(enrollment)}
+                                      className="text-[9px] font-black text-blue-600 hover:text-blue-700 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 transition-all hover:scale-105"
+                                    >
+                                      Edit Schedule
+                                    </button>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {enrollment.selectedSchedules.map((s: any) => s && (
+                                      <div key={s._id || s} className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                        <span className="text-gray-400 font-black uppercase tracking-tight text-[9px] min-w-[70px]">{s.sessionLabel}:</span>
+                                        <span className="text-blue-600">{s.dayOfWeek}</span>
+                                        <span className="text-gray-400">•</span>
+                                        <span>{s.startTime}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -196,6 +230,17 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                     </div>
                   )}
                 </div>
+
+                {/* Edit Schedule Modal */}
+                <AnimatePresence>
+                  {isEditModalOpen && (
+                    <EditScheduleModal 
+                      isOpen={isEditModalOpen}
+                      onClose={() => setIsEditModalOpen(false)}
+                      enrollment={selectedEnrollmentForEdit}
+                    />
+                  )}
+                </AnimatePresence>
 
                 {/* Quick Info / Personal Details */}
                 <div className="bg-blue-900 text-white rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden header-gradient">

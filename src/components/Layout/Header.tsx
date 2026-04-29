@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Search, Bell, Settings as SettingsIcon } from 'lucide-react';
+import { Menu, Search, User } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 interface HeaderProps {
@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
     if (path.includes('/parent/dashboard')) return 'Parent Portal';
     if (path.includes('/student/dashboard')) return 'Student Dashboard';
     
-    return 'SSM Quiz Portal';
+    return 'Ethiohope Portal';
   };
 
   return (
@@ -39,17 +39,8 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
-          <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-all">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-          </button>
-          
-          <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-all hidden sm:block">
-            <SettingsIcon className="w-5 h-5" />
-          </button>
-          
-          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm cursor-pointer hover:shadow-md transition-all sm:ml-2">
-            A
+          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:shadow-md transition-all sm:ml-2">
+            <User className="w-4 h-4" />
           </div>
         </div>
       </div>

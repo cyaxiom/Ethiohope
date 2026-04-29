@@ -41,11 +41,20 @@ export const enrollmentApi = api.injectEndpoints({
         method: 'GET',
       }),
     }),
+    updateEnrollmentSchedule: builder.mutation<any, { enrollmentId: string; selectedSchedules: string[] }>({
+      query: ({ enrollmentId, selectedSchedules }) => ({
+        url: `/parent/enrollments/${enrollmentId}/schedule`,
+        method: 'PATCH',
+        body: { selectedSchedules },
+      }),
+      invalidatesTags: ['Users'],
+    }),
   }),
 });
 
 export const {
   usePrepareEnrollmentMutation,
   useGetMyPendingEnrollmentsQuery,
+  useUpdateEnrollmentScheduleMutation,
 } = enrollmentApi;
 

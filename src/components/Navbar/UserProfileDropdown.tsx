@@ -101,6 +101,14 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
     return '/';
   };
 
+  const getChatUrl = () => {
+    if (roles.includes('super_admin') || roles.includes('admin')) return '/admin/chat';
+    if (roles.includes('instructor')) return '/instructor/chat'; // Assuming there could be one
+    if (roles.includes('parent')) return '/parent/chat';
+    if (roles.includes('student') || roles.includes('child')) return '/student/chat';
+    return '/dashboard/chats';
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -219,7 +227,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
               )}
 
               <button
-                onClick={() => { navigate('/dashboard/chats'); onClose(); }}
+                onClick={() => { navigate(getChatUrl()); onClose(); }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
               >
                 <MessageCircle className="w-4 h-4" />

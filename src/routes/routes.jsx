@@ -41,7 +41,7 @@ const Likes = React.lazy(() => import('@components/Forum/Likes'));
 const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
 
 //dashboard routes
-const Chats = React.lazy(() => import('@pages/Dashboard/Chats'));
+const Chats = React.lazy(() => import('@pages/Dashboard/Chats.tsx'));
 const VideoCall = React.lazy(() => import('@pages/Dashboard/VideoCall'));
 const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
 const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
@@ -231,6 +231,11 @@ export const routes = [
         element: <AdminCourses />,
       },
       {
+        path: '/admin/chat',
+        name: 'AdminChat',
+        element: <Chats />,
+      },
+      {
         path: '/admin/sessions',
         name: 'AdminSessions',
         element: <AdminSessions />,
@@ -287,6 +292,11 @@ export const routes = [
         element: <ParentPayments />,
       },
       {
+        path: '/parent/chat',
+        name: 'ParentChat',
+        element: <Chats />,
+      },
+      {
         path: '*',
         name: 'NotFound',
         element: <NotFound />,
@@ -312,6 +322,11 @@ export const routes = [
         path: '/student/courses/:id',
         name: 'Student Course Detail',
         element: <StudentCourseDetail />,
+      },
+      {
+        path: '/student/chat',
+        name: 'StudentChat',
+        element: <Chats />,
       },
       {
         path: '/student/sessions',
