@@ -64,6 +64,10 @@ export default function Chats() {
     const code = typeof r === 'string' ? r : r?.code;
     return ['admin', 'super_admin', 'superadmin', 'administrator'].includes(code?.toLowerCase());
   });
+  const isParent = [...(authRoles || []), ...(user?.roles || [])].some(r => {
+    const code = typeof r === 'string' ? r : r?.code;
+    return code?.toLowerCase() === 'parent';
+  });
 
   // Detect if current user is a child/student (not staff)
   const isChild = user?.type === 'child' || [...(authRoles || [])].some(r => {
@@ -379,6 +383,11 @@ export default function Chats() {
 
   useEffect(() => {
     if (!token) return;
+    if (isParent && chatCategory === 'discussion') {
+      setChatCategory(isDirectChatEnabled ? 'direct' : 'announcement');
+      setActiveId(null);
+      return;
+    }
     if (chatCategory === 'direct' && !isDirectChatEnabled) {
       setChatCategory('announcement');
       setActiveId(null);
@@ -850,6 +859,7 @@ export default function Chats() {
         batchChats={batchChats}
         loading={loading}
         isAdmin={isAdmin}
+        isParent={isParent}
         handleGlobalSync={handleGlobalSync}
         fetchProgramChats={fetchProgramChats}
         fetchBatchChats={fetchBatchChats}

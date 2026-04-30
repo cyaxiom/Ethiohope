@@ -33,6 +33,7 @@ interface ChatSidebarProps {
   programChats: any[];
   batchChats: any[];
   isAdmin: boolean;
+  isParent: boolean;
   handleGlobalSync: () => void;
   fetchProgramChats: () => void;
   fetchBatchChats: () => void;
@@ -64,6 +65,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   programChats,
   batchChats,
   isAdmin,
+  isParent,
   handleGlobalSync,
   fetchProgramChats,
   fetchBatchChats,
@@ -272,7 +274,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 Direct
               </button>
             )}
-            {isGroupChatEnabled && (
+            {isGroupChatEnabled && !isParent && (
               <button
                 onClick={() => setChatCategory('discussion')}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
