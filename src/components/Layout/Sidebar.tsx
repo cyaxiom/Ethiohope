@@ -104,7 +104,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     // Default for students (including child role)
     if (roles.includes('student') || roles.includes('child')) {
       return [
-        { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/courses', icon: BookOpen, label: 'Courses' },
         { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/student/sessions', icon: Video, label: 'Live Classes' },
