@@ -7,12 +7,15 @@ import {
   UserCircle,
   UserPlus,
   RefreshCw,
+  Check,
   CheckCheck,
   Pin,
   X,
   MessageSquare,
   Loader2,
   Trash2,
+  MessageCircle,
+  Users,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -31,6 +34,7 @@ interface ChatSidebarProps {
   programChats: any[];
   batchChats: any[];
   isAdmin: boolean;
+  isParent: boolean;
   handleGlobalSync: () => void;
   fetchProgramChats: () => void;
   fetchBatchChats: () => void;
@@ -39,6 +43,13 @@ interface ChatSidebarProps {
   onRemoveChat: (conversationId: string) => void;
   onTogglePin: (conversationId: string) => void;
   fetchMyChats: () => void;
+  canStartDirectChat: boolean;
+  isDirectChatEnabled: boolean;
+  isGroupChatEnabled: boolean;
+  canToggleDirectChat: boolean;
+  canToggleGroupChat: boolean;
+  onToggleDirectChat: () => void;
+  onToggleGroupChat: () => void;
 }
 
 import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
@@ -55,6 +66,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   programChats,
   batchChats,
   isAdmin,
+  isParent,
   handleGlobalSync,
   fetchProgramChats,
   fetchBatchChats,
@@ -63,6 +75,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onRemoveChat,
   onTogglePin,
   fetchMyChats,
+  canStartDirectChat,
+  isDirectChatEnabled,
+  isGroupChatEnabled,
+  canToggleDirectChat,
+  canToggleGroupChat,
+  onToggleDirectChat,
+  onToggleGroupChat,
 }) => {
   const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
@@ -103,6 +122,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       <div className="p-5 flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Messaging</h1>
         <div className="flex items-center gap-1">
+          {canToggleDirectChat && (
+            <button
+              onClick={onToggleDirectChat}
+              className={`${ICON_BTN} p-2 rounded-full ${isDirectChatEnabled ? 'text-emerald-600' : 'text-rose-600'} hover:bg-muted`}
+              title={`Direct chat is ${isDirectChatEnabled ? 'active' : 'inactive'} - click to ${isDirectChatEnabled ? 'deactivate' : 'activate'}`}
+            >
+              <MessageCircle className="h-5 w-5" />
+            </button>
+          )}
+          {canToggleGroupChat && (
+            <button
+              onClick={onToggleGroupChat}
+              className={`${ICON_BTN} p-2 rounded-full ${isGroupChatEnabled ? 'text-emerald-600' : 'text-rose-600'} hover:bg-muted`}
+              title={`Group chat is ${isGroupChatEnabled ? 'active' : 'inactive'} - click to ${isGroupChatEnabled ? 'deactivate' : 'activate'}`}
+            >
+              <Users className="h-5 w-5" />
+            </button>
+          )}
           <button
             onClick={() => window.location.reload()}
             className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
@@ -116,24 +153,26 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       <div className="px-5 mb-4">
         <div className="flex flex-col gap-3">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <input
-              type="text"
-              placeholder="Find people to chat..."
-              value={userSearchQuery}
-              onChange={(e) => handleUserSearch(e.target.value)}
-              className="w-full bg-muted/60 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-            />
-            {userSearchQuery && (
-               <button 
-                  onClick={() => handleUserSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-               >
-                  <X className="h-4 w-4" />
-               </button>
-            )}
-          </div>
+          {canStartDirectChat && isDirectChatEnabled && (
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <input
+                type="text"
+                placeholder="Find people to chat..."
+                value={userSearchQuery}
+                onChange={(e) => handleUserSearch(e.target.value)}
+                className="w-full bg-muted/60 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+              {userSearchQuery && (
+                 <button 
+                    onClick={() => handleUserSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                 >
+                    <X className="h-4 w-4" />
+                 </button>
+              )}
+            </div>
+          )}
           
           <div className="relative">
             {isSearchingUsers && (
@@ -228,18 +267,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
 
           <div className="flex p-1 bg-muted/60 rounded-xl">
-            <button
-              onClick={() => setChatCategory('direct')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-            >
-              Direct
-            </button>
-            <button
-              onClick={() => setChatCategory('discussion')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-            >
-              Groups
-            </button>
+            {isDirectChatEnabled && (
+              <button
+                onClick={() => setChatCategory('direct')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                Direct
+              </button>
+            )}
+            {isGroupChatEnabled && !isParent && (
+              <button
+                onClick={() => setChatCategory('discussion')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                Groups
+              </button>
+            )}
             <button
               onClick={() => setChatCategory('announcement')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
@@ -247,6 +290,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               Programs
             </button>
           </div>
+
         </div>
       </div>
 
@@ -281,6 +325,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         : (chat.programId?.title || chat.batchId?.batchName || 'Group Chat')}
                     </p>
                   </div>
+                  {chat.unreadCount > 0 && (
+                    <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                      {chat.unreadCount}
+                    </span>
+                  )}
                 </button>
               ))
             )}
@@ -360,19 +409,31 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                            >
                               <Pin className={`h-4 w-4 ${c.isPinned ? 'fill-primary' : ''}`} />
                            </button>
-                           <button 
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               if (window.confirm("Remove this chat from your list?")) {
-                                 onRemoveChat(c.id);
-                               }
-                             }}
-                             className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all"
-                             title="Remove Chat"
-                           >
-                              <Trash2 className="h-3.5 w-3.5" />
-                           </button>
-                           <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
+                             <button 
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 if (window.confirm("Remove this chat from your list?")) {
+                                   onRemoveChat(c.id);
+                                 }
+                               }}
+                               className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+                               title="Remove Chat"
+                             >
+                                <Trash2 className="h-3.5 w-3.5" />
+                             </button>
+                             {c.unreadCount > 0 ? (
+                               <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                                  {c.unreadCount}
+                               </span>
+                             ) : (
+                               c.isSenderLast && (
+                                 c.isSeenLast ? (
+                                   <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
+                                 ) : (
+                                   <Check className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                 )
+                               )
+                             )}
                         </div>
                       </div>
                     </div>
@@ -434,11 +495,19 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                            >
                               <Trash2 className="h-3.5 w-3.5" />
                            </button>
-                           {c.unreadCount && (
-                             <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                                {c.unreadCount}
-                             </span>
-                           )}
+                            {c.unreadCount > 0 ? (
+                              <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                                 {c.unreadCount}
+                              </span>
+                            ) : (
+                              c.isSenderLast && (
+                                c.isSeenLast ? (
+                                  <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
+                                ) : (
+                                  <Check className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                )
+                              )
+                            )}
                         </div>
                       </div>
                     </div>

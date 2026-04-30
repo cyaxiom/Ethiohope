@@ -66,8 +66,11 @@ const Login: React.FC = () => {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
       });
 
+      const userType = result.user?.type;
+      const targetUrl = (userType === 'adult' || userType === 'child') ? '/student/courses' : (result.redirectTo || '/dashboard');
+
       setTimeout(() => {
-        navigate(result.redirectTo || '/dashboard');
+        navigate(targetUrl);
       }, 1000);
 
     } catch (err: any) {

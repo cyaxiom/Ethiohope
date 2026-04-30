@@ -16,6 +16,7 @@ import ReactionPicker from './ReactionPicker';
 interface MessageInputProps {
   activeContact: any;
   hasBroadcastPermission: boolean;
+  hasWritePermission: boolean;
   replyingTo: any;
   setReplyingTo: (msg: any) => void;
   editingMessage: any;
@@ -38,6 +39,7 @@ interface MessageInputProps {
 const MessageInput: React.FC<MessageInputProps> = ({
   activeContact,
   hasBroadcastPermission,
+  hasWritePermission,
   replyingTo,
   setReplyingTo,
   editingMessage,
@@ -56,12 +58,26 @@ const MessageInput: React.FC<MessageInputProps> = ({
   pickAndSendEmoji,
   setRecordAudioMode,
 }) => {
+  // Logic to determine if user can write in current chat
+  const canSendInCurrentChat = React.useMemo(() => {
+    if (!hasWritePermission) return false;
+    
+    // Broadcast groups have special logic
+    if (activeContact?.type === 'PROGRAM_GROUP') {
+      return hasBroadcastPermission || !!replyingTo;
+    }
+    
+    return true;
+  }, [hasWritePermission, hasBroadcastPermission, replyingTo, activeContact]);
+
   return (
     <div className="border-t border-border bg-card px-2 md:px-5 py-3 md:py-4">
-      {activeContact?.type === 'PROGRAM_GROUP' && !hasBroadcastPermission && !replyingTo ? (
-        <div className="flex items-center justify-center py-2 px-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-medium italic">
+      {!canSendInCurrentChat ? (
+        <div className="flex items-center justify-center py-2 px-4 bg-muted/50 rounded-xl border border-dashed border-border text-muted-foreground text-xs font-medium italic animate-in fade-in zoom-in-95">
           <Lock className="w-3 h-3 mr-2" />
-          This is a read-only announcement channel.
+          {activeContact?.type === 'PROGRAM_GROUP' 
+            ? "This is a read-only announcement channel." 
+            : "You do not have permission to send messages."}
         </div>
       ) : (
         <>

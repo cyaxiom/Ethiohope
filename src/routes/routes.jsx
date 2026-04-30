@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 // Lazy load components
 const Home = React.lazy(() => import('@pages/Home/Home'));
@@ -311,7 +312,7 @@ export const routes = [
       {
         path: '/student/dashboard',
         name: 'Student Dashboard',
-        element: <StudentDashboard />,
+        element: <Navigate to="/student/courses" replace />,
       },
       {
         path: '/student/courses',

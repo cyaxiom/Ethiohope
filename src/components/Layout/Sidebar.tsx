@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, PanelLeftClose, PanelLeft, Bot, 
@@ -22,7 +23,35 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, roles } = useSelector((state: any) => state.auth);
+  const { user, roles, token } = useSelector((state: any) => state.auth);
+  const [totalUnread, setTotalUnread] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/unread-count`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTotalUnread(res.data.totalUnread || 0);
+      } catch (err) {
+        console.error('Error fetching unread count:', err);
+      }
+    };
+
+    fetchUnreadCount();
+
+    const handleCustomUpdate = () => fetchUnreadCount();
+    window.addEventListener('chat-notification-update', handleCustomUpdate);
+
+    // Refresh every 2 minutes for sidebar efficiency as fallback
+    const interval = setInterval(fetchUnreadCount, 120000);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('chat-notification-update', handleCustomUpdate);
+    };
+  }, [token]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -75,7 +104,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     // Default for students (including child role)
     if (roles.includes('student') || roles.includes('child')) {
       return [
-        { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/courses', icon: BookOpen, label: 'Courses' },
         { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/student/sessions', icon: Video, label: 'Live Classes' },
@@ -203,6 +231,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                     className="relative"
                   >
                     <item.icon className={clsx("flex-shrink-0 w-5 h-5 transition-colors duration-300", isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500")} />
+                    {item.label === 'Chat' && totalUnread > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-black px-1 rounded-full min-w-[16px] h-[16px] flex items-center justify-center border-2 border-white shadow-sm z-10">
+                        {totalUnread > 99 ? '99+' : totalUnread}
+                      </span>
+                    )}
                     {isActive && (
                       <motion.div 
                         layoutId="active-dot"

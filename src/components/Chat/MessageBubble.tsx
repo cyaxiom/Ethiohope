@@ -14,7 +14,9 @@ import {
   Bell,
   FileText,
   Download,
-  X
+  X,
+  Check,
+  CheckCheck
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -47,7 +49,8 @@ interface MessageBubbleProps {
   chatPermissions?: {
     canReply: boolean;
     canReact: boolean;
-    canDelete: boolean;
+    canDeleteOwn: boolean;
+    canDeleteAll: boolean;
     canReport: boolean;
     canForward: boolean;
     canEditOwn: boolean;
@@ -67,7 +70,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   chatPermissions = {
     canReply: true,
     canReact: true,
-    canDelete: false,
+    canDeleteOwn: true,
+    canDeleteAll: false,
     canReport: true,
     canForward: true,
     canEditOwn: true,
@@ -86,6 +90,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const senderIdStr = (message.senderId?._id || message.senderId || message.childId?._id || message.childId || '').toString();
+  const isSeen = (message.isReadBy || []).some((id: any) => {
+    const idStr = (id._id || id).toString();
+    return idStr !== senderIdStr;
+  });
 
   return (
     <>
@@ -107,15 +117,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </>
         )}
         <div className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
-            }}
-            className="p-1"
-          >
-            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-          </button>
+          {!message.isDeleted && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              className="p-1"
+            >
+              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
           {isMenuOpen && (
             <div className="absolute top-0 left-0 z-50 translate-y-6">
               <Dropdown
@@ -142,7 +154,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                       onEdit(message);
                     },
                   },
-                  (chatPermissions.canDelete || isSender) && {
+                  (chatPermissions.canDeleteAll || (chatPermissions.canDeleteOwn && isSender)) && {
                     icon: <Trash2 className="h-4 w-4 text-red-500" />,
                     label: 'Delete',
                     destructive: true,
@@ -229,7 +241,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               </div>
             )}
 
-            {message.type === 'audio' ? (
+            {message.isDeleted ? (
+              <div className="flex items-center gap-2 text-muted-foreground italic opacity-70 py-1">
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="text-sm">This message was deleted</span>
+              </div>
+            ) : message.type === 'audio' ? (
               <div className="flex items-center gap-3 min-w-[220px]">
                 <audio
                   controls
@@ -302,12 +319,34 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                   </div>
                 )}
                 {message.text && (
-                  <p className="text-sm leading-relaxed text-card-foreground whitespace-pre-wrap break-words max-w-xs md:max-w-sm lg:max-w-md">
-                    {message.text.trim()}
-                  </p>
+                  <div className="flex flex-col">
+                    <p className="text-sm leading-relaxed text-card-foreground whitespace-pre-wrap break-words max-w-xs md:max-w-sm lg:max-w-md">
+                      {message.text.trim()}
+                    </p>
+                    {message.isEdited && (
+                      <span className={`text-[10px] mt-1 italic font-medium opacity-60 ${isSender ? 'text-primary-foreground text-right' : 'text-muted-foreground text-left'}`}>
+                        (edited)
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             )}
+
+            <div className="flex items-center justify-end gap-1 mt-1 -mb-1 opacity-70">
+              <span className={`text-[9px] ${isSender ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                {message.time || (message.createdAt ? dayjs(message.createdAt).format('h:mm A') : '')}
+              </span>
+              {isSender && !message.isDeleted && (
+                <div className="flex items-center">
+                  {isSeen ? (
+                    <CheckCheck className="h-3 w-3 text-primary-foreground" />
+                  ) : (
+                    <Check className="h-3 w-3 text-primary-foreground/60" />
+                  )}
+                </div>
+              )}
+            </div>
 
             {message.isStarred && (
               <Star className="absolute -top-1.5 -right-1.5 h-4 w-4 text-yellow-400 fill-yellow-400 border-2 border-white rounded-full bg-white" />

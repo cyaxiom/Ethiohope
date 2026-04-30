@@ -21,8 +21,10 @@ const PermissionCheckboxList: React.FC<PermissionCheckboxListProps> = ({
   // Group permissions by resource (e.g., user, role, dashboard)
   const grouped = useMemo(() => {
     const map: Record<string, Permission[]> = {};
-    allPermissions.forEach((perm) => {
-      const resource = perm.resource || perm.key.split('.')[0];
+    allPermissions
+      .filter((p) => p.key !== 'chat.delete') // Exclude deprecated key
+      .forEach((perm) => {
+        const resource = perm.resource || perm.key.split('.')[0];
       if (!map[resource]) map[resource] = [];
       map[resource].push(perm);
     });
@@ -105,8 +107,39 @@ const PermissionCheckboxList: React.FC<PermissionCheckboxListProps> = ({
     );
   }
 
-  const totalCount = allPermissions.length;
-  const selectedCount = selectedKeys.length;
+  const getFriendlyLabel = (perm: Permission) => {
+    const labels: Record<string, string> = {
+      'chat.read': 'Manage Chat Groups (View Directory)',
+      'chat.read.all': 'Audit Private Messages (Monitor All Access)',
+      'chat.write': 'Send Messages',
+      'chat.broadcast': 'Official Announcements (Broadcast)',
+      'chat.reply': 'Allow Replying',
+      'chat.react': 'Allow Reactions',
+      'chat.delete.own': 'Delete Own Messages',
+      'chat.delete.all': 'Delete Any Message (Admin Monitor)',
+      'chat.direct.start': 'Start New Private Chats',
+      'chat.direct.search.all': 'Search All Program Members',
+      'chat.edit.own': 'Edit Own Messages',
+      'chat.edit.all': 'Edit Any Message',
+      'dashboard.admin': 'Admin Dashboard Access',
+      'dashboard.parent': 'Parent Portal Access',
+      'dashboard.student': 'Student Portal Access',
+      'dashboard.instructor': 'Instructor Portal Access',
+    };
+
+    if (labels[perm.key]) return labels[perm.key];
+    
+    // Fallback: capitalize the action or last part of key
+    const raw = perm.action || perm.key.split('.').pop() || '';
+    return raw.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const cleanedPermissions = useMemo(() => 
+    allPermissions.filter(p => p.key !== 'chat.delete'), 
+  [allPermissions]);
+
+  const totalCount = cleanedPermissions.length;
+  const filteredSelectedCount = selectedKeys.filter(k => k !== 'chat.delete').length;
 
   return (
     <div className="space-y-3">
@@ -146,7 +179,7 @@ const PermissionCheckboxList: React.FC<PermissionCheckboxListProps> = ({
 
       {/* Selection counter */}
       <div className="text-xs text-gray-500 font-medium">
-        {selectedCount} of {totalCount} permissions selected
+        {filteredSelectedCount} of {totalCount} permissions selected
       </div>
 
       {/* Permission Groups */}
@@ -237,8 +270,8 @@ const PermissionCheckboxList: React.FC<PermissionCheckboxListProps> = ({
                           className="sr-only"
                         />
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="text-sm font-medium text-gray-700 capitalize">
-                            {perm.action || perm.key.split('.').pop()}
+                          <span className="text-sm font-medium text-gray-700">
+                            {getFriendlyLabel(perm)}
                           </span>
                         </div>
                       </label>

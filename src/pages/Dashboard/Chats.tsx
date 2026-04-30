@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, X, Send, Search } from 'lucide-react';
+import { MessageSquare, X, Send, Search, ShieldOff } from 'lucide-react';
 
 import { debounce } from '../../lib/utils';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
@@ -56,6 +56,7 @@ export default function Chats() {
   const [loading, setLoading] = useState(false);
 
   const [isDirectChatEnabled, setIsDirectChatEnabled] = useState(true);
+  const [isGroupChatEnabled, setIsGroupChatEnabled] = useState(true);
 
   const { user, roles: authRoles, permissions: authPermissions, token } = useSelector((state: any) => state.auth || {});
   
@@ -63,16 +64,49 @@ export default function Chats() {
     const code = typeof r === 'string' ? r : r?.code;
     return ['admin', 'super_admin', 'superadmin', 'administrator'].includes(code?.toLowerCase());
   });
+  const isParent = [...(authRoles || []), ...(user?.roles || [])].some(r => {
+    const code = typeof r === 'string' ? r : r?.code;
+    return code?.toLowerCase() === 'parent';
+  });
 
-  const allPermissions = [
-    ...(authPermissions || []),
-    ...(user?.permissions || [])
-  ];
+  // Detect if current user is a child/student (not staff)
+  const isChild = user?.type === 'child' || [...(authRoles || [])].some(r => {
+    const code = typeof r === 'string' ? r : r?.code;
+    return code?.toLowerCase() === 'child';
+  });
+
+  // Only use authPermissions from the login response — don't merge user object
+  // properties which may contain stale or unintended data
+  const allPermissions = [...(authPermissions || [])];
 
   const hasBroadcastPermission = isAdmin || allPermissions.some(p => {
     const key = typeof p === 'string' ? p : p?.key;
     return key === 'chat.broadcast';
   });
+
+  const hasWritePermission = isAdmin || allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.write';
+  });
+
+  // Check if user has the explicit chat.direct.start permission from their role
+  const hasDirectStartPermission = allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.direct.start';
+  });
+  const hasDirectTogglePermission = allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.direct.toggle' || key === 'chat.manage';
+  });
+  const hasGroupTogglePermission = allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.group.toggle' || key === 'chat.manage';
+  });
+  // Admins always can start direct chats; others need the explicit permission
+  const canStartDirectChat = isAdmin || hasDirectStartPermission;
+
+  // Debug: log permission state so issues can be diagnosed
+  console.log('🔑 Chat permissions debug:', { isAdmin, isChild, hasDirectStartPermission, canStartDirectChat, allPermissions });
 
   const authHeader = {
     headers: { Authorization: `Bearer ${token}` },
@@ -80,13 +114,15 @@ export default function Chats() {
   };
 
   const chatPermissions = {
+    canWrite: hasWritePermission,
     canReply: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.reply'),
     canReact: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.react'),
-    canDelete: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete'),
-    canReport: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
-    canForward: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
+    canDeleteOwn: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete.own'),
+    canDeleteAll: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.delete.all'),
     canEditOwn: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.edit.own'),
     canEditAll: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.edit.all'),
+    canReport: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
+    canForward: isAdmin || allPermissions.some(p => (typeof p === 'string' ? p : p?.key) === 'chat.read'),
   };
 
   const socketRef = useRef<any>(null);
@@ -133,7 +169,27 @@ export default function Chats() {
             const currentMessages = c.messages || [];
             const alreadyExists = currentMessages.some((m: any) => m.id === formattedMsg.id || m._id === formattedMsg.id);
             if (alreadyExists) return c;
-            return { ...c, messages: [...currentMessages, formattedMsg] };
+
+            // If this chat is NOT currently active, increment its local unread count
+            const isChatActive = (activeId === conversationId);
+            if (isChatActive) {
+               // Auto-mark as read since we are looking at it
+               axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}/read`, {}, authHeader)
+                .then(() => window.dispatchEvent(new CustomEvent('chat-notification-update')))
+                .catch(err => console.error("Error auto-marking read:", err));
+            } else {
+               window.dispatchEvent(new CustomEvent('chat-notification-update'));
+            }
+
+            return { 
+              ...c, 
+              messages: [...currentMessages, formattedMsg],
+              unreadCount: isChatActive ? 0 : (c.unreadCount || 0) + 1,
+              lastMessage: formattedMsg.text || (formattedMsg.type === 'image' ? '📷 Image' : formattedMsg.type === 'file' ? '📄 File' : '🎤 Audio'),
+              time: formattedMsg.time,
+              isSenderLast: false,
+              isSeenLast: false
+            };
           }
           return c;
         });
@@ -175,6 +231,35 @@ export default function Chats() {
         setContactslist(update);
       });
 
+      socket.on('messages-read', ({ conversationId, readerId }: any) => {
+        const myId = (user?.id || user?._id || '').toString();
+        if (readerId === myId) return;
+
+        const update = (prev: any[]) => prev.map(c => {
+          if (c._id === conversationId || c.id === conversationId) {
+            return {
+              ...c,
+              messages: (c.messages || []).map((m: any) => {
+                 const senderId = (m.senderId?._id || m.senderId || m.childId?._id || m.childId || '').toString();
+                 if (senderId === readerId) return m;
+                 
+                 const currentIsReadBy = m.isReadBy || [];
+                 if (!currentIsReadBy.includes(readerId)) {
+                   return { ...m, isReadBy: [...currentIsReadBy, readerId] };
+                 }
+                 return m;
+              }),
+              isSeenLast: true
+            };
+          }
+          return c;
+        });
+        setProgramChats(update);
+        setBatchChats(update);
+        setContactslist(update);
+        window.dispatchEvent(new CustomEvent('chat-notification-update'));
+      });
+
       socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
       socket.on('added-to-conversation', (data: any) => {
         const convId = data.conversation._id;
@@ -205,15 +290,27 @@ export default function Chats() {
     });
   };
 
+  const processChats = (chats: any[]) => {
+    const myId = (user?.id || user?._id || '').toString();
+    return chats.map((c: any) => {
+      const lastSenderId = (c.lastMessageSenderId?._id || c.lastMessageSenderId || '').toString();
+      return {
+        ...c,
+        id: c._id,
+        isSenderLast: lastSenderId === myId,
+        isSeenLast: (c.lastMessageIsReadBy || []).some((id: any) => (id._id || id).toString() !== lastSenderId)
+      };
+    });
+  };
+
   const fetchMyChats = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/my-chats`, authHeader);
-      const allChats = res.data.data;
+      const allChats = processChats(res.data.data);
 
       setContactslist(prev => mergeMessages(allChats.filter((c: any) => c.type === 'DIRECT'), prev));
       
-      // For non-admins, these are also populated from my-chats memberships
       if (!isAdmin) {
         setProgramChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'), prev));
         setBatchChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'GROUP'), prev));
@@ -230,6 +327,7 @@ export default function Chats() {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/settings`, authHeader);
         setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
+        setIsGroupChatEnabled(res.data.data.isGroupChatEnabled ?? true);
       } catch (err) {
         console.error("Error fetching chat settings:", err);
       }
@@ -239,11 +337,23 @@ export default function Chats() {
 
   const toggleDirectChat = async () => {
     try {
-      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings`, { 
+      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings/direct`, { 
         isDirectChatEnabled: !isDirectChatEnabled 
       }, authHeader);
       setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
       toast.success(`Direct chatting is now ${!isDirectChatEnabled ? 'enabled' : 'disabled'}`);
+    } catch (err) {
+      toast.error("Failed to update settings");
+    }
+  };
+
+  const toggleGroupChat = async () => {
+    try {
+      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings/group`, {
+        isGroupChatEnabled: !isGroupChatEnabled
+      }, authHeader);
+      setIsGroupChatEnabled(res.data.data.isGroupChatEnabled);
+      toast.success(`Group chatting is now ${!isGroupChatEnabled ? 'enabled' : 'disabled'}`);
     } catch (err) {
       toast.error("Failed to update settings");
     }
@@ -311,7 +421,7 @@ export default function Chats() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/programs`, authHeader);
-      setProgramChats(prev => mergeMessages(res.data.data, prev));
+      setProgramChats(prev => mergeMessages(processChats(res.data.data), prev));
     } catch (err) {
       console.error('Error fetching program chats:', err);
     } finally {
@@ -324,7 +434,7 @@ export default function Chats() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/batches`, authHeader);
-      setBatchChats(prev => mergeMessages(res.data.data, prev));
+      setBatchChats(prev => mergeMessages(processChats(res.data.data), prev));
     } catch (err) {
       console.error('Error fetching batch chats:', err);
     } finally {
@@ -334,6 +444,21 @@ export default function Chats() {
 
   useEffect(() => {
     if (!token) return;
+    if (isParent && chatCategory === 'discussion') {
+      setChatCategory(isDirectChatEnabled ? 'direct' : 'announcement');
+      setActiveId(null);
+      return;
+    }
+    if (chatCategory === 'direct' && !isDirectChatEnabled) {
+      setChatCategory('announcement');
+      setActiveId(null);
+      return;
+    }
+    if (chatCategory === 'discussion' && !isGroupChatEnabled) {
+      setChatCategory(isDirectChatEnabled ? 'direct' : 'announcement');
+      setActiveId(null);
+      return;
+    }
     if (isAdmin) {
       if (chatCategory === 'announcement') fetchProgramChats();
       else if (chatCategory === 'discussion') fetchBatchChats();
@@ -341,7 +466,16 @@ export default function Chats() {
     } else {
       fetchMyChats();
     }
-  }, [chatCategory, token, isAdmin]);
+  }, [chatCategory, token, isAdmin, isDirectChatEnabled, isGroupChatEnabled]);
+
+  useEffect(() => {
+    if (!isDirectChatEnabled && chatCategory === 'direct') {
+      setActiveId(null);
+    }
+    if (!isGroupChatEnabled && chatCategory === 'discussion') {
+      setActiveId(null);
+    }
+  }, [isDirectChatEnabled, isGroupChatEnabled, chatCategory]);
 
   const handleSyncMembers = async (chatId: string) => {
     try {
@@ -417,14 +551,18 @@ export default function Chats() {
            }));
 
            const updateMsg = (prev: any[]) => prev.map(c => 
-             (c._id === activeId || c.id === activeId) ? { ...c, messages } : c
+             (c._id === activeId || c.id === activeId) ? { ...c, messages, unreadCount: 0 } : c
            );
            
            if (chatCategory === 'announcement') setProgramChats(updateMsg);
            else if (chatCategory === 'discussion') setBatchChats(updateMsg);
            else setContactslist(updateMsg);
+
+           // MARK AS READ in backend
+           await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/read`, {}, authHeader);
+           window.dispatchEvent(new CustomEvent('chat-notification-update'));
         } catch (err) {
-           console.error("Error fetching messages:", err);
+           console.error("Error fetching messages or marking as read:", err);
         }
      };
      fetchMessages();
@@ -479,6 +617,7 @@ export default function Chats() {
 
         const updateChat = (prev: any[]) => prev.map(c => {
           if (c._id === activeId || c.id === activeId) {
+            const myId = (user?.id || user?._id || '').toString();
             if (editingMessage) {
               return { 
                 ...c, 
@@ -487,7 +626,14 @@ export default function Chats() {
                 ) 
               };
             }
-            return { ...c, messages: [...(c.messages || []), newMessage] };
+            return { 
+              ...c, 
+              messages: [...(c.messages || []), newMessage],
+              lastMessage: newMessage.text || (newMessage.type === 'image' ? '📷 Image' : newMessage.type === 'file' ? '📄 File' : '🎤 Audio'),
+              time: newMessage.time,
+              isSenderLast: true,
+              isSeenLast: false
+            };
           }
           return c;
         });
@@ -786,6 +932,7 @@ export default function Chats() {
         batchChats={batchChats}
         loading={loading}
         isAdmin={isAdmin}
+        isParent={isParent}
         handleGlobalSync={handleGlobalSync}
         fetchProgramChats={fetchProgramChats}
         fetchBatchChats={fetchBatchChats}
@@ -794,6 +941,13 @@ export default function Chats() {
         findUsers={findUsers}
         startDirectChat={startDirectChat}
         fetchMyChats={fetchMyChats}
+        canStartDirectChat={canStartDirectChat}
+        isDirectChatEnabled={isDirectChatEnabled}
+        isGroupChatEnabled={isGroupChatEnabled}
+        canToggleDirectChat={hasDirectTogglePermission}
+        canToggleGroupChat={hasGroupTogglePermission}
+        onToggleDirectChat={toggleDirectChat}
+        onToggleGroupChat={toggleGroupChat}
       />
 
       <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background min-w-0 overflow-hidden w-full`}>
@@ -858,6 +1012,7 @@ export default function Chats() {
             <MessageInput 
               activeContact={activeContact}
               hasBroadcastPermission={hasBroadcastPermission}
+              hasWritePermission={hasWritePermission}
               replyingTo={replyingTo}
               setReplyingTo={setReplyingTo}
               editingMessage={editingMessage}
@@ -960,6 +1115,23 @@ export default function Chats() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
+
+      {((chatCategory === 'direct' && !isDirectChatEnabled) ||
+        (chatCategory === 'discussion' && !isGroupChatEnabled)) && (
+        <div className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center">
+          <div className="pointer-events-auto rounded-2xl border border-border bg-card shadow-xl p-6 text-center max-w-sm mx-4">
+            <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              <ShieldOff className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="font-bold text-foreground mb-1">
+              {chatCategory === 'direct' ? 'Direct Chat Disabled' : 'Group Chat Disabled'}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              This section is deactivated. It will not render chat items until re-activated.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
