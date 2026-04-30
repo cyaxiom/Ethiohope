@@ -87,7 +87,7 @@ const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard')
 const ParentChildren = React.lazy(() => import('@pages/parent/ParentChildren'));
 const ParentCourses = React.lazy(() => import('@pages/parent/ParentCourses'));
 const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
-const StudentDashboard = React.lazy(() => import('@pages/student/StudentDashboard'));
+
 const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
 const StudentCourseDetail = React.lazy(() => import('@pages/student/CourseDetail'));
 const StudentSessions = React.lazy(() => import('@pages/student/StudentSessions'));
