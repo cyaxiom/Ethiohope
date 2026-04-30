@@ -169,7 +169,27 @@ export default function Chats() {
             const currentMessages = c.messages || [];
             const alreadyExists = currentMessages.some((m: any) => m.id === formattedMsg.id || m._id === formattedMsg.id);
             if (alreadyExists) return c;
-            return { ...c, messages: [...currentMessages, formattedMsg] };
+
+            // If this chat is NOT currently active, increment its local unread count
+            const isChatActive = (activeId === conversationId);
+            if (isChatActive) {
+               // Auto-mark as read since we are looking at it
+               axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}/read`, {}, authHeader)
+                .then(() => window.dispatchEvent(new CustomEvent('chat-notification-update')))
+                .catch(err => console.error("Error auto-marking read:", err));
+            } else {
+               window.dispatchEvent(new CustomEvent('chat-notification-update'));
+            }
+
+            return { 
+              ...c, 
+              messages: [...currentMessages, formattedMsg],
+              unreadCount: isChatActive ? 0 : (c.unreadCount || 0) + 1,
+              lastMessage: formattedMsg.text || (formattedMsg.type === 'image' ? '📷 Image' : formattedMsg.type === 'file' ? '📄 File' : '🎤 Audio'),
+              time: formattedMsg.time,
+              isSenderLast: false,
+              isSeenLast: false
+            };
           }
           return c;
         });
@@ -211,6 +231,35 @@ export default function Chats() {
         setContactslist(update);
       });
 
+      socket.on('messages-read', ({ conversationId, readerId }: any) => {
+        const myId = (user?.id || user?._id || '').toString();
+        if (readerId === myId) return;
+
+        const update = (prev: any[]) => prev.map(c => {
+          if (c._id === conversationId || c.id === conversationId) {
+            return {
+              ...c,
+              messages: (c.messages || []).map((m: any) => {
+                 const senderId = (m.senderId?._id || m.senderId || m.childId?._id || m.childId || '').toString();
+                 if (senderId === readerId) return m;
+                 
+                 const currentIsReadBy = m.isReadBy || [];
+                 if (!currentIsReadBy.includes(readerId)) {
+                   return { ...m, isReadBy: [...currentIsReadBy, readerId] };
+                 }
+                 return m;
+              }),
+              isSeenLast: true
+            };
+          }
+          return c;
+        });
+        setProgramChats(update);
+        setBatchChats(update);
+        setContactslist(update);
+        window.dispatchEvent(new CustomEvent('chat-notification-update'));
+      });
+
       socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
       socket.on('added-to-conversation', (data: any) => {
         const convId = data.conversation._id;
@@ -241,15 +290,27 @@ export default function Chats() {
     });
   };
 
+  const processChats = (chats: any[]) => {
+    const myId = (user?.id || user?._id || '').toString();
+    return chats.map((c: any) => {
+      const lastSenderId = (c.lastMessageSenderId?._id || c.lastMessageSenderId || '').toString();
+      return {
+        ...c,
+        id: c._id,
+        isSenderLast: lastSenderId === myId,
+        isSeenLast: (c.lastMessageIsReadBy || []).some((id: any) => (id._id || id).toString() !== lastSenderId)
+      };
+    });
+  };
+
   const fetchMyChats = async () => {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/my-chats`, authHeader);
-      const allChats = res.data.data;
+      const allChats = processChats(res.data.data);
 
       setContactslist(prev => mergeMessages(allChats.filter((c: any) => c.type === 'DIRECT'), prev));
       
-      // For non-admins, these are also populated from my-chats memberships
       if (!isAdmin) {
         setProgramChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'), prev));
         setBatchChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'GROUP'), prev));
@@ -360,7 +421,7 @@ export default function Chats() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/programs`, authHeader);
-      setProgramChats(prev => mergeMessages(res.data.data, prev));
+      setProgramChats(prev => mergeMessages(processChats(res.data.data), prev));
     } catch (err) {
       console.error('Error fetching program chats:', err);
     } finally {
@@ -373,7 +434,7 @@ export default function Chats() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/batches`, authHeader);
-      setBatchChats(prev => mergeMessages(res.data.data, prev));
+      setBatchChats(prev => mergeMessages(processChats(res.data.data), prev));
     } catch (err) {
       console.error('Error fetching batch chats:', err);
     } finally {
@@ -490,14 +551,18 @@ export default function Chats() {
            }));
 
            const updateMsg = (prev: any[]) => prev.map(c => 
-             (c._id === activeId || c.id === activeId) ? { ...c, messages } : c
+             (c._id === activeId || c.id === activeId) ? { ...c, messages, unreadCount: 0 } : c
            );
            
            if (chatCategory === 'announcement') setProgramChats(updateMsg);
            else if (chatCategory === 'discussion') setBatchChats(updateMsg);
            else setContactslist(updateMsg);
+
+           // MARK AS READ in backend
+           await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/read`, {}, authHeader);
+           window.dispatchEvent(new CustomEvent('chat-notification-update'));
         } catch (err) {
-           console.error("Error fetching messages:", err);
+           console.error("Error fetching messages or marking as read:", err);
         }
      };
      fetchMessages();
@@ -552,6 +617,7 @@ export default function Chats() {
 
         const updateChat = (prev: any[]) => prev.map(c => {
           if (c._id === activeId || c.id === activeId) {
+            const myId = (user?.id || user?._id || '').toString();
             if (editingMessage) {
               return { 
                 ...c, 
@@ -560,7 +626,14 @@ export default function Chats() {
                 ) 
               };
             }
-            return { ...c, messages: [...(c.messages || []), newMessage] };
+            return { 
+              ...c, 
+              messages: [...(c.messages || []), newMessage],
+              lastMessage: newMessage.text || (newMessage.type === 'image' ? '📷 Image' : newMessage.type === 'file' ? '📄 File' : '🎤 Audio'),
+              time: newMessage.time,
+              isSenderLast: true,
+              isSeenLast: false
+            };
           }
           return c;
         });

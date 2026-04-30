@@ -7,6 +7,7 @@ import {
   UserCircle,
   UserPlus,
   RefreshCw,
+  Check,
   CheckCheck,
   Pin,
   X,
@@ -324,6 +325,11 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         : (chat.programId?.title || chat.batchId?.batchName || 'Group Chat')}
                     </p>
                   </div>
+                  {chat.unreadCount > 0 && (
+                    <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                      {chat.unreadCount}
+                    </span>
+                  )}
                 </button>
               ))
             )}
@@ -403,19 +409,31 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                            >
                               <Pin className={`h-4 w-4 ${c.isPinned ? 'fill-primary' : ''}`} />
                            </button>
-                           <button 
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               if (window.confirm("Remove this chat from your list?")) {
-                                 onRemoveChat(c.id);
-                               }
-                             }}
-                             className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all"
-                             title="Remove Chat"
-                           >
-                              <Trash2 className="h-3.5 w-3.5" />
-                           </button>
-                           <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
+                             <button 
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 if (window.confirm("Remove this chat from your list?")) {
+                                   onRemoveChat(c.id);
+                                 }
+                               }}
+                               className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+                               title="Remove Chat"
+                             >
+                                <Trash2 className="h-3.5 w-3.5" />
+                             </button>
+                             {c.unreadCount > 0 ? (
+                               <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                                  {c.unreadCount}
+                               </span>
+                             ) : (
+                               c.isSenderLast && (
+                                 c.isSeenLast ? (
+                                   <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
+                                 ) : (
+                                   <Check className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                 )
+                               )
+                             )}
                         </div>
                       </div>
                     </div>
@@ -477,11 +495,19 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                            >
                               <Trash2 className="h-3.5 w-3.5" />
                            </button>
-                           {c.unreadCount && (
-                             <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                                {c.unreadCount}
-                             </span>
-                           )}
+                            {c.unreadCount > 0 ? (
+                              <span className="h-5 min-w-[1.25rem] flex items-center justify-center px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                                 {c.unreadCount}
+                              </span>
+                            ) : (
+                              c.isSenderLast && (
+                                c.isSeenLast ? (
+                                  <CheckCheck className="h-3.5 w-3.5 text-primary/70" />
+                                ) : (
+                                  <Check className="h-3.5 w-3.5 text-muted-foreground/50" />
+                                )
+                              )
+                            )}
                         </div>
                       </div>
                     </div>

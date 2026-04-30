@@ -14,7 +14,9 @@ import {
   Bell,
   FileText,
   Download,
-  X
+  X,
+  Check,
+  CheckCheck
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -88,6 +90,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const senderIdStr = (message.senderId?._id || message.senderId || message.childId?._id || message.childId || '').toString();
+  const isSeen = (message.isReadBy || []).some((id: any) => {
+    const idStr = (id._id || id).toString();
+    return idStr !== senderIdStr;
+  });
 
   return (
     <>
@@ -324,6 +332,21 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                 )}
               </div>
             )}
+
+            <div className="flex items-center justify-end gap-1 mt-1 -mb-1 opacity-70">
+              <span className={`text-[9px] ${isSender ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                {message.time || (message.createdAt ? dayjs(message.createdAt).format('h:mm A') : '')}
+              </span>
+              {isSender && !message.isDeleted && (
+                <div className="flex items-center">
+                  {isSeen ? (
+                    <CheckCheck className="h-3 w-3 text-primary-foreground" />
+                  ) : (
+                    <Check className="h-3 w-3 text-primary-foreground/60" />
+                  )}
+                </div>
+              )}
+            </div>
 
             {message.isStarred && (
               <Star className="absolute -top-1.5 -right-1.5 h-4 w-4 text-yellow-400 fill-yellow-400 border-2 border-white rounded-full bg-white" />
