@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, X, Send, Search } from 'lucide-react';
+import { MessageSquare, X, Send, Search, ShieldOff } from 'lucide-react';
 
 import { debounce } from '../../lib/utils';
 import { ThemeToggle } from '@components/ThemeToggle/ThemeToggle';
@@ -56,6 +56,7 @@ export default function Chats() {
   const [loading, setLoading] = useState(false);
 
   const [isDirectChatEnabled, setIsDirectChatEnabled] = useState(true);
+  const [isGroupChatEnabled, setIsGroupChatEnabled] = useState(true);
 
   const { user, roles: authRoles, permissions: authPermissions, token } = useSelector((state: any) => state.auth || {});
   
@@ -88,6 +89,14 @@ export default function Chats() {
   const hasDirectStartPermission = allPermissions.some(p => {
     const key = typeof p === 'string' ? p : p?.key;
     return key === 'chat.direct.start';
+  });
+  const hasDirectTogglePermission = allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.direct.toggle' || key === 'chat.manage';
+  });
+  const hasGroupTogglePermission = allPermissions.some(p => {
+    const key = typeof p === 'string' ? p : p?.key;
+    return key === 'chat.group.toggle' || key === 'chat.manage';
   });
   // Admins always can start direct chats; others need the explicit permission
   const canStartDirectChat = isAdmin || hasDirectStartPermission;
@@ -253,6 +262,7 @@ export default function Chats() {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/settings`, authHeader);
         setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
+        setIsGroupChatEnabled(res.data.data.isGroupChatEnabled ?? true);
       } catch (err) {
         console.error("Error fetching chat settings:", err);
       }
@@ -262,11 +272,23 @@ export default function Chats() {
 
   const toggleDirectChat = async () => {
     try {
-      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings`, { 
+      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings/direct`, { 
         isDirectChatEnabled: !isDirectChatEnabled 
       }, authHeader);
       setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
       toast.success(`Direct chatting is now ${!isDirectChatEnabled ? 'enabled' : 'disabled'}`);
+    } catch (err) {
+      toast.error("Failed to update settings");
+    }
+  };
+
+  const toggleGroupChat = async () => {
+    try {
+      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings/group`, {
+        isGroupChatEnabled: !isGroupChatEnabled
+      }, authHeader);
+      setIsGroupChatEnabled(res.data.data.isGroupChatEnabled);
+      toast.success(`Group chatting is now ${!isGroupChatEnabled ? 'enabled' : 'disabled'}`);
     } catch (err) {
       toast.error("Failed to update settings");
     }
@@ -357,6 +379,16 @@ export default function Chats() {
 
   useEffect(() => {
     if (!token) return;
+    if (chatCategory === 'direct' && !isDirectChatEnabled) {
+      setChatCategory('announcement');
+      setActiveId(null);
+      return;
+    }
+    if (chatCategory === 'discussion' && !isGroupChatEnabled) {
+      setChatCategory(isDirectChatEnabled ? 'direct' : 'announcement');
+      setActiveId(null);
+      return;
+    }
     if (isAdmin) {
       if (chatCategory === 'announcement') fetchProgramChats();
       else if (chatCategory === 'discussion') fetchBatchChats();
@@ -364,7 +396,16 @@ export default function Chats() {
     } else {
       fetchMyChats();
     }
-  }, [chatCategory, token, isAdmin]);
+  }, [chatCategory, token, isAdmin, isDirectChatEnabled, isGroupChatEnabled]);
+
+  useEffect(() => {
+    if (!isDirectChatEnabled && chatCategory === 'direct') {
+      setActiveId(null);
+    }
+    if (!isGroupChatEnabled && chatCategory === 'discussion') {
+      setActiveId(null);
+    }
+  }, [isDirectChatEnabled, isGroupChatEnabled, chatCategory]);
 
   const handleSyncMembers = async (chatId: string) => {
     try {
@@ -818,6 +859,12 @@ export default function Chats() {
         startDirectChat={startDirectChat}
         fetchMyChats={fetchMyChats}
         canStartDirectChat={canStartDirectChat}
+        isDirectChatEnabled={isDirectChatEnabled}
+        isGroupChatEnabled={isGroupChatEnabled}
+        canToggleDirectChat={hasDirectTogglePermission}
+        canToggleGroupChat={hasGroupTogglePermission}
+        onToggleDirectChat={toggleDirectChat}
+        onToggleGroupChat={toggleGroupChat}
       />
 
       <main className={`${!isMobileSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col flex-1 relative h-full bg-background min-w-0 overflow-hidden w-full`}>
@@ -985,6 +1032,23 @@ export default function Chats() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}} />
+
+      {((chatCategory === 'direct' && !isDirectChatEnabled) ||
+        (chatCategory === 'discussion' && !isGroupChatEnabled)) && (
+        <div className="fixed inset-0 z-30 pointer-events-none flex items-center justify-center">
+          <div className="pointer-events-auto rounded-2xl border border-border bg-card shadow-xl p-6 text-center max-w-sm mx-4">
+            <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+              <ShieldOff className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="font-bold text-foreground mb-1">
+              {chatCategory === 'direct' ? 'Direct Chat Disabled' : 'Group Chat Disabled'}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              This section is deactivated. It will not render chat items until re-activated.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

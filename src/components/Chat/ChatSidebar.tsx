@@ -13,6 +13,8 @@ import {
   MessageSquare,
   Loader2,
   Trash2,
+  MessageCircle,
+  Users,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import Dropdown from './Dropdown';
@@ -40,6 +42,12 @@ interface ChatSidebarProps {
   onTogglePin: (conversationId: string) => void;
   fetchMyChats: () => void;
   canStartDirectChat: boolean;
+  isDirectChatEnabled: boolean;
+  isGroupChatEnabled: boolean;
+  canToggleDirectChat: boolean;
+  canToggleGroupChat: boolean;
+  onToggleDirectChat: () => void;
+  onToggleGroupChat: () => void;
 }
 
 import { UserSearch, MessageSquareOff, Plus } from 'lucide-react';
@@ -65,6 +73,12 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onTogglePin,
   fetchMyChats,
   canStartDirectChat,
+  isDirectChatEnabled,
+  isGroupChatEnabled,
+  canToggleDirectChat,
+  canToggleGroupChat,
+  onToggleDirectChat,
+  onToggleGroupChat,
 }) => {
   const [userSearchResults, setUserSearchResults] = React.useState<any[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = React.useState(false);
@@ -105,6 +119,24 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
       <div className="p-5 flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Messaging</h1>
         <div className="flex items-center gap-1">
+          {canToggleDirectChat && (
+            <button
+              onClick={onToggleDirectChat}
+              className={`${ICON_BTN} p-2 rounded-full ${isDirectChatEnabled ? 'text-emerald-600' : 'text-rose-600'} hover:bg-muted`}
+              title={`Direct chat is ${isDirectChatEnabled ? 'active' : 'inactive'} - click to ${isDirectChatEnabled ? 'deactivate' : 'activate'}`}
+            >
+              <MessageCircle className="h-5 w-5" />
+            </button>
+          )}
+          {canToggleGroupChat && (
+            <button
+              onClick={onToggleGroupChat}
+              className={`${ICON_BTN} p-2 rounded-full ${isGroupChatEnabled ? 'text-emerald-600' : 'text-rose-600'} hover:bg-muted`}
+              title={`Group chat is ${isGroupChatEnabled ? 'active' : 'inactive'} - click to ${isGroupChatEnabled ? 'deactivate' : 'activate'}`}
+            >
+              <Users className="h-5 w-5" />
+            </button>
+          )}
           <button
             onClick={() => window.location.reload()}
             className={`${ICON_BTN} p-2 rounded-full text-muted-foreground`}
@@ -118,7 +150,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
       <div className="px-5 mb-4">
         <div className="flex flex-col gap-3">
-          {canStartDirectChat && (
+          {canStartDirectChat && isDirectChatEnabled && (
             <div className="relative group">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <input
@@ -232,18 +264,22 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
 
           <div className="flex p-1 bg-muted/60 rounded-xl">
-            <button
-              onClick={() => setChatCategory('direct')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-            >
-              Direct
-            </button>
-            <button
-              onClick={() => setChatCategory('discussion')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-            >
-              Groups
-            </button>
+            {isDirectChatEnabled && (
+              <button
+                onClick={() => setChatCategory('direct')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                Direct
+              </button>
+            )}
+            {isGroupChatEnabled && (
+              <button
+                onClick={() => setChatCategory('discussion')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              >
+                Groups
+              </button>
+            )}
             <button
               onClick={() => setChatCategory('announcement')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
@@ -251,6 +287,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
               Programs
             </button>
           </div>
+
         </div>
       </div>
 
