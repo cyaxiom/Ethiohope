@@ -240,13 +240,15 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                 </button>
               )}
               
-              <button
-                onClick={() => { setShowPasswordModal(true); onClose(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-              >
-                <KeyRound className="w-4 h-4" />
-                <span>Change Password</span>
-              </button>
+              {!roles.includes('child') && !roles.includes('student') && (
+                <button
+                  onClick={() => { setShowPasswordModal(true); onClose(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>Change Password</span>
+                </button>
+              )}
 
               <div className="h-px bg-gray-50 my-1 mx-2" />
 

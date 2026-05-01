@@ -253,6 +253,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                     {[
                       { label: 'Full Name', value: `${child.firstname} ${child.lastname}` },
                       { label: 'Username', value: `@${child.username}` },
+                      ...(child.plainPin ? [{ label: 'Access PIN', value: child.plainPin }] : []),
                       { label: 'Birthdate', value: new Date(child.birthdate).toLocaleDateString() },
                       { label: 'Gender', value: child.gender.toUpperCase() },
                       { label: 'Current Grade', value: `Grade ${child.grade}` },
