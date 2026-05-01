@@ -49,24 +49,12 @@ const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
 const Profile = React.lazy(() => import('@pages/Dashboard/Profile'));
 const Settings = React.lazy(() => import('@pages/Dashboard/settings/Settings'));
 // Academy routes removed
-// Services routes
-const EthiohopeServices = React.lazy(
-  () => import('@pages/Services/EthiohopeService/EthiohopeService'),
-);
-const ProgrammingService = React.lazy(
-  () => import('@pages/Services/ProgrammingService/ProgrammingService'),
-);
-
-const KidsTutoring = React.lazy(
-  () => import('@pages/Services/KidsTutoring/KidsTutoring'),
-);
+// Services routes removed
 // const ProjectServices = React.lazy(() =>
 //   import('@pages/Services/ProjectServices/ProjectServices')
 // );
 
-// CourseDetail & AllCourses
-const CourseDetail = React.lazy(() => import('@pages/Home/components/CourseDetail'));
-const AllCourses = React.lazy(() => import('@pages/Home/components/AllCourses'));
+// Course routes removed
 
 // Admin routes
 const DashboardLayout = React.lazy(() => import('@components/Layout/DashboardLayout'));
@@ -114,37 +102,6 @@ export const routes = [
       { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
       { path: '/about/contact', name: 'Contact', element: <Contact /> },
       { path: '/about/teams', name: 'Teams', element: <Teams /> },
-      // Services routes
-      {
-        path: '/services/ethiohope-service',
-        name: 'EthiohopeServices',
-        element: <EthiohopeServices />,
-      },
-      {
-        path: '/services/kids-tutoring',
-        name: 'KidsTutoring',
-        element: <KidsTutoring />,
-      },
-      {
-        path: '/services/programming-service',
-        name: 'ProgrammingService',
-        element: <ProgrammingService />,
-      },
-      {
-        path: '/academy/kids-programming/course/:id',
-        name: 'CourseDetail',
-        element: <CourseDetail />,
-      },
-      {
-        path: '/academy/kids-programming/all_kids_course',
-        name: 'AllCourses',
-        element: <AllCourses />,
-      },
-      {
-        path: '/programs',
-        name: 'Programs',
-        element: <AllCourses />,
-      },
       { path: '/forbidden', name: 'Forbidden', element: <Forbidden /> },
       // 404 route inside PublicLayout so it has header/footer
       { path: '*', name: 'NotFound', element: <NotFound /> },

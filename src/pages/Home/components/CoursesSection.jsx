@@ -83,10 +83,7 @@ const CoursesSection = () => {
             {getCurrentPageCourses().map((program) => (
               <div
                 key={program._id}
-                onClick={() =>
-                  navigate(`/academy/kids-programming/course/${program._id}`)
-                }
-                className="bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer group h-full flex flex-col"
+                className="bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 group h-full flex flex-col"
               >
                 {/* Image Section */}
                 <div className="relative h-48 bg-muted/20 overflow-hidden">
@@ -118,10 +115,7 @@ const CoursesSection = () => {
                     </span>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between group-hover:text-blue-600 transition-colors">
-                    <span className="text-primary font-bold text-sm">See Details</span>
-                    <span className="text-primary font-bold transition-transform group-hover:translate-x-1">→</span>
-                  </div>
+                  {/* Card Footer Removed */}
                 </div>
               </div>
             ))}
