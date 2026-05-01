@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   User as UserIcon, 
@@ -33,6 +33,7 @@ interface UserProfileDropdownProps {
 const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClose }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   
   const auth = useSelector((state: RootState) => state.auth);
@@ -113,6 +114,15 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
     return '/dashboard/chats';
   };
 
+  // Helper visibility checks
+  const isAtHome = location.pathname === '/';
+  const isAtDashboard = 
+    location.pathname.startsWith('/admin') || 
+    location.pathname.startsWith('/teacher') || 
+    location.pathname.startsWith('/parent') || 
+    location.pathname.startsWith('/student') || 
+    location.pathname.startsWith('/instructor');
+
   return (
     <>
       <AnimatePresence>
@@ -166,14 +176,16 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
             {/* Menu Items */}
             <div className="p-2 space-y-1 bg-white">
               
-              {/* 0. Home */}
-              <button
-                onClick={() => { navigate('/'); onClose(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-              >
-                <HomeIcon className="w-4 h-4" />
-                <span>Home</span>
-              </button>
+              {/* 0. Home - Hide if already at home */}
+              {!isAtHome && (
+                <button
+                  onClick={() => { navigate('/'); onClose(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span>Home</span>
+                </button>
+              )}
 
               {/* 1. Verify Email (if not verified) */}
               {!isVerified && user?.email && (
@@ -192,8 +204,8 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                 </button>
               )}
 
-              {/* 2. Dashboard - show only if user has upgraded roles */}
-              {hasUpgradedRoles && (
+              {/* 2. Dashboard - show only if user has upgraded roles AND not already at dashboard */}
+              {hasUpgradedRoles && !isAtDashboard && (
                 <button
                   onClick={() => { navigate(getPrimaryDashboard()); onClose(); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
@@ -202,7 +214,6 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                   <span>Dashboard</span>
                 </button>
               )}
-
 
               {/* 4. Switch Profile - only show if user has multiple meaningful roles */}
               {canSwitchProfile && (
@@ -228,7 +239,6 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                   </div>
                 </button>
               )}
-
               
               <button
                 onClick={() => { setShowPasswordModal(true); onClose(); }}
