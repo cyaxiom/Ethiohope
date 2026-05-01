@@ -58,7 +58,9 @@ const authSlice = createSlice({
       if (storedActiveRole && state.roles.includes(storedActiveRole)) {
         state.activeRole = storedActiveRole;
       } else {
-        state.activeRole = state.roles.length > 0 ? state.roles[0] : null;
+        // Prioritize roles that are NOT 'user' to ensure they land on a meaningful dashboard
+        const meaningfulRoles = state.roles.filter(r => r !== 'user');
+        state.activeRole = meaningfulRoles.length > 0 ? meaningfulRoles[0] : (state.roles.length > 0 ? state.roles[0] : null);
       }
       
       state.permissions = permissions ?? [];
