@@ -266,7 +266,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             )}
           </div>
 
-          {!isParent && (
+          {!isAdmin && isParent ? null : (
             <div className="flex p-1 bg-muted/60 rounded-xl">
               {isDirectChatEnabled && (
                 <button
