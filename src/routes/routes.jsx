@@ -48,6 +48,10 @@ const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
 const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
 const Profile = React.lazy(() => import('@pages/Dashboard/Profile'));
 const Settings = React.lazy(() => import('@pages/Dashboard/settings/Settings'));
+
+// CourseDetail
+const CourseDetail = React.lazy(() => import('@pages/Home/components/CourseDetail'));
+
 // Academy routes removed
 // Services routes removed
 // const ProjectServices = React.lazy(() =>
@@ -102,6 +106,11 @@ export const routes = [
       { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
       { path: '/about/contact', name: 'Contact', element: <Contact /> },
       { path: '/about/teams', name: 'Teams', element: <Teams /> },
+      {
+        path: '/academy/kids-programming/course/:id',
+        name: 'CourseDetail',
+        element: <CourseDetail />,
+      },
       { path: '/forbidden', name: 'Forbidden', element: <Forbidden /> },
       // 404 route inside PublicLayout so it has header/footer
       { path: '*', name: 'NotFound', element: <NotFound /> },
