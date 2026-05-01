@@ -6,6 +6,7 @@ import {
   Info
 } from 'lucide-react';
 import Avatar from './Avatar';
+import { formatLastSeen } from '@/lib/utils';
 
 const ICON_BTN = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 py-2 px-0";
 
@@ -47,7 +48,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <p className="text-[11px] font-medium text-muted-foreground hidden md:block">
             {activeContact?.isOnline
               ? 'Active Now'
-              : 'Last seen recently'}
+              : formatLastSeen(activeContact?.lastSeen)}
           </p>
         </div>
       </div>

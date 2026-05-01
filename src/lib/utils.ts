@@ -76,5 +76,24 @@ export function getImageUrl(path: string | undefined): string {
   return `${serverRoot}${path}`;
 }
 
+/**
+ * Format last seen date into human readable string
+ */
+export function formatLastSeen(date: string | Date | null): string {
+  if (!date) return 'Offline';
+  const d = new Date(date);
+  const now = new Date();
+  const diffInMs = now.getTime() - d.getTime();
+  const diffInMins = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMins < 1) return 'Last seen just now';
+  if (diffInMins < 60) return `Last seen ${diffInMins}m ago`;
+  if (diffInHours < 24) return `Last seen ${diffInHours}h ago`;
+  if (diffInDays < 7) return `Last seen ${diffInDays}d ago`;
+  return `Last seen on ${d.toLocaleDateString()}`;
+}
+
 const utils = { cn, formatNumber, truncate, getInitials, debounce, isInViewport, getImageUrl };
 export default utils;
