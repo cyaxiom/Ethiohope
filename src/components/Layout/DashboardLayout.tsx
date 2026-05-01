@@ -17,7 +17,7 @@ export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed for better mobile UX
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
-  const { roles } = useSelector((state: any) => state.auth);
+  const { roles, activeRole } = useSelector((state: any) => state.auth);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -30,7 +30,9 @@ export const DashboardLayout: React.FC = () => {
 
   // Sync nav items with Sidebar items for the mobile horizontal bar
   const getNavItems = () => {
-    if (roles.includes('admin') || roles.includes('super_admin')) {
+    const currentRole = activeRole || (roles.length > 0 ? roles[0] : null);
+
+    if (currentRole === 'admin' || currentRole === 'super_admin') {
       return [
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
@@ -45,7 +47,7 @@ export const DashboardLayout: React.FC = () => {
       ];
     }
     
-    if (roles.includes('teacher')) {
+    if (currentRole === 'teacher') {
       return [
         { path: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/teacher/classes', icon: BookOpen, label: 'Classes' },
@@ -54,7 +56,7 @@ export const DashboardLayout: React.FC = () => {
       ];
     }
 
-    if (roles.includes('parent')) {
+    if (currentRole === 'parent') {
       return [
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
@@ -64,7 +66,7 @@ export const DashboardLayout: React.FC = () => {
       ];
     }
 
-    if (roles.includes('instructor')) {
+    if (currentRole === 'instructor') {
       return [
         { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/training', icon: BookOpen, label: 'Training' },

@@ -31,18 +31,25 @@ export const PermissionRoute: React.FC<PermissionRouteProps> = ({
   allowedRoles = [], 
   requiredPermissions = [] 
 }) => {
-  const { roles, permissions, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { roles, activeRole, permissions, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check roles
-  const hasRole = allowedRoles.length === 0 || roles.some((role: string) => allowedRoles.includes(role));
+  // Check roles using activeRole
+  const currentRole = activeRole || (roles.length > 0 ? roles[0] : null);
+  const hasRole = allowedRoles.length === 0 || (currentRole && allowedRoles.includes(currentRole));
   
-  // Check permissions
+  // Check permissions (Note: permissions in state may be a merged list of all roles)
   const hasPermission = requiredPermissions.length === 0 || requiredPermissions.some((perm: string) => permissions.includes(perm));
 
+  // If the route specifically restricts by role, and the active role doesn't match, block access.
+  if (allowedRoles.length > 0 && !hasRole) {
+    return <Navigate to="/forbidden" replace />;
+  }
+
+  // Otherwise, fallback to the original check
   if (!hasRole && !hasPermission) {
     return <Navigate to="/forbidden" replace />;
   }

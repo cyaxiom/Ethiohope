@@ -26,7 +26,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHovered, setIsHovered }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { roles, token } = useSelector((state: any) => state.auth);
+  const { roles, token, activeRole } = useSelector((state: any) => state.auth);
   const [totalUnread, setTotalUnread] = useState(0);
 
   useEffect(() => {
@@ -67,7 +67,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
   };
 
   const getNavItems = (): NavItem[] => {
-    if (roles.includes('admin') || roles.includes('super_admin')) {
+    const currentRole = activeRole || (roles.length > 0 ? roles[0] : null);
+
+    if (currentRole === 'admin' || currentRole === 'super_admin') {
       return [
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
@@ -82,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
       ];
     }
     
-    if (roles.includes('parent')) {
+    if (currentRole === 'parent') {
       return [
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
@@ -92,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
       ];
     }
 
-    if (roles.includes('instructor')) {
+    if (currentRole === 'instructor') {
       return [
         { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/training', icon: BookOpen, label: 'Training' },
@@ -101,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
       ];
     }
 
-    if (roles.includes('student') || roles.includes('child')) {
+    if (currentRole === 'student' || currentRole === 'child') {
       return [
         { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/courses', icon: BookOpen, label: 'Courses' },
