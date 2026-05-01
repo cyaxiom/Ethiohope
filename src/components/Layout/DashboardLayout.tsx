@@ -16,6 +16,7 @@ export const DashboardLayout: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed for better mobile UX
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const { roles } = useSelector((state: any) => state.auth);
 
   const toggleSidebar = () => {
@@ -82,17 +83,18 @@ export const DashboardLayout: React.FC = () => {
   };
 
   const navItems = getNavItems();
+  const isExpanded = isSidebarOpen || isSidebarHovered;
 
   return (
     <div className="flex bg-gray-50 min-h-screen text-gray-800 font-sans overflow-x-hidden">
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        toggleSidebar={toggleSidebar} 
+        isHovered={isSidebarHovered}
+        setIsHovered={setIsSidebarHovered}
+      />
       
-      <div 
-        className={twMerge(
-          "flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full",
-          isSidebarOpen ? "lg:ml-64" : "lg:ml-20"
-        )}
-      >
+      <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full">
         <Header toggleSidebar={toggleSidebar} isOpen={isSidebarOpen} />
         
         {/* Mobile Horizontal Navigation: Horizontally scrollable list of dashboard pages */}
