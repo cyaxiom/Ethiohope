@@ -45,11 +45,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <h2 className="font-bold text-base truncate">
             {activeContact?.name}
           </h2>
-          <p className="text-[11px] font-medium text-muted-foreground hidden md:block">
-            {activeContact?.isOnline
-              ? 'Active Now'
-              : formatLastSeen(activeContact?.lastSeen)}
-          </p>
+          {activeContact?.type === 'DIRECT' && (
+            <p className="text-[11px] font-medium text-muted-foreground hidden md:block">
+              {activeContact?.isOnline
+                ? 'Active Now'
+                : formatLastSeen(activeContact?.lastSeen)}
+            </p>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">

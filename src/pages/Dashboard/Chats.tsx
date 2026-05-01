@@ -468,13 +468,15 @@ export default function Chats() {
 
   useEffect(() => {
     if (!token) return;
-    if (isParent && chatCategory === 'discussion') {
-      setChatCategory(isDirectChatEnabled ? 'direct' : 'announcement');
+    if (isParent && (chatCategory === 'discussion' || chatCategory === 'announcement')) {
+      setChatCategory('direct');
       setActiveId(null);
       return;
     }
     if (chatCategory === 'direct' && !isDirectChatEnabled) {
-      setChatCategory('announcement');
+      if (!isParent) {
+        setChatCategory('announcement');
+      }
       setActiveId(null);
       return;
     }
