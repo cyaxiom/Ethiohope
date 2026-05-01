@@ -1,8 +1,10 @@
 
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function KidsTutoring() {
+	const navigate = useNavigate();
 	return (
 		<div className="w-full min-h-screen overflow-x-hidden bg-muted/30 dark:bg-muted/60 text-foreground font-sans">
 			<section className="relative pt-20 pb-20 px-4 md:px-12 overflow-hidden">
@@ -22,8 +24,11 @@ export default function KidsTutoring() {
 						<p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0 mb-6">
 							Ethiohope offers personalized tutoring for kids, helping them excel in coding and technology with engaging, hands-on lessons.
 						</p>
-						<button className="btn-primary">
-							Book Your Free Trial
+						<button 
+							onClick={() => navigate('/programs')}
+							className="btn-primary"
+						>
+							Explore Courses
 						</button>
 					</div>
 					{/* Right Image Placeholder */}

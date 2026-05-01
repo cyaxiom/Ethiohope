@@ -92,6 +92,14 @@ export const authApi = api.injectEndpoints({
       }),
       transformResponse: (response: { data: AuthResponse }) => response.data,
     }),
+    changePassword: builder.mutation<GenericResponse, any>({
+      query: (data) => ({
+        url: 'auth/change-password',
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: any) => response.data,
+    }),
   }),
   overrideExisting: false,
 });
@@ -106,4 +114,5 @@ export const {
   useVerifyEmailMutation,
   useConfirmVerificationMutation,
   useSignupMutation,
+  useChangePasswordMutation,
 } = authApi;

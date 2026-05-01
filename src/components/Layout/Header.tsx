@@ -1,6 +1,7 @@
-import React from 'react';
-import { Menu, Search, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, User } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import UserProfileDropdown from '../Navbar/UserProfileDropdown';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
   const location = useLocation();
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   // Simple title mapping based on route
   const getPageTitle = () => {
@@ -21,6 +23,14 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
     if (path.includes('/student/dashboard')) return 'Student Dashboard';
     
     return 'Ethiohope Portal';
+  };
+
+  const handleProfileClick = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const handleProfileDropdownClose = () => {
+    setIsProfileDropdownOpen(false);
   };
 
   return (
@@ -39,8 +49,18 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
 
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:shadow-md transition-all sm:ml-2">
-            <User className="w-4 h-4" />
+          <div className="relative">
+            <div 
+              onClick={handleProfileClick}
+              className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:shadow-md transition-all sm:ml-2"
+            >
+              <User className="w-5 h-5" />
+            </div>
+
+            <UserProfileDropdown
+              isOpen={isProfileDropdownOpen}
+              onClose={handleProfileDropdownClose}
+            />
           </div>
         </div>
       </div>

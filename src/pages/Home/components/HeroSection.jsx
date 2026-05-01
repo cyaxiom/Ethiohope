@@ -1,7 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   // Standard background for the section
   const sectionBgClass = 'bg-muted/30';
   
@@ -26,8 +28,11 @@ const HeroSection = () => {
             coding in the most engaging way and improves their creativity.
             Explore courses based on age, skill level, and interest.
           </p>
-          <button className="bg-primary hover:bg-accent text-primary-foreground px-8 py-3 rounded-lg font-semibold shadow-md transition-all duration-300">
-            Book Your Free Trial
+          <button 
+            onClick={() => navigate('/programs')}
+            className="bg-primary hover:bg-accent text-primary-foreground px-8 py-3 rounded-lg font-semibold shadow-md transition-all duration-300"
+          >
+            Explore Courses
           </button>
         </div>
 

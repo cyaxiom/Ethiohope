@@ -140,6 +140,11 @@ export const routes = [
         name: 'AllCourses',
         element: <AllCourses />,
       },
+      {
+        path: '/programs',
+        name: 'Programs',
+        element: <AllCourses />,
+      },
       { path: '/forbidden', name: 'Forbidden', element: <Forbidden /> },
       // 404 route inside PublicLayout so it has header/footer
       { path: '*', name: 'NotFound', element: <NotFound /> },
