@@ -42,7 +42,7 @@ const CoursesSection = () => {
   }
 
   return (
-    <section className="py-16 px-4 bg-background">
+    <section id="popular-programs" className="py-16 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -146,22 +146,7 @@ const CoursesSection = () => {
           </div>
         )}
 
-        {/* Animated View All Courses Button */}
-        <div className="text-center mt-12">
-          <motion.button
-            onClick={() =>
-              navigate("/academy/kids-programming/all_kids_course")
-            }
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg transition-all duration-300"
-          >
-            Explore All Programs
-          </motion.button>
-        </div>
+        {/* Bottom button removed as it's redundant when scrolling to this section */}
       </div>
     </section>
   );

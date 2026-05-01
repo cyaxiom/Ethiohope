@@ -166,10 +166,10 @@ const CourseDetail = () => {
         <h2 className="text-3xl font-bold mb-4 text-gray-800">Program Not Found</h2>
         <p className="text-muted-foreground mb-8 text-lg">The program you are looking for does not exist or was disabled.</p>
         <button
-          onClick={() => navigate("/academy/kids-programming/all_kids_course")}
+          onClick={() => navigate("/")}
           className="px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow hover:bg-primary/90 font-bold"
         >
-          Browse All Programs
+          Back to Home
         </button>
       </div>
     );
@@ -390,28 +390,20 @@ const CourseDetail = () => {
                 </motion.div>
               ))}
             </div>
-             <div className="text-center mt-8">
-                    <motion.button
-                      onClick={() =>
-                        navigate("/academy/kids-programming/all_kids_course")
-                      }
-                      whileHover={{
-                        scale: 1.05,
-                        boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
-                      }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-10 py-3  bg-primary text-primary-foreground rounded-lg shadow hover:bg-accent"
-                    >
-                      View All Courses
-                    </motion.button>
-                  </div>
+             {/* View All Courses button removed as requested */}
           </div>
         )}
 
         {/* ---------------- BACK BUTTON ---------------- */}
         <div className="text-center py-12">
           <button
-            onClick={() => navigate("/academy/kids-programming")}
+            onClick={() => {
+              navigate("/");
+              // Small delay to ensure the home page is mounted before scrolling
+              setTimeout(() => {
+                document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
             className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg shadow hover:bg-secondary/80"
           >
             ← Back to Courses

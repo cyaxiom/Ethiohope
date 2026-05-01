@@ -29,7 +29,7 @@ const HeroSection = () => {
             Explore courses based on age, skill level, and interest.
           </p>
           <button 
-            onClick={() => navigate('/programs')}
+            onClick={() => document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-primary hover:bg-accent text-primary-foreground px-8 py-3 rounded-lg font-semibold shadow-md transition-all duration-300"
           >
             Explore Courses

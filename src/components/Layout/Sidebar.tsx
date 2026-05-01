@@ -72,7 +72,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/roles', icon: Shield, label: 'Roles' },
         { path: '/admin/users', icon: Users, label: 'Users' },
-        { path: '/admin/programs', icon: Library, label: 'Programs' },
         { path: '/admin/batches', icon: Users, label: 'Batches' },
         { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
         { path: '/admin/courses', icon: BookOpen, label: 'Courses' },

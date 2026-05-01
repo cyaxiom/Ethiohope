@@ -60,7 +60,7 @@ const CTASection = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/programs')}
+            onClick={() => document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
           >
             Explore Courses
