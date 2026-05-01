@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { ChevronDown, Check } from 'lucide-react';
 
-import { logout } from '../../features/auth/authSlice';
+import { logout, setActiveRole } from '../../features/auth/authSlice';
 import { useVerifyEmailMutation } from '../../features/auth/authApi';
 import { RootState } from '../../app/store';
 import CompleteProfileModal from './CompleteProfileModal';
@@ -39,10 +40,12 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
   const auth = useSelector((state: RootState) => state.auth);
   const user = auth?.user;
   const roles = auth?.roles || [];
+  const activeRole = auth?.activeRole;
   
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isSwitchingProfile, setIsSwitchingProfile] = useState(false);
 
   // Handle outside click to close
   useEffect(() => {
@@ -65,6 +68,29 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
     onClose();
     navigate('/login');
     toast.success('Logged out successfully');
+  };
+
+  const handleSwitchRole = (role: string) => {
+    setIsSwitchingProfile(false);
+    onClose();
+    
+    // IMPORTANT: We update localStorage directly instead of dispatching to Redux!
+    // Dispatching to Redux triggers an immediate re-render, causing Guard.tsx 
+    // to flash "Access Denied" before the reload happens. 
+    localStorage.setItem('activeRole', role);
+    toast.success(`Switched to ${role} profile`);
+    
+    // Redirect to the appropriate dashboard with a full page reload
+    // The newly loaded app will read the updated activeRole from localStorage.
+    let targetUrl = '/';
+    if (role === 'super_admin' || role === 'admin') targetUrl = '/admin/dashboard';
+    else if (role === 'instructor') targetUrl = '/instructor/dashboard';
+    else if (role === 'parent') targetUrl = '/parent/dashboard';
+    else if (role === 'student' || role === 'child') targetUrl = '/student/dashboard';
+    
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 100); // Tiny delay to ensure toast and localStorage are ready
   };
 
   const handleVerifyEmail = async () => {
@@ -97,12 +123,14 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
   // Show "My Courses" / "View Courses" only if profile is completed or has upgraded roles
   const showCourses = hasUpgradedRoles || isProfileComplete;
 
-  // Dashboard navigation based on primary role
+  // Dashboard navigation based on active role
   const getPrimaryDashboard = () => {
-    if (roles.includes('super_admin') || roles.includes('admin')) return '/admin/dashboard';
-    if (roles.includes('instructor')) return '/instructor/dashboard';
-    if (roles.includes('parent')) return '/parent/dashboard';
-    if (roles.includes('student') || roles.includes('child')) return '/student/dashboard';
+    const currentRole = activeRole || (roles.length > 0 ? roles[0] : null);
+    if (!currentRole) return '/';
+    if (currentRole === 'super_admin' || currentRole === 'admin') return '/admin/dashboard';
+    if (currentRole === 'instructor') return '/instructor/dashboard';
+    if (currentRole === 'parent') return '/parent/dashboard';
+    if (currentRole === 'student' || currentRole === 'child') return '/student/dashboard';
     return '/';
   };
 
@@ -217,13 +245,44 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
 
               {/* 4. Switch Profile - only show if user has multiple meaningful roles */}
               {canSwitchProfile && (
-                <button
-                  onClick={() => { /* Switch profile logic */ onClose(); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-                >
-                  <RefreshCcw className="w-4 h-4" />
-                  <span>Switch Profile</span>
-                </button>
+                <div className="w-full">
+                  <button
+                    onClick={() => setIsSwitchingProfile(!isSwitchingProfile)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <RefreshCcw className="w-4 h-4" />
+                      <span>Switch Profile</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isSwitchingProfile ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {isSwitchingProfile && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden pl-11 pr-2 space-y-1 mt-1"
+                      >
+                        {meaningfulRoles.map(role => (
+                          <button
+                            key={role}
+                            onClick={() => handleSwitchRole(role)}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition-all ${
+                              activeRole === role 
+                                ? 'bg-blue-100 text-blue-700' 
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                            }`}
+                          >
+                            <span className="capitalize">{role}</span>
+                            {activeRole === role && <Check className="w-3 h-3" />}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               )}
 
               {/* 5. Add Profile - only show if user has only 'user' role and no complete profile */}
