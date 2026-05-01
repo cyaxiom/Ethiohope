@@ -342,6 +342,7 @@ export default function Chats() {
       
       if (!res.data || !res.data.data || !Array.isArray(res.data.data)) {
         console.error("Invalid response format from /my-chats. Received:", typeof res.data === 'string' ? res.data.substring(0, 100) + '...' : res.data);
+        toast.error('Chat list response format error — check API connection.');
         return;
       }
 
@@ -353,8 +354,10 @@ export default function Chats() {
         setProgramChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'PROGRAM_GROUP'), prev));
         setBatchChats(prev => mergeMessages(allChats.filter((c: any) => c.type === 'GROUP'), prev));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching my chats:', err);
+      const msg = err?.response?.data?.message || err?.message || 'Failed to load chats';
+      toast.error(`Chat load error: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -369,9 +372,12 @@ export default function Chats() {
           setIsGroupChatEnabled(res.data.data.isGroupChatEnabled ?? true);
         } else {
           console.error("Invalid response format from /chats/settings:", res.data);
+          toast.error('Could not load chat settings — API may be unreachable.');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching chat settings:", err);
+        const msg = err?.response?.data?.message || err?.message || 'Network error';
+        toast.error(`Settings error: ${msg}`);
       }
     };
     if (token) fetchSettings();
@@ -465,10 +471,13 @@ export default function Chats() {
       const res = await axios.get(`${API_BASE_URL}/admin/chats/programs`, authHeader);
       if (res.data && res.data.data && Array.isArray(res.data.data)) {
         setProgramChats(prev => mergeMessages(processChats(res.data.data), prev));
+      } else {
+        toast.error('Program chats response format error.');
       }
-
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching program chats:', err);
+      const msg = err?.response?.data?.message || err?.message || 'Network error';
+      toast.error(`Program chats error: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -481,9 +490,13 @@ export default function Chats() {
       const res = await axios.get(`${API_BASE_URL}/admin/chats/batches`, authHeader);
       if (res.data && res.data.data && Array.isArray(res.data.data)) {
         setBatchChats(prev => mergeMessages(processChats(res.data.data), prev));
+      } else {
+        toast.error('Batch chats response format error.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching batch chats:', err);
+      const msg = err?.response?.data?.message || err?.message || 'Network error';
+      toast.error(`Batch chats error: ${msg}`);
     } finally {
       setLoading(false);
     }
