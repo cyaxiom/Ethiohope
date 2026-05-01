@@ -124,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
         "bg-white shadow-[4px_0_12px_rgba(0,0,0,0.03)] border-r border-gray-100 z-50 flex flex-col transition-all duration-300 ease-in-out font-sans",
         "lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0",
         isExpanded ? "lg:w-64" : "lg:w-20",
-        "fixed inset-y-0 left-0 w-64 lg:relative lg:translate-x-0",
+        "fixed inset-y-0 left-0 w-64 lg:translate-x-0",
         isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       )}
     >

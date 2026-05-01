@@ -86,7 +86,7 @@ export const DashboardLayout: React.FC = () => {
   const isExpanded = isSidebarOpen || isSidebarHovered;
 
   return (
-    <div className="flex bg-gray-50 min-h-screen text-gray-800 font-sans overflow-x-hidden">
+    <div className="flex bg-gray-50 min-h-screen text-gray-800 font-sans">
       <Sidebar 
         isOpen={isSidebarOpen} 
         toggleSidebar={toggleSidebar} 
