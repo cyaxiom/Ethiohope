@@ -23,6 +23,8 @@ import ChatInfoPanel from '@/components/Chat/ChatInfoPanel';
 // Placeholder for CONTACTS if not found (though it should be here)
 const CONTACTS: any[] = []; 
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
 export default function Chats() {
   // State for layout and basic navigation
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export default function Chats() {
   const canStartDirectChat = isAdmin || hasDirectStartPermission;
 
   // Debug: log permission state so issues can be diagnosed
-  console.log('🔑 Chat permissions debug:', { isAdmin, isChild, hasDirectStartPermission, canStartDirectChat, allPermissions });
+  // console.log('🔑 Chat permissions debug:', { isAdmin, isChild, hasDirectStartPermission, canStartDirectChat, allPermissions });
 
   const authHeader = {
     headers: { Authorization: `Bearer ${token}` },
@@ -131,20 +133,23 @@ export default function Chats() {
     if (!token) return;
 
     import('socket.io-client').then(({ io }) => {
-      const serverUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || 'http://localhost:2707';
-      
+      const serverUrl = API_BASE_URL.replace('/api/v1', '');
+
       const socket = io(serverUrl, {
         auth: { token },
         withCredentials: true,
         transports: ['websocket', 'polling'],
       });
 
-      socket.on('connect', () => console.log('🔌 Socket connected:', socket.id));
+      socket.on('connect', () => {
+        // console.log('🔌 Socket connected:', socket.id)
+      });
 
       socket.on('new-message', ({ conversationId, message }: any) => {
         const senderId = (message.senderId?._id || message.senderId || message.childId?._id || message.childId || '').toString();
         const myId = (user?.id || user?._id || user?.attributes?.id || '').toString();
         
+        /*
         console.log('📩 Real-time Message:', { 
           conversationId, 
           msgId: message._id, 
@@ -152,6 +157,7 @@ export default function Chats() {
           myId, 
           isMe: senderId === myId 
         });
+        */
 
         // Don't duplicate our own sent messages (handled by handleSend)
         if (senderId === myId) return;
@@ -165,7 +171,7 @@ export default function Chats() {
 
         const updateWithDedupe = (prev: any[]) => prev.map(c => {
           if (c._id === conversationId || c.id === conversationId) {
-            console.log('✨ Updating history for chat:', c.name || conversationId);
+            // console.log('✨ Updating history for chat:', c.name || conversationId);
             const currentMessages = c.messages || [];
             const alreadyExists = currentMessages.some((m: any) => m.id === formattedMsg.id || m._id === formattedMsg.id);
             if (alreadyExists) return c;
@@ -174,7 +180,7 @@ export default function Chats() {
             const isChatActive = (activeId === conversationId);
             if (isChatActive) {
                // Auto-mark as read since we are looking at it
-               axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}/read`, {}, authHeader)
+               axios.post(`${API_BASE_URL}/chats/${conversationId}/read`, {}, authHeader)
                 .then(() => window.dispatchEvent(new CustomEvent('chat-notification-update')))
                 .catch(err => console.error("Error auto-marking read:", err));
             } else {
@@ -264,7 +270,7 @@ export default function Chats() {
         const myId = (user?.id || user?._id || '').toString();
         if (userId === myId) return;
 
-        console.log('👤 Presence Update:', { userId, isOnline, lastSeen });
+        // console.log('👤 Presence Update:', { userId, isOnline, lastSeen });
 
         const update = (prev: any[]) => prev.map(c => {
           if (c.type === 'DIRECT') {
@@ -274,7 +280,7 @@ export default function Chats() {
             });
 
             if (isOtherMember) {
-              console.log('✅ Updating presence for chat:', c.name || c.id);
+              // console.log('✅ Updating presence for chat:', c.name || c.id);
               return { ...c, isOnline, lastSeen };
             }
           }
@@ -284,7 +290,9 @@ export default function Chats() {
         setContactslist(update);
       });
 
-      socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
+      socket.on('disconnect', () => {
+        // console.log('🔌 Socket disconnected')
+      });
       socket.on('added-to-conversation', (data: any) => {
         const convId = data.conversation._id;
         socket.emit('join-room', convId);
@@ -330,7 +338,13 @@ export default function Chats() {
   const fetchMyChats = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/my-chats`, authHeader);
+      const res = await axios.get(`${API_BASE_URL}/chats/my-chats`, authHeader);
+      
+      if (!res.data || !res.data.data || !Array.isArray(res.data.data)) {
+        console.error("Invalid response format from /my-chats. Received:", typeof res.data === 'string' ? res.data.substring(0, 100) + '...' : res.data);
+        return;
+      }
+
       const allChats = processChats(res.data.data);
 
       setContactslist(prev => mergeMessages(allChats.filter((c: any) => c.type === 'DIRECT'), prev));
@@ -349,9 +363,13 @@ export default function Chats() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/settings`, authHeader);
-        setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
-        setIsGroupChatEnabled(res.data.data.isGroupChatEnabled ?? true);
+        const res = await axios.get(`${API_BASE_URL}/chats/settings`, authHeader);
+        if (res.data && res.data.data) {
+          setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
+          setIsGroupChatEnabled(res.data.data.isGroupChatEnabled ?? true);
+        } else {
+          console.error("Invalid response format from /chats/settings:", res.data);
+        }
       } catch (err) {
         console.error("Error fetching chat settings:", err);
       }
@@ -361,7 +379,7 @@ export default function Chats() {
 
   const toggleDirectChat = async () => {
     try {
-      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings/direct`, { 
+      const res = await axios.patch(`${API_BASE_URL}/admin/chats/settings/direct`, { 
         isDirectChatEnabled: !isDirectChatEnabled 
       }, authHeader);
       setIsDirectChatEnabled(res.data.data.isDirectChatEnabled);
@@ -373,7 +391,7 @@ export default function Chats() {
 
   const toggleGroupChat = async () => {
     try {
-      const res = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/settings/group`, {
+      const res = await axios.patch(`${API_BASE_URL}/admin/chats/settings/group`, {
         isGroupChatEnabled: !isGroupChatEnabled
       }, authHeader);
       setIsGroupChatEnabled(res.data.data.isGroupChatEnabled);
@@ -386,7 +404,7 @@ export default function Chats() {
   const findUsers = async (query: string) => {
     if (!query) return [];
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/search-users?query=${query}`, authHeader);
+      const res = await axios.get(`${API_BASE_URL}/chats/search-users?query=${query}`, authHeader);
       return res.data.data;
     } catch (err) {
       return [];
@@ -399,7 +417,7 @@ export default function Chats() {
         toast.warning("Direct chatting is currently disabled");
         return;
       }
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/direct`, { targetUserId }, authHeader);
+      const res = await axios.post(`${API_BASE_URL}/chats/direct`, { targetUserId }, authHeader);
       const newConv = res.data.data;
       if (socketRef.current) {
         socketRef.current.emit('join-room', newConv._id || newConv.id);
@@ -415,7 +433,7 @@ export default function Chats() {
 
   const handleRemoveChat = async (conversationId: string) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}`, authHeader);
+      await axios.delete(`${API_BASE_URL}/chats/${conversationId}`, authHeader);
       setContactslist(prev => prev.filter(c => c.id !== conversationId));
       if (activeId === conversationId) {
         setActiveId(null);
@@ -428,7 +446,7 @@ export default function Chats() {
 
   const handleTogglePin = async (conversationId: string) => {
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}/chats/${conversationId}/pin`;
+      const url = `${API_BASE_URL}/chats/${conversationId}/pin`;
       console.log('🔗 Pinning URL:', url);
       const res = await axios.patch(url, {}, authHeader);
       toast.success(res.data.message);
@@ -444,8 +462,11 @@ export default function Chats() {
     if (!isAdmin) return;
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/programs`, authHeader);
-      setProgramChats(prev => mergeMessages(processChats(res.data.data), prev));
+      const res = await axios.get(`${API_BASE_URL}/admin/chats/programs`, authHeader);
+      if (res.data && res.data.data && Array.isArray(res.data.data)) {
+        setProgramChats(prev => mergeMessages(processChats(res.data.data), prev));
+      }
+
     } catch (err) {
       console.error('Error fetching program chats:', err);
     } finally {
@@ -457,8 +478,10 @@ export default function Chats() {
     if (!isAdmin) return;
     try {
       setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/batches`, authHeader);
-      setBatchChats(prev => mergeMessages(processChats(res.data.data), prev));
+      const res = await axios.get(`${API_BASE_URL}/admin/chats/batches`, authHeader);
+      if (res.data && res.data.data && Array.isArray(res.data.data)) {
+        setBatchChats(prev => mergeMessages(processChats(res.data.data), prev));
+      }
     } catch (err) {
       console.error('Error fetching batch chats:', err);
     } finally {
@@ -505,7 +528,7 @@ export default function Chats() {
 
   const handleSyncMembers = async (chatId: string) => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/${chatId}/sync`, {}, authHeader);
+      await axios.post(`${API_BASE_URL}/admin/chats/${chatId}/sync`, {}, authHeader);
       toast.success("Members synced successfully!");
     } catch (err) {
       toast.error("Failed to sync members");
@@ -515,7 +538,7 @@ export default function Chats() {
   const handleGlobalSync = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/admin/chats/sync-all`, {}, authHeader);
+      const res = await axios.post(`${API_BASE_URL}/admin/chats/sync-all`, {}, authHeader);
       toast.success(res.data.message);
       if (chatCategory === 'announcement') fetchProgramChats();
       if (chatCategory === 'discussion') fetchBatchChats();
@@ -568,7 +591,7 @@ export default function Chats() {
         }
 
         try {
-           const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`, authHeader);
+           const res = await axios.get(`${API_BASE_URL}/chats/${activeId}/messages`, authHeader);
            const messages = res.data.data.reverse().map((m: any) => ({
              ...m,
              id: m._id,
@@ -585,7 +608,7 @@ export default function Chats() {
            else setContactslist(updateMsg);
 
            // MARK AS READ in backend
-           await axios.post(`${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/read`, {}, authHeader);
+           await axios.post(`${API_BASE_URL}/chats/${activeId}/read`, {}, authHeader);
            window.dispatchEvent(new CustomEvent('chat-notification-update'));
         } catch (err) {
            console.error("Error fetching messages or marking as read:", err);
@@ -620,12 +643,12 @@ export default function Chats() {
       try {
         const res = editingMessage 
           ? await axios.patch(
-              `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages/${editingMessage._id || editingMessage.id}`,
+              `${API_BASE_URL}/chats/${activeId}/messages/${editingMessage._id || editingMessage.id}`,
               { text: inputText },
               authHeader
             )
           : await axios.post(
-              `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages`,
+              `${API_BASE_URL}/chats/${activeId}/messages`,
               { 
                 text: inputText, 
                 type: 'text',
@@ -733,7 +756,7 @@ export default function Chats() {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/chats/${activeId}/messages/${id}/react`,
+        `${API_BASE_URL}/chats/${activeId}/messages/${id}/react`,
         { emoji },
         authHeader
       );
