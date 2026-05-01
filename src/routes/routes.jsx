@@ -88,6 +88,19 @@ import { ProtectedRoute, PermissionRoute } from './Guard';
 
 // Helper for protecting sub-routes
 const wrapInAuth = (element) => <ProtectedRoute>{element}</ProtectedRoute>;
+
+const DashboardRedirect = () => {
+  const { roles, activeRole } = useSelector((state) => state.auth);
+  const currentRole = activeRole || (roles.length > 0 ? (roles.includes('admin') ? 'admin' : roles[0]) : null);
+  
+  if (currentRole === 'admin' || currentRole === 'super_admin') return <Navigate to="/admin/dashboard" replace />;
+  if (currentRole === 'instructor') return <Navigate to="/teacher/dashboard" replace />;
+  if (currentRole === 'parent') return <Navigate to="/parent/dashboard" replace />;
+  if (currentRole === 'student' || currentRole === 'child') return <Navigate to="/student/courses" replace />;
+  
+  return <Navigate to="/" replace />;
+};
+
 const wrapInPermission = (element, allowedRoles = [], requiredPermissions = []) => (
   <PermissionRoute allowedRoles={allowedRoles} requiredPermissions={requiredPermissions}>
     {element}
@@ -149,6 +162,11 @@ export const routes = [
     path: '/dashboard/settings',
     name: 'Settings',
     element: wrapInAuth(<Settings />),
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    element: wrapInAuth(<DashboardRedirect />),
   },
   {
     path: '/dashboard/chats/voice-call',

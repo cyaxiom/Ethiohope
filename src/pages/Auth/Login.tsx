@@ -66,8 +66,20 @@ const Login: React.FC = () => {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
       });
 
-      const userType = result.user?.type;
-      const targetUrl = (userType === 'adult' || userType === 'child') ? '/student/courses' : (result.redirectTo || '/dashboard');
+      const roles = result.roles || [];
+      let targetUrl = '/dashboard';
+
+      if (roles.includes('super_admin') || roles.includes('admin')) {
+        targetUrl = '/admin/dashboard';
+      } else if (roles.includes('instructor')) {
+        targetUrl = '/instructor/dashboard';
+      } else if (roles.includes('parent')) {
+        targetUrl = '/parent/dashboard';
+      } else if (roles.includes('student') || roles.includes('child')) {
+        targetUrl = '/student/courses';
+      } else {
+        targetUrl = result.redirectTo || '/';
+      }
 
       setTimeout(() => {
         navigate(targetUrl);
