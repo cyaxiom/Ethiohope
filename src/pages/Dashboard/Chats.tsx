@@ -410,7 +410,7 @@ export default function Chats() {
   const findUsers = async (query: string) => {
     if (!query) return [];
     try {
-      const res = await axios.get(`${API_BASE_URL}/chats/search-users?query=${query}`, authHeader);
+      const res = await axios.get(`${API_BASE_URL}/chats/search-users?query=${encodeURIComponent(query)}`, authHeader);
       return res.data.data;
     } catch (err) {
       return [];
@@ -504,7 +504,7 @@ export default function Chats() {
 
   useEffect(() => {
     if (!token) return;
-    if (isParent && (chatCategory === 'discussion' || chatCategory === 'announcement')) {
+    if (!isAdmin && isParent && (chatCategory === 'discussion' || chatCategory === 'announcement')) {
       setChatCategory('direct');
       setActiveId(null);
       return;
