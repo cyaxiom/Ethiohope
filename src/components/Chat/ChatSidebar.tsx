@@ -266,30 +266,32 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             )}
           </div>
 
-          <div className="flex p-1 bg-muted/60 rounded-xl">
-            {isDirectChatEnabled && (
+          {!isParent && (
+            <div className="flex p-1 bg-muted/60 rounded-xl">
+              {isDirectChatEnabled && (
+                <button
+                  onClick={() => setChatCategory('direct')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+                >
+                  Direct
+                </button>
+              )}
+              {isGroupChatEnabled && (
+                <button
+                  onClick={() => setChatCategory('discussion')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+                >
+                  Groups
+                </button>
+              )}
               <button
-                onClick={() => setChatCategory('direct')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'direct' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+                onClick={() => setChatCategory('announcement')}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
               >
-                Direct
+                Programs
               </button>
-            )}
-            {isGroupChatEnabled && !isParent && (
-              <button
-                onClick={() => setChatCategory('discussion')}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'discussion' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-              >
-                Groups
-              </button>
-            )}
-            <button
-              onClick={() => setChatCategory('announcement')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${chatCategory === 'announcement' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
-            >
-              Programs
-            </button>
-          </div>
+            </div>
+          )}
 
         </div>
       </div>

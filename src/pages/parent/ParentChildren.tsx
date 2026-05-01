@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import SectionCard from '../../components/dashboard/SectionCard';
-import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus, MapPin, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus, MapPin, ChevronDown, CheckCircle2, KeyRound } from 'lucide-react';
 import Loading from '../../ui/Loading';
 import ChildDetailModal from '../../components/Enrollment/ChildDetailModal';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -207,7 +207,16 @@ export const ParentChildren: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                       <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100">@{child.username}</span>
+                       <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100 flex items-center gap-1">
+                         <User className="w-3 h-3" />
+                         @{child.username}
+                       </span>
+                       {child.plainPin && (
+                         <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-amber-100 flex items-center gap-1">
+                           <KeyRound className="w-3 h-3" />
+                           PIN: {child.plainPin}
+                         </span>
+                       )}
                        <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-purple-100">Grade {child.grade}</span>
                     </div>
                   </div>

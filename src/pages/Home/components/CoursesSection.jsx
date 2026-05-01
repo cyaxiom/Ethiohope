@@ -16,7 +16,7 @@ const CoursesSection = () => {
     limit: 20 // Fetch enough to paginate on home
   });
 
-  const programs = (programsData?.data || []).filter(p => p.isActive);
+  const programs = programsData?.data || [];
   const totalPages = Math.ceil(programs.length / coursesPerPage);
 
   const getCurrentPageCourses = () => {
@@ -42,7 +42,7 @@ const CoursesSection = () => {
   }
 
   return (
-    <section className="py-16 px-4 bg-background">
+    <section id="popular-programs" className="py-16 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -80,53 +80,71 @@ const CoursesSection = () => {
 
           {/* Courses Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mx-8">
-            {getCurrentPageCourses().map((program) => (
-              <div
-                key={program._id}
-                onClick={() =>
-                  navigate(`/academy/kids-programming/course/${program._id}`)
-                }
-                className="bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 cursor-pointer group h-full flex flex-col"
-              >
-                {/* Image Section */}
-                <div className="relative h-48 bg-muted/20 overflow-hidden">
-                  {program.image ? (
-                    <img
-                      src={getImageUrl(program.image)}
-                      alt={program.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                       <span className="text-white text-4xl font-black">{program.title.charAt(0)}</span>
+            {getCurrentPageCourses().map((program) => {
+              const isActive = program.isActive !== false;
+              
+              return (
+                <div
+                  key={program._id}
+                  onClick={() => {
+                    if (isActive) {
+                      navigate(`/academy/kids-programming/course/${program._id}`);
+                    }
+                  }}
+                  className={`bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 group h-full flex flex-col relative ${isActive ? 'hover:shadow-xl hover:scale-105 cursor-pointer' : 'cursor-default'}`}
+                >
+                  {/* Coming Soon Overlay */}
+                  {!isActive && (
+                    <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="bg-white/95 px-6 py-2 rounded-full shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 border border-blue-100">
+                        <span className="text-blue-900 font-black tracking-[0.2em] text-[10px] uppercase">Coming Soon</span>
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Card Content */}
-                <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-card-foreground mb-3 line-clamp-2">
-                    {program.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                    {program.description || 'Join our expert-led program to master new skills through hands-on projects and interactive learning.'}
-                  </p>
-                  
-                  <div className="mt-auto mb-5">
-                    <span className="inline-block bg-gradient-to-r from-orange-400 to-pink-500 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-wide shadow-md transform hover:-translate-y-0.5 transition-all">
-                      Age: {program.ageRange || 'All ages'}
-                    </span>
+                  {/* Image Section */}
+                  <div className={`relative h-48 bg-muted/20 overflow-hidden ${!isActive ? 'grayscale-[0.5]' : ''}`}>
+                    {program.image ? (
+                      <img
+                        src={getImageUrl(program.image)}
+                        alt={program.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                         <span className="text-white text-4xl font-black">{program.title.charAt(0)}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between group-hover:text-blue-600 transition-colors">
-                    <span className="text-primary font-bold text-sm">See Details</span>
-                    <span className="text-primary font-bold transition-transform group-hover:translate-x-1">→</span>
+                  {/* Card Content */}
+                  <div className={`p-6 flex-1 flex flex-col ${!isActive ? 'opacity-70' : ''}`}>
+                    <h3 className="text-xl font-bold text-card-foreground mb-3 line-clamp-2">
+                      {program.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                      {program.description || 'Join our expert-led program to master new skills through hands-on projects and interactive learning.'}
+                    </p>
+                    
+                    <div className="mt-auto mb-5">
+                      <span className="inline-block bg-gradient-to-r from-orange-400 to-pink-500 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-wide shadow-md transform hover:-translate-y-0.5 transition-all">
+                        Age: {program.ageRange || 'All ages'}
+                      </span>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between group-hover:text-blue-600 transition-colors">
+                      <span className="text-primary font-bold text-sm">
+                        {isActive ? 'See Details' : 'Coming Soon'}
+                      </span>
+                      {isActive && <span className="text-primary font-bold transition-transform group-hover:translate-x-1">→</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+
 
         {/* Page Indicators */}
         {totalPages > 1 && (
@@ -146,22 +164,7 @@ const CoursesSection = () => {
           </div>
         )}
 
-        {/* Animated View All Courses Button */}
-        <div className="text-center mt-12">
-          <motion.button
-            onClick={() =>
-              navigate("/academy/kids-programming/all_kids_course")
-            }
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg transition-all duration-300"
-          >
-            Explore All Programs
-          </motion.button>
-        </div>
+        {/* Bottom button removed as it's redundant when scrolling to this section */}
       </div>
     </section>
   );

@@ -260,6 +260,30 @@ export default function Chats() {
         window.dispatchEvent(new CustomEvent('chat-notification-update'));
       });
 
+      socket.on('user-presence', ({ userId, isOnline, lastSeen }: any) => {
+        const myId = (user?.id || user?._id || '').toString();
+        if (userId === myId) return;
+
+        console.log('👤 Presence Update:', { userId, isOnline, lastSeen });
+
+        const update = (prev: any[]) => prev.map(c => {
+          if (c.type === 'DIRECT') {
+            const isOtherMember = (c.members || []).some((m: any) => {
+              const mid = (m.userId?._id || m.userId || m.childId?._id || m.childId || '').toString();
+              return mid === userId.toString();
+            });
+
+            if (isOtherMember) {
+              console.log('✅ Updating presence for chat:', c.name || c.id);
+              return { ...c, isOnline, lastSeen };
+            }
+          }
+          return c;
+        });
+
+        setContactslist(update);
+      });
+
       socket.on('disconnect', () => console.log('🔌 Socket disconnected'));
       socket.on('added-to-conversation', (data: any) => {
         const convId = data.conversation._id;
@@ -444,13 +468,15 @@ export default function Chats() {
 
   useEffect(() => {
     if (!token) return;
-    if (isParent && chatCategory === 'discussion') {
-      setChatCategory(isDirectChatEnabled ? 'direct' : 'announcement');
+    if (isParent && (chatCategory === 'discussion' || chatCategory === 'announcement')) {
+      setChatCategory('direct');
       setActiveId(null);
       return;
     }
     if (chatCategory === 'direct' && !isDirectChatEnabled) {
-      setChatCategory('announcement');
+      if (!isParent) {
+        setChatCategory('announcement');
+      }
       setActiveId(null);
       return;
     }

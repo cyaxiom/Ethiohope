@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   User as UserIcon, 
@@ -12,7 +12,9 @@ import {
   Loader2,
   MailWarning,
   LayoutDashboard,
-  BookOpen
+  BookOpen,
+  Home as HomeIcon,
+  KeyRound
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -21,6 +23,7 @@ import { logout } from '../../features/auth/authSlice';
 import { useVerifyEmailMutation } from '../../features/auth/authApi';
 import { RootState } from '../../app/store';
 import CompleteProfileModal from './CompleteProfileModal';
+import ChangePasswordModal from './ChangePasswordModal';
 
 interface UserProfileDropdownProps {
   onClose: () => void;
@@ -30,6 +33,7 @@ interface UserProfileDropdownProps {
 const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClose }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   
   const auth = useSelector((state: RootState) => state.auth);
@@ -38,6 +42,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
   
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // Handle outside click to close
   useEffect(() => {
@@ -109,6 +114,15 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
     return '/dashboard/chats';
   };
 
+  // Helper visibility checks
+  const isAtHome = location.pathname === '/';
+  const isAtDashboard = 
+    location.pathname.startsWith('/admin') || 
+    location.pathname.startsWith('/teacher') || 
+    location.pathname.startsWith('/parent') || 
+    location.pathname.startsWith('/student') || 
+    location.pathname.startsWith('/instructor');
+
   return (
     <>
       <AnimatePresence>
@@ -162,6 +176,17 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
             {/* Menu Items */}
             <div className="p-2 space-y-1 bg-white">
               
+              {/* 0. Home - Hide if already at home */}
+              {!isAtHome && (
+                <button
+                  onClick={() => { navigate('/'); onClose(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                >
+                  <HomeIcon className="w-4 h-4" />
+                  <span>Home</span>
+                </button>
+              )}
+
               {/* 1. Verify Email (if not verified) */}
               {!isVerified && user?.email && (
                 <button
@@ -179,25 +204,14 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                 </button>
               )}
 
-              {/* 2. Dashboard Home - show only if user has upgraded roles */}
-              {hasUpgradedRoles && (
+              {/* 2. Dashboard - show only if user has upgraded roles AND not already at dashboard */}
+              {hasUpgradedRoles && !isAtDashboard && (
                 <button
                   onClick={() => { navigate(getPrimaryDashboard()); onClose(); }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  <span>Dashboard Home</span>
-                </button>
-              )}
-
-              {/* 3. My Courses - only show if profile is complete or has upgraded roles */}
-              {showCourses && (
-                <button
-                  onClick={() => { navigate('/dashboard/courses'); onClose(); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-                >
-                  <BookOpen className="w-4 h-4" />
-                  <span>My Courses</span>
+                  <span>Dashboard</span>
                 </button>
               )}
 
@@ -225,30 +239,16 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                   </div>
                 </button>
               )}
-
-              <button
-                onClick={() => { navigate(getChatUrl()); onClose(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Chats</span>
-              </button>
-
-              <button
-                onClick={() => { navigate('/dashboard/profile'); onClose(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-              >
-                <UserIcon className="w-4 h-4" />
-                <span>Profile</span>
-              </button>
               
-              <button
-                onClick={() => { navigate('/dashboard/settings'); onClose(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Settings</span>
-              </button>
+              {!roles.includes('child') && !roles.includes('student') && (
+                <button
+                  onClick={() => { setShowPasswordModal(true); onClose(); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>Change Password</span>
+                </button>
+              )}
 
               <div className="h-px bg-gray-50 my-1 mx-2" />
 
@@ -269,6 +269,12 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
       <CompleteProfileModal 
         isOpen={showProfileModal} 
         onClose={() => setShowProfileModal(false)} 
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
       />
     </>
   );

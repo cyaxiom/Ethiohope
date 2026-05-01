@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-React;
+import { useNavigate } from "react-router-dom";
 
 const Counter = ({ target, duration = 2, suffix = "" }) => {
   const [count, setCount] = useState(0);
@@ -29,6 +29,7 @@ const Counter = ({ target, duration = 2, suffix = "" }) => {
 };
 
 const CTASection = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-20 px-4 relative overflow-hidden bg-background">
       {/* Floating shapes in the background */}
@@ -59,9 +60,10 @@ const CTASection = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
           >
-            Start Free Trial
+            Explore Courses
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}

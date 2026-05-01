@@ -9,21 +9,24 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+
+import { logout } from '../../features/auth/authSlice';
 
 type SubItem = { path: string; label: string };
 type NavItem = { path?: string; icon: any; label: string; subItems?: SubItem[] };
-import { logout } from '../../features/auth/authSlice';
 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
+  isHovered: boolean;
+  setIsHovered: (val: boolean) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHovered, setIsHovered }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user, roles, token } = useSelector((state: any) => state.auth);
+  const { roles, token } = useSelector((state: any) => state.auth);
   const [totalUnread, setTotalUnread] = useState(0);
 
   useEffect(() => {
@@ -45,7 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     const handleCustomUpdate = () => fetchUnreadCount();
     window.addEventListener('chat-notification-update', handleCustomUpdate);
 
-    // Refresh every 2 minutes for sidebar efficiency as fallback
     const interval = setInterval(fetchUnreadCount, 120000);
     return () => {
       clearInterval(interval);
@@ -64,9 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
   };
 
-  // Define navigation items based on role
   const getNavItems = (): NavItem[] => {
-    // Admin and Super Admin should see the same core management items
     if (roles.includes('admin') || roles.includes('super_admin')) {
       return [
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -101,12 +101,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       ];
     }
 
-    // Default for students (including child role)
     if (roles.includes('student') || roles.includes('child')) {
       return [
+        { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/courses', icon: BookOpen, label: 'Courses' },
-        { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/student/sessions', icon: Video, label: 'Live Classes' },
+        { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
       ];
     }
 
@@ -114,15 +114,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   };
 
   const navItems = getNavItems();
+  const isExpanded = isOpen || isHovered;
 
   return (
     <aside 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={twMerge(
-        "fixed inset-y-0 left-0 bg-white shadow-[4px_0_12px_rgba(0,0,0,0.03)] border-r border-gray-100 z-50 flex flex-col transition-all duration-300 ease-in-out font-sans",
-        // Desktop widths
-        isOpen ? "lg:w-64" : "lg:w-20",
-        // Mobile behavior: slide in/out
-        isOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full lg:translate-x-0 lg:w-20"
+        "bg-white shadow-[4px_0_12px_rgba(0,0,0,0.03)] border-r border-gray-100 z-50 flex flex-col transition-all duration-300 ease-in-out font-sans",
+        "lg:sticky lg:top-0 lg:h-screen lg:flex-shrink-0",
+        isExpanded ? "lg:w-64" : "lg:w-20",
+        "fixed inset-y-0 left-0 w-64 lg:translate-x-0",
+        isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
       )}
     >
       <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100">
@@ -130,24 +133,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <div className="flex-shrink-0 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-xl p-2 flex items-center justify-center shadow-lg shadow-blue-100 group-hover/logo:scale-105 transition-transform">
              <Bot className="w-5 h-5 text-white" />
           </div>
-          {isOpen && (
-            <span className="font-black text-xl text-blue-900 whitespace-nowrap tracking-tighter">
-              Ethiohope
-            </span>
-          )}
+          <span className={clsx(
+            "font-black text-xl text-blue-900 whitespace-nowrap tracking-tighter transition-all duration-300",
+            isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
+          )}>
+            Ethiohope
+          </span>
         </Link>
-        
-        {isOpen && (
-           <button 
-             onClick={toggleSidebar}
-             className="hidden lg:flex text-gray-300 hover:text-blue-500 hover:bg-blue-50 p-1.5 rounded-lg transition-all"
-           >
-             <PanelLeftClose className="w-5 h-5" />
-           </button>
-        )}
       </div>
 
-      <nav className="flex-1 py-1 px-3 space-y-1 overflow-y-auto mt-4">
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto mt-2">
         {navItems.map((item) => {
           if (item.subItems) {
             const isMenuOpen = openMenus[item.label];
@@ -161,34 +156,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <motion.div whileHover={{ scale: 1.2, rotate: 5 }} whileTap={{ scale: 0.9 }}>
-                      <item.icon className="flex-shrink-0 w-5 h-5 transition-colors duration-300 text-gray-400 group-hover:text-blue-500" />
-                    </motion.div>
-                    {isOpen && (
-                      <motion.span 
-                        initial={{ opacity: 0, x: -10 }} 
-                        animate={{ opacity: 1, x: 0 }} 
-                        className="whitespace-nowrap font-black"
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
+                    <item.icon className="flex-shrink-0 w-5 h-5 transition-colors duration-300 text-gray-400 group-hover:text-blue-500" />
+                    <span className={clsx(
+                      "whitespace-nowrap font-black transition-all duration-300",
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
+                    )}>
+                      {item.label}
+                    </span>
                   </div>
-                  {isOpen && (
+                  {isExpanded && (
                     <motion.div animate={{ rotate: isMenuOpen ? 180 : 0 }}>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </motion.div>
                   )}
-                  
-                  {/* Floating tooltip when closed */}
-                  {!isOpen && (
-                    <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
-                      {item.label}
-                      <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-r-[6px] border-r-blue-900" />
-                    </div>
-                  )}
                 </button>
-                {isMenuOpen && isOpen && (
+                {isMenuOpen && isExpanded && (
                   <div className="pl-11 pr-3 py-1 space-y-1">
                     {item.subItems.map(subItem => (
                       <NavLink
@@ -225,46 +207,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             >
               {({ isActive }) => (
                 <>
-                  <motion.div 
-                    whileHover={{ scale: 1.2, rotate: [0, -5, 5, 0] }} 
-                    transition={{ duration: 0.3 }}
-                    className="relative"
-                  >
-                    <item.icon className={clsx("flex-shrink-0 w-5 h-5 transition-colors duration-300", isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500")} />
-                    {item.label === 'Chat' && totalUnread > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] font-black px-1 rounded-full min-w-[16px] h-[16px] flex items-center justify-center border-2 border-white shadow-sm z-10">
-                        {totalUnread > 99 ? '99+' : totalUnread}
-                      </span>
-                    )}
-                    {isActive && (
-                      <motion.div 
-                        layoutId="active-dot"
-                        className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 rounded-full border-2 border-white"
-                      />
-                    )}
-                  </motion.div>
-                  
-                  {isOpen ? (
-                    <motion.span 
-                      initial={{ opacity: 0, x: -5 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className={clsx("whitespace-nowrap transition-all duration-300", isActive ? "font-black" : "font-bold")}
-                    >
+                  <div className="flex items-center gap-3">
+                    <item.icon className={clsx(
+                      "flex-shrink-0 w-5 h-5 transition-colors duration-300", 
+                      isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500"
+                    )} />
+                    
+                    <span className={clsx(
+                      "whitespace-nowrap transition-all duration-300",
+                      isActive ? "font-black" : "font-bold",
+                      isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
+                    )}>
                       {item.label}
-                    </motion.span>
-                  ) : (
-                    /* Floating Tooltip */
-                    <div className="fixed left-20 px-4 py-2 bg-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
-                      {item.label}
-                      <div className="absolute left-[-4px] top-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-r-[6px] border-r-blue-900" />
-                    </div>
-                  )}
-                  
-                  {isActive && (
-                    <motion.div 
-                      layoutId="sidebar-active"
-                      className="absolute left-0 w-1.5 h-8 bg-blue-600 rounded-r-full"
-                    />
+                    </span>
+                  </div>
+
+                  {item.label === 'Chat' && totalUnread > 0 && (
+                    <span className={clsx(
+                      "absolute bg-red-600 text-white text-[9px] font-black px-1 rounded-full min-w-[16px] h-[16px] flex items-center justify-center border-2 border-white shadow-sm z-10 transition-all",
+                      isExpanded ? "right-3" : "top-2 right-2"
+                    )}>
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
                   )}
                 </>
               )}
@@ -272,27 +236,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           );
         })}
 
-        <div className="my-4 px-3">
-          <div className="h-px bg-gray-100 w-full" />
-        </div>
-
-        <button
+        <div className="pt-4 mt-4 border-t border-gray-100">
+          <button
             onClick={handleLogout}
             className="w-full group flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative font-bold text-sm text-gray-500 hover:text-red-500 hover:bg-red-50"
           >
-            <motion.div whileHover={{ scale: 1.2, x: 2 }}>
-              <LogOut className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-red-500" />
-            </motion.div>
-            {isOpen && <span className="whitespace-nowrap">Logout</span>}
-            {!isOpen && (
-              <div className="fixed left-20 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 -translate-x-2 group-hover:translate-x-0 shadow-xl z-[100]">
-                Logout
-              </div>
-            )}
-        </button>
+            <LogOut className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-red-500" />
+            <span className={clsx(
+              "whitespace-nowrap transition-all duration-300",
+              isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
+            )}>
+              Logout
+            </span>
+          </button>
+        </div>
       </nav>
-
-      {/* User profile footer removed per request */}
     </aside>
   );
 };
