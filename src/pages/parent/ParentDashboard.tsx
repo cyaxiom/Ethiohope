@@ -4,7 +4,7 @@ import SectionCard from '../../components/dashboard/SectionCard';
 import StatCard from '../../components/dashboard/StatCard';
 import HeroBanner from '../../components/dashboard/HeroBanner';
 import { useGetParentDashboardStatsQuery } from '../../features/user/userApi';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Using the same character for consistency
 const heroImage = '/dashboard_hero_character_1775105958488.png';
@@ -12,10 +12,7 @@ const heroImage = '/dashboard_hero_character_1775105958488.png';
 export const ParentDashboard: React.FC = () => {
   const { data, isLoading, error } = useGetParentDashboardStatsQuery();
 
-  const recentMessages = [
-    { id: 1, sender: 'Teacher Mary', subject: 'Math Homework', text: "Sarah is doing great in algebra class...", time: '10:30 AM' },
-    { id: 2, sender: 'School Office', subject: 'Newsletter Update', text: "Please find the monthly school newsletter...", time: 'Yesterday' },
-  ];
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -53,16 +50,14 @@ export const ParentDashboard: React.FC = () => {
       {/* Hero Section */}
       <HeroBanner 
         title="Stay connected to your children's progress!"
-        description="Review homework, attendance, and latest results in one place. Don't forget the parent-teacher meeting this Thursday at 4 PM."
-        ctaText="See Schedule"
-        imageSrc={heroImage}
+        description="See your child progress and if you have any suggestion or idea you can chat the admin"
+        ctaText="Chat With Us"
+        onCtaClick={() => navigate('/parent/chat')}
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-8">
         <StatCard title="Total Children" value={stats.totalChildren.toString().padStart(2, '0')} icon={Heart} color="red" />
-        <StatCard title="Unread Messages" value={stats.unreadMessages.toString().padStart(2, '0')} icon={MessageSquare} color="blue" trend={{ value: 2, isUp: true }} />
-        <StatCard title="Notifications" value={stats.notifications.toString().padStart(2, '0')} icon={Bell} color="orange" />
       </div>
 
       {/* Main Content Grid */}
@@ -80,7 +75,7 @@ export const ParentDashboard: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="text-base font-bold text-gray-800 tracking-tight">{child.name}</h4>
-                        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">{child.grade} • {child.lastResult} avg</p>
+                        <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">Student Profile</p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
@@ -99,14 +94,6 @@ export const ParentDashboard: React.FC = () => {
                   
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-6">
-                      <div className="flex flex-col">
-                         <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Attendance</span>
-                         <span className="text-xs font-black text-gray-700">{child.attendance}%</span>
-                      </div>
-                      <div className="flex flex-col">
-                         <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Last Result</span>
-                         <span className="text-xs font-black text-gray-700">{child.lastResult}</span>
-                      </div>
                     </div>
                     <Link to="/parent/children" className="p-2 bg-white rounded-xl shadow-sm text-blue-500 hover:text-white hover:bg-blue-500 transition-all">
                       <ChevronRight className="w-5 h-5" />
@@ -125,37 +112,7 @@ export const ParentDashboard: React.FC = () => {
           </div>
         </SectionCard>
 
-        {/* Recent Messages Section */}
-        <SectionCard title="Recent Messages" viewAllPath="/parent/messages">
-          <div className="space-y-4">
-            {recentMessages.map((msg) => (
-              <div key={msg.id} className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group flex items-start gap-4 cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 group-hover:bg-orange-100 transition-colors">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h5 className="text-sm font-bold text-gray-800 tracking-tight group-hover:text-blue-600 transition-colors">{msg.sender}</h5>
-                    <span className="text-[10px] font-bold text-gray-400 font-sans">{msg.time}</span>
-                  </div>
-                  <p className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-1">{msg.subject}</p>
-                  <p className="text-xs text-gray-500 line-clamp-1 leading-relaxed">{msg.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-8 p-6 rounded-3xl bg-gradient-to-tr from-blue-500 to-blue-600 text-white relative overflow-hidden group shadow-lg shadow-blue-100">
-             <div className="z-10 relative">
-               <h4 className="text-lg font-black tracking-tight mb-2">School Event Calendar</h4>
-               <p className="text-xs text-blue-50 font-medium mb-4 opacity-90 leading-relaxed italic">Check out the upcoming school activities and important dates for your children.</p>
-               <button className="px-5 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl text-xs font-black uppercase tracking-widest transition-all">
-                 View Calendar
-               </button>
-             </div>
-             <Calendar className="absolute top-1/2 right-[-20px] w-32 h-32 opacity-10 rotate-12 -translate-y-1/2 group-hover:scale-110 transition-transform duration-700" />
-          </div>
-        </SectionCard>
+        {/* Recent Messages Section removed */}
       </div>
     </div>
   );

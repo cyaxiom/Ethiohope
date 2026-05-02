@@ -20,8 +20,13 @@ export const dashboardApi = api.injectEndpoints({
       transformResponse: (response: DashboardStatsResponse) => response.data,
       providesTags: ['DashboardStats'],
     }),
+    getInstructorStats: builder.query<DashboardStats, void>({
+      query: () => '/instructor/dashboard/stats',
+      transformResponse: (response: DashboardStatsResponse) => response.data,
+      providesTags: ['DashboardStats'],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetDashboardStatsQuery } = dashboardApi;
+export const { useGetDashboardStatsQuery, useGetInstructorStatsQuery } = dashboardApi;

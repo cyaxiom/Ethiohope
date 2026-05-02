@@ -12,9 +12,10 @@ import { twMerge } from 'tailwind-merge';
 import { motion } from 'framer-motion';
 
 import { logout } from '../../features/auth/authSlice';
+import { hasPermission, hasAnyPermission } from '../../lib/rbac';
 
 type SubItem = { path: string; label: string };
-type NavItem = { path?: string; icon: any; label: string; subItems?: SubItem[] };
+type NavItem = { path?: string; icon: any; label: string; subItems?: SubItem[]; permission?: string | string[] };
 
 interface SidebarProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHovered, setIsHovered }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { roles, token, activeRole } = useSelector((state: any) => state.auth);
+  const { roles, token, activeRole, permissions } = useSelector((state: any) => state.auth);
   const [totalUnread, setTotalUnread] = useState(0);
 
   useEffect(() => {
@@ -70,42 +71,66 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
     const currentRole = activeRole || (roles.length > 0 ? roles[0] : null);
 
     if (currentRole === 'admin' || currentRole === 'super_admin') {
-      return [
-        { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/admin/roles', icon: Shield, label: 'Roles' },
-        { path: '/admin/users', icon: Users, label: 'Users' },
-        { path: '/admin/programs', icon: Library, label: 'Programs' },
-        { path: '/admin/batches', icon: Users, label: 'Batches' },
-        { path: '/admin/schedules', icon: Calendar, label: 'Schedules' },
-        { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
-        { path: '/admin/chat', icon: MessageCircle, label: 'Chat' },
-        { path: '/admin/sessions', icon: Video, label: 'Sessions' },
-        { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
+      const items = [
+        { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard', permission: 'dashboard.admin' },
+        { path: '/admin/roles', icon: Shield, label: 'Roles', permission: 'role.read' },
+        { path: '/admin/users', icon: Users, label: 'Users', permission: 'user.read' },
+        { path: '/admin/programs', icon: Library, label: 'Programs', permission: 'program.read' },
+        { path: '/admin/batches', icon: Users, label: 'Batches', permission: ['batch.read', 'batch.write', 'batch.create'] },
+        { path: '/admin/schedules', icon: Calendar, label: 'Schedules', permission: ['schedule.read', 'schedule.write', 'schedule.create'] },
+        { path: '/admin/courses', icon: BookOpen, label: 'Courses', permission: ['course.read', 'course.write', 'course.create'] },
+        { path: '/admin/chat', icon: MessageCircle, label: 'Chat', permission: ['chat.read', 'chat.write', 'chat.direct.start'] },
+        { path: '/admin/sessions', icon: Video, label: 'Session', permission: ['session.read', 'session.write'] },
+        { path: '/admin/payments', icon: CreditCard, label: 'Payments', permission: 'payment.read' },
       ];
+      return items.filter(item => {
+        if (!item.permission) return true;
+        if (Array.isArray(item.permission)) return hasAnyPermission(permissions, item.permission);
+        return hasPermission(permissions, item.permission);
+      });
     }
     
     if (currentRole === 'parent') {
-      return [
+      const items = [
         { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
         { path: '/parent/children', icon: Users, label: 'Children' },
-        { path: '/parent/chat', icon: MessageCircle, label: 'Chat' },
+        { path: '/parent/chat', icon: MessageCircle, label: 'Chat', permission: ['chat.read', 'chat.write', 'chat.direct.start'] },
         { path: '/parent/payments', icon: CreditCard, label: 'Payments' },
       ];
+      return items.filter(item => {
+        if (!item.permission) return true;
+        if (Array.isArray(item.permission)) return hasAnyPermission(permissions, item.permission);
+        return hasPermission(permissions, item.permission);
+      });
     }
 
     if (currentRole === 'instructor') {
-      return [
-        { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { path: '/training', icon: BookOpen, label: 'Training' },
-        { path: '/exams', icon: FileText, label: 'Exams' },
-        { path: '/lessons', icon: GraduationCap, label: 'Lessons' },
+      const items = [
+        { path: '/instructor/dashboard', icon: LayoutDashboard, label: 'Dashboard', permission: 'dashboard.instructor' },
+        { path: '/instructor/roles', icon: Shield, label: 'Roles', permission: 'role.read' },
+        { path: '/instructor/users', icon: Users, label: 'Users', permission: 'user.read' },
+        { path: '/instructor/programs', icon: Library, label: 'Programs', permission: 'program.read' },
+        { path: '/instructor/batches', icon: Users, label: 'Batches', permission: ['batch.read', 'batch.write'] },
+        { path: '/instructor/schedules', icon: Calendar, label: 'Schedules', permission: ['schedule.read', 'schedule.write'] },
+        { path: '/instructor/courses', icon: BookOpen, label: 'Courses', permission: ['course.read', 'course.write'] },
+        { path: '/instructor/chat', icon: MessageCircle, label: 'Chat', permission: ['chat.read', 'chat.write', 'chat.direct.start'] },
+        { path: '/instructor/sessions', icon: Video, label: 'Sessions', permission: ['session.read', 'session.write'] },
+        { path: '/instructor/payments', icon: CreditCard, label: 'Payments', permission: 'payment.read' },
+        // Legacy items
+        { path: '/training', icon: BookOpen, label: 'Training', permission: 'training.read' },
+        { path: '/exams', icon: FileText, label: 'Exams', permission: 'exam.read' },
+        { path: '/lessons', icon: GraduationCap, label: 'Lessons', permission: 'lesson.read' },
       ];
+      return items.filter(item => {
+        if (!item.permission) return true;
+        if (Array.isArray(item.permission)) return hasAnyPermission(permissions, item.permission);
+        return hasPermission(permissions, item.permission);
+      });
     }
 
     if (currentRole === 'student' || currentRole === 'child') {
       return [
-        { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/courses', icon: BookOpen, label: 'Courses' },
         { path: '/student/sessions', icon: Video, label: 'Live Classes' },
         { path: '/student/chat', icon: MessageCircle, label: 'Chat' },

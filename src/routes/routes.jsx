@@ -94,7 +94,7 @@ const DashboardRedirect = () => {
   const currentRole = activeRole || (roles.length > 0 ? (roles.includes('admin') ? 'admin' : roles[0]) : null);
   
   if (currentRole === 'admin' || currentRole === 'super_admin') return <Navigate to="/admin/dashboard" replace />;
-  if (currentRole === 'instructor') return <Navigate to="/teacher/dashboard" replace />;
+  if (currentRole === 'instructor') return <Navigate to="/instructor/dashboard" replace />;
   if (currentRole === 'parent') return <Navigate to="/parent/dashboard" replace />;
   if (currentRole === 'student' || currentRole === 'child') return <Navigate to="/student/courses" replace />;
   
@@ -240,14 +240,59 @@ export const routes = [
 
   // Role-based Dashboard Routes - ALL PROTECTED
   {
-    path: '/teacher',
-    name: 'TeacherPortal',
+    path: '/instructor',
+    name: 'InstructorPortal',
     element: wrapInPermission(<DashboardLayout />, ['instructor', 'admin', 'super_admin'], ['dashboard.instructor']),
     routes: [
       {
-        path: '/teacher/dashboard',
-        name: 'Teacher Dashboard',
+        path: '/instructor/dashboard',
+        name: 'Instructor Dashboard',
         element: <TeacherDashboard />,
+      },
+      {
+        path: '/instructor/roles',
+        name: 'Instructor Roles',
+        element: <AdminRoles />,
+      },
+      {
+        path: '/instructor/users',
+        name: 'Instructor Users',
+        element: <AdminUsers />,
+      },
+      {
+        path: '/instructor/programs',
+        name: 'Instructor Programs',
+        element: <AdminPrograms />,
+      },
+      {
+        path: '/instructor/batches',
+        name: 'Instructor Batches',
+        element: <AdminBatches />,
+      },
+      {
+        path: '/instructor/schedules',
+        name: 'Instructor Schedules',
+        element: <AdminSchedules />,
+      },
+      {
+        path: '/instructor/courses',
+        name: 'Instructor Courses',
+        element: <AdminCourses />,
+      },
+      {
+        path: '/instructor/sessions',
+        name: 'Instructor Sessions',
+        element: <AdminSessions />,
+      },
+      {
+        path: '/instructor/payments',
+        name: 'Instructor Payments',
+        element: <AdminPayments />,
+      },
+      {
+        path: '/instructor/chat',
+        name: 'Instructor Chat',
+        element: <Chats />,
       },
       {
         path: '*',
