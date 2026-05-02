@@ -250,6 +250,51 @@ export const routes = [
         element: <TeacherDashboard />,
       },
       {
+        path: '/instructor/roles',
+        name: 'Instructor Roles',
+        element: <AdminRoles />,
+      },
+      {
+        path: '/instructor/users',
+        name: 'Instructor Users',
+        element: <AdminUsers />,
+      },
+      {
+        path: '/instructor/programs',
+        name: 'Instructor Programs',
+        element: <AdminPrograms />,
+      },
+      {
+        path: '/instructor/batches',
+        name: 'Instructor Batches',
+        element: <AdminBatches />,
+      },
+      {
+        path: '/instructor/schedules',
+        name: 'Instructor Schedules',
+        element: <AdminSchedules />,
+      },
+      {
+        path: '/instructor/courses',
+        name: 'Instructor Courses',
+        element: <AdminCourses />,
+      },
+      {
+        path: '/instructor/sessions',
+        name: 'Instructor Sessions',
+        element: <AdminSessions />,
+      },
+      {
+        path: '/instructor/payments',
+        name: 'Instructor Payments',
+        element: <AdminPayments />,
+      },
+      {
+        path: '/instructor/chat',
+        name: 'Instructor Chat',
+        element: <Chats />,
+      },
+      {
         path: '*',
         name: 'NotFound',
         element: <NotFound />,
