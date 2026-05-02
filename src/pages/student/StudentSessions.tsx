@@ -116,14 +116,9 @@ export default function StudentSessions() {
   };
 
   const SessionCard = ({ session, i }: { session: any, i: number }) => {
-    const getLocalTime = (isoStr: string) => {
-      const localStr = isoStr.includes('T') ? isoStr.split(/[Z+-]/)[0] : isoStr;
-      return new Date(localStr);
-    };
-
-    const startTimeLocal = getLocalTime(session.startTime);
-    const endTimeLocal = getLocalTime(session.endTime);
     const now = new Date();
+    const startTimeLocal = new Date(session.startTime);
+    const endTimeLocal = new Date(session.endTime);
 
     const [isAvailable, setIsAvailable] = useState(now >= startTimeLocal);
     const isNow = now >= startTimeLocal && now <= endTimeLocal;
@@ -182,15 +177,9 @@ export default function StudentSessions() {
             <div>
               <p className="text-[10px] uppercase text-gray-300 tracking-wider font-black">Session Period</p>
               <span className={isEnded ? 'text-gray-400' : 'text-gray-600'}>
-                {session.startTime.includes('T') 
-                  ? formatTime12h(session.startTime.split('T')[1].substring(0, 5))
-                  : startTimeLocal.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                } 
+                {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
                 <span className="text-gray-300 mx-2">-</span>
-                {session.endTime.includes('T')
-                  ? formatTime12h(session.endTime.split('T')[1].substring(0, 5))
-                  : endTimeLocal.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                }
+                {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>
