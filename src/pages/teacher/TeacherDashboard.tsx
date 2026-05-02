@@ -1,110 +1,163 @@
 import React from 'react';
-import { Users, BookOpen, Clock, FileText, CheckCircle, TrendingUp } from 'lucide-react';
-import SectionCard from '../../components/dashboard/SectionCard';
-import StatCard from '../../components/dashboard/StatCard';
-import HeroBanner from '../../components/dashboard/HeroBanner';
-import { RankingCard } from '../../components/dashboard/RankingCard';
-
-// Using the same character but with a different message
-const heroImage = '/dashboard_hero_character_1775105958488.png';
+import { Users, Shield, Activity, TrendingUp, MoreVertical, RefreshCw } from 'lucide-react';
+import { useGetInstructorStatsQuery } from '../../features/dashboard/dashboardApi';
 
 export const TeacherDashboard: React.FC = () => {
-  const stats = [
-    { title: 'Total Students', value: '1,284', icon: Users, color: 'blue', trend: { value: 12, isUp: true } },
-    { title: 'Active Classes', value: '08', icon: BookOpen, color: 'purple', trend: { value: 5, isUp: true } },
-    { title: 'Assignments', value: '34', icon: FileText, color: 'orange', trend: { value: 8, isUp: false } },
-  ];
-
-  const recentActivities = [
-    { id: 1, student: 'Alice Johnson', activity: 'submitted Assignment #3', time: '2 mins ago', status: 'pending' },
-    { id: 2, student: 'Bob Smith', activity: 'joined Class 10A', time: '1 hour ago', status: 'completed' },
-    { id: 3, student: 'Charlie Davis', activity: 'requested help on Quiz 2', time: '3 hours ago', status: 'high' },
-  ];
-
-  const upcomingClasses = [
-    { id: 1, title: 'Medical Pathology', time: '09:00 AM', duration: '1h 30m', students: 45 },
-    { id: 2, title: 'Clinical Anatomy', time: '11:00 AM', duration: '1h 00m', students: 38 },
-    { id: 3, title: 'Neurology Seminar', time: '02:30 PM', duration: '2h 00m', students: 52 },
-  ];
+  const { data, isLoading, isError, isFetching, refetch } = useGetInstructorStatsQuery();
 
   return (
-    <div className="animate-fadeIn pb-8 max-w-[1400px] mx-auto">
-      <header className="mb-8">
-        <h1 className="text-2xl font-black text-blue-900 tracking-tight">Welcome back, Teacher 👋</h1>
-      </header>
-
-      {/* Hero Section */}
-      <HeroBanner 
-        title="Grading period ending soon!"
-        description="Don't forget to review all pending assignments before the weekend. Your current grading completion is at 85%. Keep up the great work!"
-        ctaText="Go to Grading"
-        imageSrc={heroImage}
-      />
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        {stats.map((stat, idx) => (
-          <StatCard key={idx} {...stat} />
-        ))}
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Welcome back, Instructor 👋</h1>
+          <p className="text-gray-500 mt-1">Here is what's happening today in your classes.</p>
+        </div>
+        <button 
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm disabled:opacity-70"
+        >
+          <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+          <span>Refresh Stats</span>
+        </button>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activities */}
-        <SectionCard title="Recent Activities" viewAllPath="/teacher/activities">
-          <div className="space-y-4">
-            {recentActivities.map((act) => (
-              <div key={act.id} className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                  act.status === 'pending' ? 'bg-orange-100 text-orange-600' : 
-                  act.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                }`}>
-                  {act.student.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-800 tracking-tight">
-                    {act.student} <span className="text-gray-500 font-medium">{act.activity}</span>
-                  </p>
-                  <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 mt-1">
-                    <Clock className="w-3 h-3" /> {act.time}
-                  </span>
-                </div>
-                <button className="opacity-0 group-hover:opacity-100 transition-all p-2 bg-white rounded-lg shadow-sm text-blue-500 hover:text-blue-600">
-                  <CheckCircle className="w-5 h-5" />
-                </button>
-              </div>
-            ))}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isLoading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : isError ? (
+          <div className="col-span-full p-4 bg-red-50 text-red-600 rounded-lg text-center font-medium border border-red-100">
+            Failed to load dashboard statistics. Please try again later.
           </div>
-        </SectionCard>
+        ) : (
+          <>
+            <StatCard 
+              title="Total Users" 
+              value={data?.totalUsers?.toString() || "0"} 
+              icon={<Users className="w-6 h-6" />}
+              trend="Real-time"
+              trendLabel="total registered"
+              color="blue"
+            />
+            <StatCard 
+              title="Total Roles" 
+              value={data?.totalRoles?.toString() || "0"} 
+              icon={<Shield className="w-6 h-6" />}
+              trend="Real-time"
+              trendLabel="system roles"
+              color="indigo"
+            />
+            <StatCard 
+              title="Active Users" 
+              value={data?.activeUsers?.toString() || "0"} 
+              icon={<Activity className="w-6 h-6" />}
+              trend="Real-time"
+              trendLabel="active status"
+              color="emerald"
+            />
+          </>
+        )}
+      </div>
 
-        {/* Upcoming Classes */}
-        <SectionCard title="Upcoming Classes" viewAllPath="/teacher/schedule">
-           <div className="space-y-4">
-            {upcomingClasses.map((cls) => (
-              <div key={cls.id} className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 flex flex-col items-center justify-center">
-                    <span className="text-blue-600 font-black text-xs">{cls.time.split(' ')[0]}</span>
-                    <span className="text-blue-400 font-bold text-[10px] tracking-widest">{cls.time.split(' ')[1]}</span>
+      {/* Dashboard Content area (e.g. charts / recent activity placeholder) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+         <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-h-[400px]">
+            <div className="flex items-center justify-between mb-4">
+               <h2 className="text-lg font-bold text-gray-800">Engagement Breakdown</h2>
+               <button className="p-1 hover:bg-gray-100 rounded-md text-gray-500 transition-colors">
+                  <MoreVertical className="w-5 h-5" />
+               </button>
+            </div>
+            
+            <div className="flex items-center justify-center h-[300px] border-2 border-dashed border-gray-100 rounded-xl text-gray-400">
+               <div className="text-center">
+                 <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                 <p className="font-medium">Chart rendering placeholder</p>
+                 <p className="text-sm">Connect data source to view</p>
+               </div>
+            </div>
+         </div>
+         
+         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Recent Activity</h2>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-start gap-3 pb-3 border-b border-gray-50 last:border-0">
+                  <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                    U{i}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-gray-800 tracking-tight transition-colors group-hover:text-blue-600">{cls.title}</h4>
-                    <span className="text-[10px] font-bold text-gray-400 flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-blue-400" /> {cls.duration}</span>
-                      <span className="flex items-center gap-1"><Users className="w-3 h-3 text-blue-400" /> {cls.students} students</span>
-                    </span>
+                    <p className="text-sm font-medium text-gray-800">New user registered</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{i * 10} minutes ago</p>
                   </div>
                 </div>
-                <button className="px-4 py-2 bg-gray-50 group-hover:bg-blue-500 group-hover:text-white text-gray-600 rounded-xl font-bold text-xs transition-all tracking-wide">
-                  Join
-                </button>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
+              ))}
+            </div>
+         </div>
       </div>
     </div>
   );
 };
+
+// Extracted Subcomponent for Stats
+interface StatCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  trend: string;
+  trendLabel: string;
+  color: 'blue' | 'indigo' | 'emerald';
+}
+
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trend, trendLabel, color }) => {
+  const colorStyles = {
+    blue: "bg-blue-50 text-blue-600",
+    indigo: "bg-indigo-50 text-indigo-600",
+    emerald: "bg-emerald-50 text-emerald-600",
+  };
+
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
+          <h3 className="text-3xl font-bold text-gray-800 tracking-tight">{value}</h3>
+        </div>
+        <div className={`p-3 rounded-xl ${colorStyles[color]} transition-transform group-hover:scale-110`}>
+          {icon}
+        </div>
+      </div>
+      <div className="mt-4 flex items-center gap-2 text-sm">
+        <span className="font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+          {trend}
+        </span>
+        <span className="text-gray-400">{trendLabel}</span>
+      </div>
+    </div>
+  );
+};
+
+// Basic Skeleton Loader for StatCard
+const StatCardSkeleton: React.FC = () => (
+  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-32 animate-pulse">
+    <div className="flex justify-between items-start">
+      <div className="space-y-3 w-1/2">
+        <div className="h-4 bg-gray-200 rounded w-full"></div>
+        <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+      </div>
+      <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
+    </div>
+    <div className="flex gap-2 items-center mt-4">
+      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+    </div>
+  </div>
+);
 
 export default TeacherDashboard;

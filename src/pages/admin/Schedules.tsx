@@ -399,7 +399,7 @@ const ScheduleModal: React.FC<{ onClose: () => void, group?: any }> = ({ onClose
                 <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Capacity</label>
                 <input 
                   type="number"
-                  {...register('capacity', { required: true, min: 1 })}
+                  {...register('capacity', { required: true, min: 1, valueAsNumber: true })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
              </div>
