@@ -3,6 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Video, Calendar, Clock, ExternalLink, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const [hours, minutes] = time.split(':');
+  let h = parseInt(hours, 10);
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  return `${h}:${m} ${ampm}`;
+};
+
 export default function StudentSessions() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,10 +116,18 @@ export default function StudentSessions() {
   };
 
   const SessionCard = ({ session, i }: { session: any, i: number }) => {
-    const [isAvailable, setIsAvailable] = useState(new Date() >= new Date(session.startTime));
+    const getLocalTime = (isoStr: string) => {
+      const localStr = isoStr.includes('T') ? isoStr.split(/[Z+-]/)[0] : isoStr;
+      return new Date(localStr);
+    };
+
+    const startTimeLocal = getLocalTime(session.startTime);
+    const endTimeLocal = getLocalTime(session.endTime);
     const now = new Date();
-    const isNow = now >= new Date(session.startTime) && now <= new Date(session.endTime);
-    const isEnded = now > new Date(session.endTime);
+
+    const [isAvailable, setIsAvailable] = useState(now >= startTimeLocal);
+    const isNow = now >= startTimeLocal && now <= endTimeLocal;
+    const isEnded = now > endTimeLocal;
 
     return (
       <motion.div 
@@ -163,9 +182,15 @@ export default function StudentSessions() {
             <div>
               <p className="text-[10px] uppercase text-gray-300 tracking-wider font-black">Session Period</p>
               <span className={isEnded ? 'text-gray-400' : 'text-gray-600'}>
-                {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
+                {session.startTime.includes('T') 
+                  ? formatTime12h(session.startTime.split('T')[1].substring(0, 5))
+                  : startTimeLocal.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                } 
                 <span className="text-gray-300 mx-2">-</span>
-                {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {session.endTime.includes('T')
+                  ? formatTime12h(session.endTime.split('T')[1].substring(0, 5))
+                  : endTimeLocal.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
               </span>
             </div>
           </div>
