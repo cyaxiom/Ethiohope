@@ -131,7 +131,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
 
     if (currentRole === 'student' || currentRole === 'child') {
       return [
-        { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/student/courses', icon: BookOpen, label: 'Courses' },
         { path: '/student/sessions', icon: Video, label: 'Live Classes' },
         { path: '/student/chat', icon: MessageCircle, label: 'Chat' },
