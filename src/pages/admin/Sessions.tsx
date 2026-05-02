@@ -25,11 +25,13 @@ const formatTime12h = (time: string) => {
 };
 
 const isMeetingTime = (startTime: string, now: Date) => {
-  return now.getTime() >= new Date(startTime).getTime();
+  const localTimeStr = startTime.includes('T') ? startTime.split(/[Z+-]/)[0] : startTime;
+  return now.getTime() >= new Date(localTimeStr).getTime();
 };
 
 const isSessionEnded = (endTime: string, now: Date) => {
-  return now.getTime() > new Date(endTime).getTime();
+  const localTimeStr = endTime.includes('T') ? endTime.split(/[Z+-]/)[0] : endTime;
+  return now.getTime() > new Date(localTimeStr).getTime();
 };
 
 export default function Sessions() {
@@ -226,7 +228,13 @@ export default function Sessions() {
                     </div>
                     <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
                       <Clock className="w-4 h-4 text-blue-400" />
-                      {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {session.startTime.includes('T') 
+                        ? formatTime12h(session.startTime.split('T')[1].substring(0, 5))
+                        : new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      } - {session.endTime.includes('T')
+                        ? formatTime12h(session.endTime.split('T')[1].substring(0, 5))
+                        : new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      }
                     </div>
                   </div>
 
@@ -289,7 +297,10 @@ export default function Sessions() {
                     {!isActive && !isEnded && (
                       <div className="flex items-center justify-center gap-2 text-[10px] font-black text-red-500 uppercase tracking-tighter bg-red-50 py-2 rounded-lg animate-pulse">
                         <Clock className="w-3 h-3" />
-                        Locked until {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        Locked until {session.startTime.includes('T') 
+                          ? formatTime12h(session.startTime.split('T')[1].substring(0, 5))
+                          : new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        }
                       </div>
                     )}
 
