@@ -134,6 +134,31 @@ const CourseDetail: React.FC = () => {
     }));
   };
 
+  const handleContinueLearning = () => {
+    if (!course?.weeks) return;
+    
+    // Find the first uncompleted lecture
+    for (let wIdx = 0; wIdx < course.weeks.length; wIdx++) {
+      const week = course.weeks[wIdx];
+      if (isWeekLocked(wIdx)) break;
+      
+      for (let lIdx = 0; lIdx < (week.lessons?.length || 0); lIdx++) {
+        const lesson = week.lessons[lIdx];
+        if (isLessonLocked(wIdx, lIdx)) break;
+        
+        for (let vIdx = 0; vIdx < (lesson.videoUrls?.length || 0); vIdx++) {
+          if (!isLectureCompleted(wIdx, lIdx, vIdx)) {
+            setSelectedVideo({ weekIndex: wIdx, lessonIndex: lIdx, videoIndex: vIdx });
+            return;
+          }
+        }
+      }
+    }
+    
+    // Fallback: if all completed or none found, open the first one
+    setSelectedVideo({ weekIndex: 0, lessonIndex: 0, videoIndex: 0 });
+  };
+
   const handleCompleteLecture = async (weekIndex: number, lessonIndex: number, videoIndex: number) => {
     if (!enrollmentId || !id) return;
     try {
@@ -191,7 +216,7 @@ const CourseDetail: React.FC = () => {
     let player: any = null;
 
     const initPlayer = () => {
-      const elId = `youtube-player-${videoId}`;
+      const elId = 'youtube-player-element';
       const el = document.getElementById(elId);
       
       if (!el || !(window as any).YT || !(window as any).YT.Player) return;
@@ -218,8 +243,18 @@ const CourseDetail: React.FC = () => {
       playerRef.current = player;
     };
 
+    // If player already exists and is ready, just load the new video
+    if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
+      try {
+        playerRef.current.loadVideoById(videoId);
+        return;
+      } catch (err) {
+        console.warn("Re-initializing player due to load error", err);
+      }
+    }
+
     const runInit = () => {
-      const elId = `youtube-player-${videoId}`;
+      const elId = 'youtube-player-element';
       if (document.getElementById(elId) && (window as any).YT && (window as any).YT.Player) {
         initPlayer();
       } else {
@@ -247,12 +282,22 @@ const CourseDetail: React.FC = () => {
     }
 
     return () => {
+      // We don't destroy here to allow loadVideoById to work on next effect run
+      // unless we're navigating away entirely which is handled by another effect or below
+    };
+  }, [selectedVideo, course]);
+
+  // Clean up player when leaving the video view or unmounting
+  useEffect(() => {
+    return () => {
       if (playerRef.current) {
-        try { playerRef.current.destroy(); } catch(e) {}
+        try {
+          playerRef.current.destroy();
+        } catch (e) {}
         playerRef.current = null;
       }
     };
-  }, [selectedVideo, course]);
+  }, [!!selectedVideo === false]); 
 
   // 7. Render Loading/Error States
   if (!canRead) {
@@ -327,7 +372,10 @@ const CourseDetail: React.FC = () => {
                   const selectedVideoMeta = resolveVideoMeta(currentLesson.videoUrls[selectedVideo.videoIndex], currentLesson, selectedVideo.videoIndex);
                   const videoId = getYoutubeId(selectedVideoMeta.url);
                   return videoId ? (
-                    <div key={videoId} id={`youtube-player-${videoId}`} className="absolute inset-0 w-full h-full" />
+                    <div 
+                      id="youtube-player-element" 
+                      className="absolute inset-0 w-full h-full" 
+                    />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center">
                       <Video className="w-16 h-16 mb-4 text-gray-600" />
@@ -421,11 +469,14 @@ const CourseDetail: React.FC = () => {
                         return (
                           <button 
                             key={vIdx}
+                            disabled={isLessonLocked(selectedVideo.weekIndex, lIdx)}
                             onClick={() => setSelectedVideo({ ...selectedVideo, lessonIndex: lIdx, videoIndex: vIdx })}
                             className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between group ${
                               isActive 
                                 ? 'bg-blue-50 text-blue-600' 
-                                : 'hover:bg-gray-50 text-gray-700'
+                                : isLessonLocked(selectedVideo.weekIndex, lIdx)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:bg-gray-50 text-gray-700'
                             }`}
                           >
                             <div className="flex items-center gap-3 min-w-0">
@@ -819,7 +870,10 @@ const CourseDetail: React.FC = () => {
                </div>
             </div>
 
-            <button className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95">
+            <button 
+              onClick={handleContinueLearning}
+              className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+            >
               {coursePercentage === 100 ? 'Review Course' : 'Continue Learning'}
             </button>
           </div>
