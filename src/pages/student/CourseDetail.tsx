@@ -63,6 +63,7 @@ const CourseDetail: React.FC = () => {
     lessonIndex: number;
     videoIndex: number;
   } | null>(null);
+  const [evaluatedExercises, setEvaluatedExercises] = useState<Record<string, boolean>>({});
 
   const playerRef = useRef<any>(null);
 
@@ -134,6 +135,31 @@ const CourseDetail: React.FC = () => {
     }));
   };
 
+  const handleContinueLearning = () => {
+    if (!course?.weeks) return;
+    
+    // Find the first uncompleted lecture
+    for (let wIdx = 0; wIdx < course.weeks.length; wIdx++) {
+      const week = course.weeks[wIdx];
+      if (isWeekLocked(wIdx)) break;
+      
+      for (let lIdx = 0; lIdx < (week.lessons?.length || 0); lIdx++) {
+        const lesson = week.lessons[lIdx];
+        if (isLessonLocked(wIdx, lIdx)) break;
+        
+        for (let vIdx = 0; vIdx < (lesson.videoUrls?.length || 0); vIdx++) {
+          if (!isLectureCompleted(wIdx, lIdx, vIdx)) {
+            setSelectedVideo({ weekIndex: wIdx, lessonIndex: lIdx, videoIndex: vIdx });
+            return;
+          }
+        }
+      }
+    }
+    
+    // Fallback: if all completed or none found, open the first one
+    setSelectedVideo({ weekIndex: 0, lessonIndex: 0, videoIndex: 0 });
+  };
+
   const handleCompleteLecture = async (weekIndex: number, lessonIndex: number, videoIndex: number) => {
     if (!enrollmentId || !id) return;
     try {
@@ -150,6 +176,23 @@ const CourseDetail: React.FC = () => {
         toast.error(err?.data?.message || 'Failed to complete lecture');
       }
     }
+  };
+
+  const handleEvaluateExercise = (weekIndex: number, exerciseIndex: number) => {
+    const key = `${weekIndex}-${exerciseIndex}`;
+    setEvaluatedExercises(prev => ({ ...prev, [key]: true }));
+  };
+
+  const handleResetExercise = (weekIndex: number, exerciseIndex: number) => {
+    const keyPrefix = `${weekIndex}-${exerciseIndex}-`;
+    setExerciseAnswers(prev => {
+      const newAnswers = { ...prev };
+      Object.keys(newAnswers).forEach(key => {
+        if (key.startsWith(keyPrefix)) delete newAnswers[key];
+      });
+      return newAnswers;
+    });
+    setEvaluatedExercises(prev => ({ ...prev, [`${weekIndex}-${exerciseIndex}`]: false }));
   };
 
   const toggleWeek = (index: number) => {
@@ -191,7 +234,7 @@ const CourseDetail: React.FC = () => {
     let player: any = null;
 
     const initPlayer = () => {
-      const elId = `youtube-player-${videoId}`;
+      const elId = 'youtube-player-element';
       const el = document.getElementById(elId);
       
       if (!el || !(window as any).YT || !(window as any).YT.Player) return;
@@ -218,8 +261,18 @@ const CourseDetail: React.FC = () => {
       playerRef.current = player;
     };
 
+    // If player already exists and is ready, just load the new video
+    if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
+      try {
+        playerRef.current.loadVideoById(videoId);
+        return;
+      } catch (err) {
+        console.warn("Re-initializing player due to load error", err);
+      }
+    }
+
     const runInit = () => {
-      const elId = `youtube-player-${videoId}`;
+      const elId = 'youtube-player-element';
       if (document.getElementById(elId) && (window as any).YT && (window as any).YT.Player) {
         initPlayer();
       } else {
@@ -247,12 +300,22 @@ const CourseDetail: React.FC = () => {
     }
 
     return () => {
+      // We don't destroy here to allow loadVideoById to work on next effect run
+      // unless we're navigating away entirely which is handled by another effect or below
+    };
+  }, [selectedVideo, course]);
+
+  // Clean up player when leaving the video view or unmounting
+  useEffect(() => {
+    return () => {
       if (playerRef.current) {
-        try { playerRef.current.destroy(); } catch(e) {}
+        try {
+          playerRef.current.destroy();
+        } catch (e) {}
         playerRef.current = null;
       }
     };
-  }, [selectedVideo, course]);
+  }, [!!selectedVideo === false]); 
 
   // 7. Render Loading/Error States
   if (!canRead) {
@@ -327,7 +390,10 @@ const CourseDetail: React.FC = () => {
                   const selectedVideoMeta = resolveVideoMeta(currentLesson.videoUrls[selectedVideo.videoIndex], currentLesson, selectedVideo.videoIndex);
                   const videoId = getYoutubeId(selectedVideoMeta.url);
                   return videoId ? (
-                    <div key={videoId} id={`youtube-player-${videoId}`} className="absolute inset-0 w-full h-full" />
+                    <div 
+                      id="youtube-player-element" 
+                      className="absolute inset-0 w-full h-full" 
+                    />
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-8 text-center">
                       <Video className="w-16 h-16 mb-4 text-gray-600" />
@@ -421,11 +487,14 @@ const CourseDetail: React.FC = () => {
                         return (
                           <button 
                             key={vIdx}
+                            disabled={isLessonLocked(selectedVideo.weekIndex, lIdx)}
                             onClick={() => setSelectedVideo({ ...selectedVideo, lessonIndex: lIdx, videoIndex: vIdx })}
                             className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between group ${
                               isActive 
                                 ? 'bg-blue-50 text-blue-600' 
-                                : 'hover:bg-gray-50 text-gray-700'
+                                : isLessonLocked(selectedVideo.weekIndex, lIdx)
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : 'hover:bg-gray-50 text-gray-700'
                             }`}
                           >
                             <div className="flex items-center gap-3 min-w-0">
@@ -728,15 +797,48 @@ const CourseDetail: React.FC = () => {
                                               className="px-6 pb-6 pt-2 space-y-4"
                                             >
                                               <div className="bg-white p-6 rounded-2xl border border-amber-50 shadow-sm space-y-6">
-                                                {exercise.questions?.map((q, qIdx) => (
-                                                   <div key={qIdx} className="space-y-4">
-                                                      <div className="flex gap-3">
-                                                        <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] font-black flex-shrink-0">Q{qIdx + 1}</span>
-                                                        <p className="text-sm font-bold text-gray-700">{q.question}</p>
-                                                      </div>
+                                                {exercise.questions?.map((q, qIdx) => {
+                                                   const exerciseKey = `${weekIndex}-${exerciseIndex}`;
+                                                   const questionKey = `${exerciseKey}-${qIdx}`;
+                                                   const isEvaluated = evaluatedExercises[exerciseKey];
+                                                   const selectedOption = exerciseAnswers[questionKey];
+                                                   
+                                                   return (
+                                                     <div key={qIdx} className={`space-y-4 p-5 rounded-2xl transition-all border-4 ${
+                                                       isEvaluated 
+                                                         ? (selectedOption === q.correctAnswer ? 'border-green-500 bg-green-50/50' : 'border-red-500 bg-red-50/50') 
+                                                         : 'border-transparent bg-white shadow-sm'
+                                                     }`}>
+                                                        <div className="flex items-center justify-between">
+                                                          <div className="flex items-center gap-3">
+                                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${isEvaluated ? 'bg-white text-gray-700' : 'bg-blue-100 text-blue-600'}`}>Q{qIdx + 1}</span>
+                                                            <p className="text-sm font-bold text-gray-700">{q.question}</p>
+                                                          </div>
+                                                          {isEvaluated && (
+                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
+                                                              selectedOption === q.correctAnswer ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                                                            }`}>
+                                                              {selectedOption === q.correctAnswer ? 'Correct' : 'Wrong'}
+                                                            </span>
+                                                          )}
+                                                        </div>
                                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-9">
                                                         {q.options?.map((opt, optIdx) => {
-                                                          const isSelected = exerciseAnswers[`${weekIndex}-${exerciseIndex}-${qIdx}`] === optIdx;
+                                                                                                                      const isSelected = selectedOption === optIdx;
+                                                            const isCorrect = q.correctAnswer === optIdx;
+                                                            
+                                                            let variantStyles = "bg-white border-gray-100 text-gray-500 hover:border-blue-200 hover:bg-gray-50";
+                                                            if (isEvaluated) {
+                                                              if (isCorrect) {
+                                                                variantStyles = "bg-green-50 border-green-500 text-green-700 shadow-sm shadow-green-50";
+                                                              } else if (isSelected && !isCorrect) {
+                                                                variantStyles = "bg-red-50 border-red-500 text-red-700 shadow-sm shadow-red-50";
+                                                              } else {
+                                                                variantStyles = "bg-gray-50 border-gray-100 text-gray-400 opacity-60";
+                                                              }
+                                                            } else if (isSelected) {
+                                                              variantStyles = "bg-blue-50 border-blue-500 text-blue-700 shadow-sm";
+                                                            }
                                                           return (
                                                             <button 
                                                               key={optIdx} 
@@ -751,7 +853,9 @@ const CourseDetail: React.FC = () => {
                                                             >
                                                               <div className={`
                                                                 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all
-                                                                ${isSelected ? 'border-blue-500' : 'border-gray-300'}
+                                                                ${isEvaluated && isCorrect ? 'border-green-500 bg-green-500' : 
+                                                                    isEvaluated && isSelected && !isCorrect ? 'border-red-500 bg-red-500' :
+                                                                    isSelected ? 'border-blue-500' : 'border-gray-300'}
                                                               `}>
                                                                 {isSelected && <div className="w-2 h-2 rounded-full bg-blue-500" />}
                                                               </div>
@@ -761,10 +865,24 @@ const CourseDetail: React.FC = () => {
                                                         })}
                                                       </div>
                                                    </div>
-                                                 ))}
-                                                <button className="w-full py-3 bg-amber-500 text-white rounded-xl font-black text-xs shadow-lg shadow-amber-100 hover:bg-amber-600 transition-all active:scale-[0.98]">
-                                                  Start Exercise
-                                                </button>
+                                                 ); })}
+                                                <div className="flex gap-4 pt-4">
+                                                   {evaluatedExercises[`${weekIndex}-${exerciseIndex}`] ? (
+                                                     <button 
+                                                       onClick={() => handleResetExercise(weekIndex, exerciseIndex)}
+                                                       className="w-full py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-xs hover:bg-gray-200 transition-all"
+                                                     >
+                                                       Try Again
+                                                     </button>
+                                                   ) : (
+                                                     <button 
+                                                       onClick={() => handleEvaluateExercise(weekIndex, exerciseIndex)}
+                                                       className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-[0.98]"
+                                                     >
+                                                       Evaluate My Answers
+                                                     </button>
+                                                   )}
+                                                 </div>
                                               </div>
                                             </motion.div>
                                           )}
@@ -819,7 +937,10 @@ const CourseDetail: React.FC = () => {
                </div>
             </div>
 
-            <button className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95">
+            <button 
+              onClick={handleContinueLearning}
+              className="w-full mt-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+            >
               {coursePercentage === 100 ? 'Review Course' : 'Continue Learning'}
             </button>
           </div>
