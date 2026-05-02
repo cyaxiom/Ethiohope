@@ -23,7 +23,6 @@ import { ChevronDown, Check } from 'lucide-react';
 import { logout, setActiveRole } from '../../features/auth/authSlice';
 import { useVerifyEmailMutation } from '../../features/auth/authApi';
 import { RootState } from '../../app/store';
-import CompleteProfileModal from './CompleteProfileModal';
 import ChangePasswordModal from './ChangePasswordModal';
 
 interface UserProfileDropdownProps {
@@ -43,7 +42,6 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
   const activeRole = auth?.activeRole;
   
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [isSwitchingProfile, setIsSwitchingProfile] = useState(false);
 
@@ -117,8 +115,6 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
   const meaningfulRoles = roles.filter(r => r !== 'user');
   const canSwitchProfile = meaningfulRoles.length > 1;
 
-  // Show "Add Profile" only if user has only the 'user' role AND hasn't completed profile
-  const showAddProfile = isOnlyUserRole && !isProfileComplete;
 
   // Show "My Courses" / "View Courses" only if profile is completed or has upgraded roles
   const showCourses = hasUpgradedRoles || isProfileComplete;
@@ -285,19 +281,6 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
                 </div>
               )}
 
-              {/* 5. Add Profile - only show if user has only 'user' role and no complete profile */}
-              {showAddProfile && (
-                <button
-                  onClick={() => { setShowProfileModal(true); onClose(); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Add Profile</span>
-                  <div className="ml-auto px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-black rounded-md uppercase">
-                    New
-                  </div>
-                </button>
-              )}
               
               {!roles.includes('child') && !roles.includes('student') && (
                 <button
@@ -324,11 +307,6 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
         )}
       </AnimatePresence>
 
-      {/* Complete Profile Modal */}
-      <CompleteProfileModal 
-        isOpen={showProfileModal} 
-        onClose={() => setShowProfileModal(false)} 
-      />
 
       {/* Change Password Modal */}
       <ChangePasswordModal

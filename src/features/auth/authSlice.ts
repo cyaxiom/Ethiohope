@@ -41,6 +41,16 @@ const initialState: AuthState = {
   loading: false,
 };
 
+const determineActiveRole = (roles: string[]): string | null => {
+  const storedActiveRole = localStorage.getItem('activeRole');
+  const meaningfulRoles = roles.filter(r => r !== 'user');
+  
+  if (storedActiveRole && roles.includes(storedActiveRole) && !(storedActiveRole === 'user' && meaningfulRoles.length > 0)) {
+    return storedActiveRole;
+  }
+  return meaningfulRoles.length > 0 ? meaningfulRoles[0] : (roles.length > 0 ? roles[0] : null);
+};
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -53,15 +63,7 @@ const authSlice = createSlice({
       state.user = user;
       state.token = token;
       state.roles = roles ?? [];
-      
-      const storedActiveRole = localStorage.getItem('activeRole');
-      if (storedActiveRole && state.roles.includes(storedActiveRole)) {
-        state.activeRole = storedActiveRole;
-      } else {
-        // Prioritize roles that are NOT 'user' to ensure they land on a meaningful dashboard
-        const meaningfulRoles = state.roles.filter(r => r !== 'user');
-        state.activeRole = meaningfulRoles.length > 0 ? meaningfulRoles[0] : (state.roles.length > 0 ? state.roles[0] : null);
-      }
+      state.activeRole = determineActiveRole(state.roles);
       
       state.permissions = permissions ?? [];
       state.isAuthenticated = true;
@@ -89,6 +91,14 @@ const authSlice = createSlice({
       if (roles) {
         state.roles = roles;
         localStorage.setItem('roles', JSON.stringify(roles));
+        
+        // Re-evaluate active role when roles are updated (e.g. during child registration)
+        const newActiveRole = determineActiveRole(roles);
+        if (newActiveRole !== state.activeRole) {
+          state.activeRole = newActiveRole;
+          if (newActiveRole) localStorage.setItem('activeRole', newActiveRole);
+          else localStorage.removeItem('activeRole');
+        }
       }
     },
     setActiveRole: (state, action: PayloadAction<string>) => {
