@@ -24,13 +24,30 @@ const formatTime12h = (time: string) => {
   return `${h}:${m} ${ampm}`;
 };
 
+const isMeetingTime = (startTime: string, now: Date) => {
+  return now.getTime() >= new Date(startTime).getTime();
+};
+
+const isSessionEnded = (endTime: string, now: Date) => {
+  return now.getTime() > new Date(endTime).getTime();
+};
+
 export default function Sessions() {
+  const [now, setNow] = React.useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     scheduleId: '',
     targetDate: '',
   });
+
+  // Update current time every 10 seconds to keep UI fresh
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
@@ -138,90 +155,155 @@ export default function Sessions() {
       {/* Sessions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence mode="popLayout">
-          {sessions.map((session) => (
-            <motion.div
-              key={session._id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden"
-            >
-              {/* Background Decoration */}
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <Video className="w-6 h-6" />
+          {sessions.map((session) => {
+            const isActive = isMeetingTime(session.startTime, now);
+            const isEnded = isSessionEnded(session.endTime, now);
+            const isJoinable = isActive && !isEnded;
+
+            return (
+              <motion.div
+                key={session._id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className={`bg-white p-6 rounded-[2rem] border ${isEnded ? 'border-gray-100 opacity-75' : 'border-gray-100'} shadow-sm hover:shadow-xl transition-all group relative overflow-hidden`}
+              >
+                {/* Background Decoration */}
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className={`w-12 h-12 rounded-2xl ${isEnded ? 'bg-gray-50 text-gray-400' : 'bg-blue-50 text-blue-600'} flex items-center justify-center`}>
+                      <Video className="w-6 h-6" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {canUpdate && (
+                        <button 
+                          onClick={() => {
+                            const sId = typeof session.scheduleId === 'object' ? session.scheduleId._id : session.scheduleId;
+                            setEditingSessionId(session._id);
+                            setFormData({ 
+                              scheduleId: sId || '', 
+                              targetDate: session.startTime.split('T')[0] 
+                            });
+                            setIsModalOpen(true);
+                          }}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button 
+                          onClick={() => handleDelete(session._id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {canUpdate && (
-                      <button 
-                        onClick={() => {
-                          const sId = typeof session.scheduleId === 'object' ? session.scheduleId._id : session.scheduleId;
-                          setEditingSessionId(session._id);
-                          setFormData({ 
-                            scheduleId: sId || '', 
-                            targetDate: session.startTime.split('T')[0] 
-                          });
-                          setIsModalOpen(true);
-                        }}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md">
+                        {session.sessionType || 'Lecture'}
+                      </span>
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${isEnded ? 'text-gray-400' : isActive ? 'text-green-500' : 'text-gray-400'}`}>
+                        {isEnded ? 'ENDED' : isActive ? 'LIVE NOW' : 'UPCOMING'}
+                      </span>
+                    </div>
+                    <h3 className={`text-lg font-black ${isEnded ? 'text-gray-400' : 'text-gray-800'} line-clamp-1 group-hover:text-blue-600 transition-colors`}>
+                      {session.title}
+                    </h3>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
+                      <Calendar className="w-4 h-4 text-blue-400" />
+                      {new Date(session.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
+                      <Clock className="w-4 h-4 text-blue-400" />
+                      {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex flex-col gap-3">
+                    {session.zoomLinkJunior || session.zoomLinkSenior ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {isJoinable ? (
+                          <a 
+                            href={session.zoomLinkJunior} 
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 transition-all active:scale-95"
+                          >
+                            <LinkIcon className="w-3 h-3" />
+                            Junior (9-12)
+                          </a>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <LinkIcon className="w-3 h-3" />
+                            Junior (9-12)
+                          </div>
+                        )}
+
+                        {isJoinable ? (
+                          <a 
+                            href={session.zoomLinkSenior || session.zoomLinkJunior} 
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-600 transition-all active:scale-95"
+                          >
+                            <LinkIcon className="w-3 h-3" />
+                            Senior (13+)
+                          </a>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2 py-3 rounded-xl font-black text-[10px] bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <LinkIcon className="w-3 h-3" />
+                            Senior (13+)
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      isJoinable ? (
+                        <a 
+                          href={session.zoomLink || session.join_url} 
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-xs bg-gray-50 hover:bg-blue-600 hover:text-white text-gray-700 transition-all active:scale-95"
+                        >
+                          <LinkIcon className="w-4 h-4" />
+                          Join Meeting
+                        </a>
+                      ) : (
+                        <div className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-black text-xs bg-gray-100 text-gray-400 cursor-not-allowed">
+                          <LinkIcon className="w-4 h-4" />
+                          Join Meeting
+                        </div>
+                      )
                     )}
-                    {canDelete && (
-                      <button 
-                        onClick={() => handleDelete(session._id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    
+                    {!isActive && !isEnded && (
+                      <div className="flex items-center justify-center gap-2 text-[10px] font-black text-red-500 uppercase tracking-tighter bg-red-50 py-2 rounded-lg animate-pulse">
+                        <Clock className="w-3 h-3" />
+                        Locked until {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    )}
+
+                    {isEnded && (
+                      <div className="flex items-center justify-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-tighter bg-gray-50 py-2 rounded-lg">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Session Completed
+                      </div>
                     )}
                   </div>
                 </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md">
-                      {session.sessionType || 'Lecture'}
-                    </span>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      Live
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-black text-gray-800 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                    {session.title}
-                  </h3>
-                </div>
-
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
-                    <Calendar className="w-4 h-4 text-blue-400" />
-                    {new Date(session.startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm font-bold text-gray-500">
-                    <Clock className="w-4 h-4 text-blue-400" />
-                    {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(session.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
-
-                <div className="pt-4 flex items-center gap-3">
-                  <a 
-                    href={session.zoomLink || session.join_url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 bg-gray-50 hover:bg-blue-600 hover:text-white text-gray-700 py-3 rounded-xl font-black text-xs transition-all active:scale-95"
-                  >
-                    <LinkIcon className="w-4 h-4" />
-                    Join Meeting
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
 
         {sessions.length === 0 && !isSessionsLoading && (

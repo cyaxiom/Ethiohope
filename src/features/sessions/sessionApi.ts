@@ -11,6 +11,10 @@ export interface Session {
   description?: string;
   zoomLink?: string;
   join_url?: string;
+  zoomLinkJunior?: string;
+  joinUrlJunior?: string;
+  zoomLinkSenior?: string;
+  joinUrlSenior?: string;
   startTime: string;
   endTime: string;
   createdBy: string;
