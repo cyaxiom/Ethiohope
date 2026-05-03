@@ -72,9 +72,9 @@ export default function Chats() {
   });
 
   // Detect if current user is a child/student (not staff)
-  const isChild = user?.type === 'child' || [...(authRoles || [])].some(r => {
+  const isChild = user?.type === 'child' || user?.type === 'student' || [...(authRoles || [])].some(r => {
     const code = typeof r === 'string' ? r : r?.code;
-    return code?.toLowerCase() === 'child';
+    return ['child', 'student'].includes(code?.toLowerCase());
   });
 
   // Only use authPermissions from the login response — don't merge user object
