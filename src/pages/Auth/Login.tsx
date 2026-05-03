@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, RefreshCw, Home } from 'lucide-react';
@@ -18,12 +18,16 @@ interface LoginFormInputs {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const [verifyEmail, { isLoading: isResending }] = useVerifyEmailMutation();
   const [serverError, setServerError] = useState<string | null>(null);
   const [showResend, setShowResend] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+
+  // Get the return path from location state
+  const from = location.state?.from || '/dashboard';
 
   const {
     register,
@@ -54,12 +58,12 @@ const Login: React.FC = () => {
       const result = await login(credentials).unwrap();
       
       dispatch(
-        setCredentials({
-          token: result.token,
-          user: result.user,
-          roles: result.roles,
-          permissions: result.permissions,
-        })
+          setCredentials({
+            token: result.token,
+            user: result.user,
+            roles: result.roles,
+            permissions: result.permissions,
+          })
       );
 
       toast.success('Login successful! Redirecting...', {
@@ -67,22 +71,25 @@ const Login: React.FC = () => {
       });
 
       const roles = result.roles || [];
-      let targetUrl = '/dashboard';
+      let targetUrl = from;
 
-      if (roles.includes('super_admin') || roles.includes('admin')) {
-        targetUrl = '/admin/dashboard';
-      } else if (roles.includes('instructor')) {
-        targetUrl = '/instructor/dashboard';
-      } else if (roles.includes('parent')) {
-        targetUrl = '/parent/dashboard';
-      } else if (roles.includes('student') || roles.includes('child')) {
-        targetUrl = '/student/courses';
-      } else {
-        targetUrl = result.redirectTo || '/';
+      // If 'from' is just the default dashboard, we might want to be more specific based on role
+      if (from === '/dashboard') {
+        if (roles.includes('super_admin') || roles.includes('admin')) {
+          targetUrl = '/admin/dashboard';
+        } else if (roles.includes('instructor')) {
+          targetUrl = '/instructor/dashboard';
+        } else if (roles.includes('parent')) {
+          targetUrl = '/parent/dashboard';
+        } else if (roles.includes('student') || roles.includes('child')) {
+          targetUrl = '/student/courses';
+        } else {
+          targetUrl = result.redirectTo || '/';
+        }
       }
 
       setTimeout(() => {
-        navigate(targetUrl);
+        navigate(targetUrl, { replace: true });
       }, 1000);
 
     } catch (err: any) {
@@ -302,6 +309,7 @@ const Login: React.FC = () => {
               Don't have an account?{' '}
               <Link 
                 to="/register" 
+                state={{ from }}
                 className="text-primary font-bold hover:text-accent transition-colors"
                 id="goToRegister"
               >

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw, Phone, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,11 +18,15 @@ interface RegisterFormInputs {
 }
 
 const Register: React.FC = () => {
+  const location = useLocation();
   const [signup, { isLoading: isSigningUp }] = useSignupMutation();
   const [verifyEmail, { isLoading: isResending }] = useVerifyEmailMutation();
   const [serverError, setServerError] = useState<string | null>(null);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
   const [resendSuccess, setResendSuccess] = useState(false);
+
+  // Get the return path from location state
+  const from = location.state?.from;
 
   const {
     register,
@@ -168,6 +172,7 @@ const Register: React.FC = () => {
 
             <Link
               to="/login"
+              state={{ from }}
               className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-xl font-bold
                 bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]
                 shadow-lg shadow-primary/20 transition-all duration-300"
@@ -335,6 +340,7 @@ const Register: React.FC = () => {
               Already have an account?{' '}
               <Link 
                 to="/login" 
+                state={{ from }}
                 className="text-primary font-bold hover:text-accent transition-colors"
               >
                 Login

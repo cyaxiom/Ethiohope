@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 React;
@@ -42,6 +42,14 @@ const articles = [
 
 const FromTheCrowd = () => {
   const [index, setIndex] = useState(0);
+
+  // Automatic rotation
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev === articles.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handlePrev = () => {
     setIndex((prev) => (prev === 0 ? articles.length - 1 : prev - 1));

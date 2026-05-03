@@ -343,12 +343,6 @@
     outline: none;
   }
 
-  /* Make desktop navbar items use the default arrow cursor (override cursor-pointer) */
-  nav > div.container ul li > a,
-  nav > div.container ul li > div {
-    cursor: default !important;
-  }
-
   /* Ensure Tailwind's `cursor-pointer` applies to the element and its children
      so card components show the hand pointer across the whole tile. */
   .cursor-pointer,
@@ -363,6 +357,20 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+
+  @keyframes gradient-x {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
   }
 }
 
