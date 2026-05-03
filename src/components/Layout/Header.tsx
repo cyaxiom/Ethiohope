@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-10 w-full transition-all duration-300">
+    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-[100] w-full transition-all duration-300">
       <div className="flex items-center gap-4">
         <button
           onClick={toggleSidebar}
