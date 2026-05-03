@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, LogIn } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { dashboardLinks, navLinks } from '../../common/navLinks';
@@ -12,6 +12,8 @@ import {
 } from '../../assets/images/z-index.img';
 
 export default function Navbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<any, boolean>>({});
   const [drawerTop, setDrawerTop] = useState(0);
@@ -104,11 +106,14 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           {/* Left: hamburger (mobile) + Logo + Ethiohope text */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
             <button
               aria-label="Open menu"
-              onClick={() => setIsDrawerOpen(true)}
-              className="p-2 rounded-md bg-white/80 hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden border border-border shadow"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDrawerOpen(true);
+              }}
+              className="p-2 rounded-md bg-white/80 hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden border border-border shadow cursor-pointer"
             >
               <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -139,7 +144,7 @@ export default function Navbar() {
                       </span>
                     </Link>
                 ) : (
-                  <div className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2">
+                  <div className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2 cursor-pointer">
                     {link.name}
                   </div>
                 )}
@@ -169,6 +174,7 @@ export default function Navbar() {
             ) : (
               <Link 
                 to="/login"
+                state={{ from: location.pathname }}
                 className="px-4 py-2 text-sm font-semibold flex items-center gap-2 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors text-black"
               >
                 <LogIn className="w-4 h-4" />

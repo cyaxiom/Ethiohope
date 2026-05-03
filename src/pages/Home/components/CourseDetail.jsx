@@ -77,7 +77,7 @@ const CourseDetail = () => {
 
   const handleRegisterClick = async () => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/login", { state: { from: window.location.pathname } });
       return;
     }
     try {
@@ -94,7 +94,7 @@ const CourseDetail = () => {
 
   const handleEnrollClick = async (phase) => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
       return;
     }
 
@@ -108,7 +108,7 @@ const CourseDetail = () => {
       }
     } catch (err) {
       if (err.status === 401) {
-        navigate('/login');
+        navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
       } else {
         toast.error("Please complete your profile first.");
         setIsProfileModalOpen(true);
@@ -131,13 +131,24 @@ const CourseDetail = () => {
       // If the backend returns 404 User Not Found (e.g. database reset but token persisted)
       if (err?.status === 404 || err?.status === 401) {
         dispatch(logout()); // Clean up stale state
-        navigate("/login");
+        navigate("/login", { state: { from: window.location.pathname } });
       }
     }
   };
 
   // Scroll to top when course changes
   useEffect(() => {
+    // If there is a hash in the URL, scroll to that element
+    if (window.location.hash) {
+      const hashId = window.location.hash.substring(1);
+      const element = document.getElementById(hashId);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 500); // Wait for content to load
+        return;
+      }
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
@@ -276,7 +287,7 @@ const CourseDetail = () => {
 
         {/* ---------------- PHASES SECTION ---------------- */}
         {phases.length > 0 && (
-          <div ref={phasesRef} className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20">
+          <div id="program-phases" ref={phasesRef} className="max-w-6xl mx-auto px-6 py-16 scroll-mt-20">
             <h2 className="text-3xl font-bold mb-10 text-center text-foreground">Program Phases Layout</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {phases.map((phase) => {
