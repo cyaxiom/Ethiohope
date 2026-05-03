@@ -5,9 +5,10 @@ interface AvatarProps {
   name?: string;
   isOnline?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  onClick?: () => void;
 }
 
-const Avatar: React.FC<AvatarProps> = ({ src, name, isOnline, size = 'md' }) => {
+const Avatar: React.FC<AvatarProps> = ({ src, name, isOnline, size = 'md', onClick }) => {
   const sizes = {
     sm: 'h-8 w-8 text-xs',
     md: 'h-10 w-10 text-sm',
@@ -50,7 +51,10 @@ const Avatar: React.FC<AvatarProps> = ({ src, name, isOnline, size = 'md' }) => 
   const colorClass = getAvatarColor(name || '');
 
   return (
-    <div className={`relative flex-shrink-0 ${sizes[size]} rounded-full flex items-center justify-center font-bold border ${colorClass}`}>
+    <div 
+      onClick={onClick}
+      className={`relative flex-shrink-0 ${sizes[size]} rounded-full flex items-center justify-center font-bold border ${colorClass} ${onClick ? 'cursor-pointer active:scale-95' : ''} transition-all duration-200`}
+    >
       {!isDefaultImage ? (
         <>
           <img
