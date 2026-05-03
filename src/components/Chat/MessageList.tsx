@@ -11,6 +11,7 @@ interface MessageListProps {
   handleDelete: (id: string) => void;
   handleReact: (id: string, emoji: string) => void;
   handleStarMessage: (id: string) => void;
+  onViewProfile?: (user: any) => void;
   user: any;
   chatPermissions: any;
 }
@@ -23,6 +24,7 @@ const MessageList: React.FC<MessageListProps> = ({
   handleDelete,
   handleReact,
   handleStarMessage,
+  onViewProfile,
   user,
   chatPermissions,
 }) => {
@@ -73,6 +75,7 @@ const MessageList: React.FC<MessageListProps> = ({
                 message={m}
                 onReact={handleReact}
                 onStarMessage={handleStarMessage}
+                onViewProfile={onViewProfile}
                 currentUser={user}
                 isAnnouncement={activeContact?.type === 'PROGRAM_GROUP'}
                 chatPermissions={chatPermissions}

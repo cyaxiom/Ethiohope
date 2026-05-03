@@ -19,6 +19,7 @@ import ChatHeader from '@/components/Chat/ChatHeader';
 import MessageList from '@/components/Chat/MessageList';
 import MessageInput from '@/components/Chat/MessageInput';
 import ChatInfoPanel from '@/components/Chat/ChatInfoPanel';
+import UserMiniProfile from '@/components/Chat/UserMiniProfile';
 
 // Placeholder for CONTACTS if not found (though it should be here)
 const CONTACTS: any[] = []; 
@@ -56,6 +57,8 @@ export default function Chats() {
   const [programChats, setProgramChats] = useState<any[]>([]);
   const [batchChats, setBatchChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const [isDirectChatEnabled, setIsDirectChatEnabled] = useState(true);
   const [isGroupChatEnabled, setIsGroupChatEnabled] = useState(true);
@@ -72,9 +75,9 @@ export default function Chats() {
   });
 
   // Detect if current user is a child/student (not staff)
-  const isChild = user?.type === 'child' || [...(authRoles || [])].some(r => {
+  const isChild = user?.type === 'child' || user?.type === 'student' || [...(authRoles || [])].some(r => {
     const code = typeof r === 'string' ? r : r?.code;
-    return code?.toLowerCase() === 'child';
+    return ['child', 'student'].includes(code?.toLowerCase());
   });
 
   // Only use authPermissions from the login response — don't merge user object
@@ -435,6 +438,12 @@ export default function Chats() {
     } catch (err) {
       toast.error("Failed to start direct chat");
     }
+  };
+
+  const handleViewProfile = (user: any) => {
+    if (!user) return;
+    setSelectedUser(user);
+    setIsProfileModalOpen(true);
   };
 
   const handleRemoveChat = async (conversationId: string) => {
@@ -1067,6 +1076,7 @@ export default function Chats() {
               handleDelete={handleDeleteMessage}
               handleReact={handleReact}
               handleStarMessage={handleStarMessage}
+              onViewProfile={handleViewProfile}
               user={user}
               chatPermissions={chatPermissions}
             />
@@ -1194,6 +1204,13 @@ export default function Chats() {
           </div>
         </div>
       )}
+      <UserMiniProfile 
+        isOpen={isProfileModalOpen} 
+        onClose={() => setIsProfileModalOpen(false)} 
+        user={selectedUser} 
+        onStartChat={startDirectChat}
+        currentUserId={user?.id || user?._id}
+      />
     </div>
   );
 }

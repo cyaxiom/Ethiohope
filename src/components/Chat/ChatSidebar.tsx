@@ -232,7 +232,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             <div className="flex items-center gap-2">
                                <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
                                   {u.type === 'staff' ? <UserCircle className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-                                  {u.type}
+                                  {u.roleName || u.type}
                                </span>
                             </div>
                           </div>
