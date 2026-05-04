@@ -2,11 +2,13 @@ import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { routes } from '@routes/routes';
 import Loading from '@ui/Loading';
+import ScrollToTop from './components/common/ScrollToTop';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
+      <ScrollToTop />
       <Suspense fallback={<Loading />}>
         <Routes>
           {routes.map((route, index) => {

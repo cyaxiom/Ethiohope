@@ -147,7 +147,7 @@ export default function HowItWorks() {
           </Text>
           <Link to="/register">
             <Button 
-              className="text-lg bg-white hover:bg-slate-100 text-blue-900 font-bold px-10 py-6 rounded-full shadow-xl transition-transform hover:scale-105"
+              className="text-lg bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white font-bold px-10 py-6 rounded-full shadow-xl transition-transform hover:scale-105"
               rightIcon={<ArrowRight className="w-5 h-5 ml-2" />}
             >
               Create Your Account

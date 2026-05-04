@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { SectionContainer } from '../../components/ui/Container';
 import { Heading, Text } from '../../components/ui/Typography';
 import { Button } from '../../components/ui/Button';
-import { UserPlus, UserCircle, LayoutGrid, Rocket, ArrowRight } from 'lucide-react';
+import { UserPlus, BookOpen, CreditCard, Rocket, ArrowRight } from 'lucide-react';
 
 /**
  * Step interface for TypeScript
@@ -18,26 +18,26 @@ interface Step {
 export default function Stats() {
   const steps: Step[] = [
     {
-      title: "1. Sign Up & Verify",
-      description: "Sign up and verify your email to get started.",
+      title: "1. Create Account",
+      description: "Sign up and verify your email to secure your account.",
       icon: <UserPlus className="w-5 h-5" />,
       color: "bg-blue-100 text-blue-600"
     },
     {
-      title: "2. Add to Favorites",
-      description: "Add your children to their favorite courses.",
-      icon: <UserCircle className="w-5 h-5" />,
+      title: "2. Choose Program",
+      description: "Browse and select the best coding program for your child.",
+      icon: <BookOpen className="w-5 h-5" />,
       color: "bg-purple-100 text-purple-600"
     },
     {
-      title: "3. Get Password",
-      description: "Receive the student's password and credentials.",
-      icon: <LayoutGrid className="w-5 h-5" />,
+      title: "3. Enroll & Schedule",
+      description: "Add your child, pick a schedule, and complete payment.",
+      icon: <CreditCard className="w-5 h-5" />,
       color: "bg-cyan-100 text-cyan-600"
     },
     {
       title: "4. Start Learning",
-      description: "Start the favorite learning journey right away.",
+      description: "Get credentials and begin the exciting coding journey.",
       icon: <Rocket className="w-5 h-5 text-white" />,
       color: "bg-primary text-white scale-110 shadow-lg shadow-primary/30"
     }
@@ -77,10 +77,9 @@ export default function Stats() {
         </div>
 
         <div className="flex justify-center mt-12">
-          <Link to="/how-it-works">
+          <Link to="/how-it-works" onClick={() => window.scrollTo(0, 0)}>
             <Button 
-              variant="outline" 
-              className="rounded-full font-semibold border-2 hover:bg-muted text-primary px-8 py-3 h-auto"
+              className="rounded-full font-bold bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all px-10 py-4 h-auto"
               rightIcon={<ArrowRight className="w-4 h-4 ml-2" />}
             >
               See the full detailed journey

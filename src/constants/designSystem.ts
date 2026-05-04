@@ -200,7 +200,7 @@ export const DESIGN_SYSTEM = {
     
     // Variants
     variants: {
-      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg',
+      primary: 'bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all duration-300',
       secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border',
       outline: 'bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground',
       ghost: 'bg-transparent text-foreground hover:bg-muted',
@@ -209,7 +209,7 @@ export const DESIGN_SYSTEM = {
     },
     
     // Full combinations
-    primaryMd: 'inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-300',
+    primaryMd: 'inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white hover:opacity-90 shadow-md hover:shadow-lg transition-all duration-300',
     outlineMd: 'inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-xl bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300',
   },
 

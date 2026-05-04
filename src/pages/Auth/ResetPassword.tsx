@@ -64,10 +64,10 @@ const ResetPassword: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background relative">
         <Link 
           to="/" 
-          className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 group z-50 bg-card/50 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 shadow-sm"
+          className="absolute top-4 left-4 flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50"
         >
-          <Home size={18} className="group-hover:-translate-x-0.5 transition-transform" />
-          <span className="text-sm font-semibold tracking-tight">Back to Home</span>
+          <Home size={18} />
+          <span className="text-sm tracking-tight">Back to Home</span>
         </Link>
         <div className="card shadow-2xl p-8 text-center max-w-md w-full">
           <h2 className="text-2xl font-bold text-error mb-4">Invalid Link</h2>
@@ -89,10 +89,10 @@ const ResetPassword: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn relative">
       <Link 
         to="/" 
-        className="absolute top-4 left-4 flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 group z-50 bg-card/50 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 shadow-sm"
+        className="absolute top-4 left-4 flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50"
       >
-        <Home size={18} className="group-hover:-translate-x-0.5 transition-transform" />
-        <span className="text-sm font-semibold tracking-tight">Back to Home</span>
+        <Home size={18} />
+        <span className="text-sm tracking-tight">Back to Home</span>
       </Link>
       {/* Background decoration elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-30 pointer-events-none">
@@ -175,7 +175,7 @@ const ResetPassword: React.FC = () => {
                 flex items-center justify-center gap-2
                 ${isLoading 
                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' 
-                  : 'bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20'
+                  : 'bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/20'
                 }
               `}
             >
