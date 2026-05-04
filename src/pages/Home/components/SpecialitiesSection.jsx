@@ -21,8 +21,8 @@ const differentiators = [
     desc: 'Learn from the industry experts. Our personalized training ensures every child gets the attention and guidance they need to excel.'
   },
   {
-    title: 'Courses Designed By Alumnus of IIT, NIT & IIM',
-    desc: 'Our courses are crafted by top minds from premier institutes, ensuring high quality and relevance in every lesson.'
+    title: 'Crafted by Senior Industry Instructors',
+    desc: 'Our curriculum is developed and taught by seasoned professionals with years of real-world industry experience, ensuring your child learns practical, cutting-edge skills.'
   },
   {
     title: 'EthioHope Certification',

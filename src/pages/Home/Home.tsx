@@ -4,9 +4,7 @@ import VideoSection from './components/VideoSection';
 import CoursesSection from './components/CoursesSection';
 import WhyCodeSection from './components/WhyCoding';
 import SpecialitiesSection from './components/SpecialitiesSection';
-import ProjectsShowcaseSection from './components/ProjectsShowcaseSection';
 import FeaturesSection from './components/FeaturesSection';
-import CTASection from './components/CTASection';
 import FromTheCrowd from './components/Article';
 
 import Growth from '../../components/Home/Growth';
@@ -25,9 +23,7 @@ function Home() {
       <Growth />
       <Stats />
 
-      <ProjectsShowcaseSection />
       <FeaturesSection />
-      <CTASection />
       <FromTheCrowd />
     </div>
   );

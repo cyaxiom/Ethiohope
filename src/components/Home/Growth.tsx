@@ -58,15 +58,7 @@ export default function Growth() {
               ))}
             </ul>
             
-            <div className="pt-8">
-              <Button 
-                variant="outline" 
-                className="rounded-full font-semibold border-2 hover:bg-muted text-primary px-8 py-3 h-auto"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                Follow a Track (demo directions)
-              </Button>
-            </div>
+            {/* Follow Track button removed per request */}
           </div>
           
         </div>
