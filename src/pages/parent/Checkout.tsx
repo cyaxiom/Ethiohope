@@ -237,7 +237,7 @@ const Checkout = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-0.5">Zelle Account</p>
-                              <p className="text-base font-bold text-gray-900">ethiohope@example.com</p>
+                              <p className="text-base font-bold text-gray-900">ethiohope50@gmail.com</p>
                               <p className="text-xs text-gray-500">Recipient: Ethio Hope Academy</p>
                             </div>
                           </div>
@@ -248,7 +248,7 @@ const Checkout = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-0.5">Call Us</p>
-                              <p className="text-base font-bold text-gray-900">+1 (555) 123-4567</p>
+                              <p className="text-base font-bold text-gray-900">+1 (469) 803-6773</p>
                               <p className="text-xs text-gray-500">Available Mon-Fri, 9AM-5PM</p>
                             </div>
                           </div>
@@ -259,7 +259,7 @@ const Checkout = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">WhatsApp Receipt</p>
-                              <p className="text-base font-bold text-gray-900">+1 (555) 987-6543</p>
+                              <p className="text-base font-bold text-gray-900">+1 (469) 803-6773</p>
                               <p className="text-xs text-gray-500">Send us a screenshot of your transfer</p>
                             </div>
                           </div>
@@ -287,7 +287,7 @@ const Checkout = () => {
                           <CheckCircle className="w-10 h-10" />
                         </div>
                         <h5 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h5>
-                        <p className="text-gray-600 mb-6">We've received your notice. Please make sure to send the screenshot to our WhatsApp <span className="font-bold text-purple-700">+1 (555) 987-6543</span> if you haven't already.</p>
+                        <p className="text-gray-600 mb-6">We've received your notice. Please make sure to send the screenshot to our WhatsApp <span className="font-bold text-purple-700">+1 (469) 803-6773</span> if you haven't already.</p>
                         <button
                           onClick={() => setShowZelleConfirmation(false)}
                           className="text-sm font-bold text-purple-600 hover:text-purple-700 underline"

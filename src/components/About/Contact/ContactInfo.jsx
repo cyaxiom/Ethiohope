@@ -30,11 +30,7 @@ const ContactInfo = ({ darkMode }) => {
                   <div className="flex flex-col gap-2 items-center md:items-start">
                      <p className={`text-2xl md:text-xl xl:text-3xl font-bold cursor-pointer hover:underline ${darkMode ? 'text-white' : 'text-blue-600'
                         }`}>
-                        +(555) 123-4567
-                     </p>
-                     <p className={`text-2xl md:text-xl xl:text-3xl font-bold cursor-pointer hover:underline ${darkMode ? 'text-white' : 'text-blue-600'
-                        }`}>
-                        +(555) 987-6543
+                        +1 (469) 803-6773
                      </p>
                   </div>
                </div>
@@ -59,11 +55,7 @@ const ContactInfo = ({ darkMode }) => {
                   <div className="flex flex-col gap-2 items-center md:items-start">
                      <p className={`text-2xl md:text-xl xl:text-3xl font-bold cursor-pointer hover:underline ${darkMode ? 'text-white' : 'text-green-600'
                         }`}>
-                        coindox@gmail.com
-                     </p>
-                     <p className={`text-2xl md:text-xl xl:text-3xl font-bold cursor-pointer hover:underline ${darkMode ? 'text-white' : 'text-green-600'
-                        }`}>
-                        info@gmail.com
+                        contact@ethiohope.com
                      </p>
                   </div>
                </div>
@@ -88,11 +80,7 @@ const ContactInfo = ({ darkMode }) => {
                   <div className="flex flex-col gap-2 items-center md:items-start">
                      <p className={`text-2xl md:text-xl xl:text-3xl font-bold ${darkMode ? 'text-white' : 'text-purple-600'
                         }`}>
-                        123 Main Street
-                     </p>
-                     <p className={`text-2xl md:text-xl xl:text-3xl font-bold ${darkMode ? 'text-white' : 'text-purple-600'
-                        }`}>
-                        Anytown, CA 98765
+                        USA
                      </p>
                   </div>
                </div>
