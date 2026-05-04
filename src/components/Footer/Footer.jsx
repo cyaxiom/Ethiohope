@@ -23,18 +23,7 @@ const Footer = () => {
       { name: 'How it Works', path: '/how-it-works' },
       { name: 'About Us', path: '/about' },
       { name: 'Our Team', path: '/about/teams' },
-      { name: 'Services', path: '/services' },
-    ],
-    support: [
       { name: 'Contact Us', path: '/about/contact' },
-      { name: 'FAQ', path: '/faq' },
-      { name: 'Community', path: '/community' },
-      { name: 'Help Center', path: '/help' },
-    ],
-    legal: [
-      { name: 'Privacy Policy', path: '/privacy' },
-      { name: 'Terms of Service', path: '/terms' },
-      { name: 'Cookie Policy', path: '/cookies' },
     ]
   };
 
@@ -85,27 +74,11 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="grid grid-cols-2 gap-8 lg:col-span-2">
+          <div className="lg:col-span-1">
             <div>
               <h3 className="text-gray-900 font-bold text-lg mb-6">Platform</h3>
               <ul className="space-y-4">
                 {footerLinks.platform.map((link, index) => (
-                  <li key={index}>
-                    <Link 
-                      to={link.path} 
-                      className="text-gray-500 hover:text-primary transition-colors text-sm flex items-center group"
-                    >
-                      <ArrowRight size={12} className="mr-2 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-gray-900 font-bold text-lg mb-6">Support</h3>
-              <ul className="space-y-4">
-                {footerLinks.support.map((link, index) => (
                   <li key={index}>
                     <Link 
                       to={link.path} 
@@ -165,15 +138,7 @@ const Footer = () => {
             © {currentYear} Ethiohope. All rights reserved. Built with ❤️ for Ethiopia.
           </p>
           <div className="flex space-x-6">
-            {footerLinks.legal.map((link, index) => (
-              <Link 
-                key={index} 
-                to={link.path} 
-                className="text-gray-400 hover:text-gray-600 text-xs transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
+            {/* Legal links removed per request */}
           </div>
         </div>
       </div>

@@ -178,7 +178,7 @@ const CourseDetail = () => {
         <p className="text-muted-foreground mb-8 text-lg">The program you are looking for does not exist or was disabled.</p>
         <button
           onClick={() => navigate("/")}
-          className="px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow hover:bg-primary/90 font-bold"
+          className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white rounded-full font-bold hover:scale-105 transition-all shadow-xl"
         >
           Back to Home
         </button>
@@ -415,7 +415,7 @@ const CourseDetail = () => {
                 document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' });
               }, 100);
             }}
-            className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg shadow hover:bg-secondary/80"
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white rounded-full font-bold hover:scale-105 transition-all shadow-xl"
           >
             ← Back to Courses
           </button>
