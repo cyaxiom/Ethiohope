@@ -174,8 +174,8 @@ const Register: React.FC = () => {
               to="/login"
               state={{ from }}
               className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-xl font-bold
-                bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98]
-                shadow-lg shadow-primary/20 transition-all duration-300"
+                bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white hover:scale-[1.02] active:scale-[0.98]
+                shadow-lg shadow-blue-500/20 transition-all duration-300"
             >
               <span>Go to Login</span>
               <ArrowRight className="h-5 w-5" />
@@ -317,7 +317,7 @@ const Register: React.FC = () => {
                 flex items-center justify-center gap-2
                 ${isSigningUp
                   ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' 
-                  : 'bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20'
+                  : 'bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/20'
                 }
               `}
             >

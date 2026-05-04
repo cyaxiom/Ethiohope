@@ -139,7 +139,7 @@ const ForgotPassword: React.FC = () => {
                     flex items-center justify-center gap-2
                     ${isLoading 
                       ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-70' 
-                      : 'bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20'
+                      : 'bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-500/20'
                     }
                   `}
                 >

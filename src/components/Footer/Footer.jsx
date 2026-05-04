@@ -59,7 +59,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 rotate-3 transition-transform hover:rotate-0 cursor-pointer">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 rotate-3 transition-transform hover:rotate-0 cursor-pointer">
                 <span className="text-white font-bold text-lg">E</span>
               </div>
               <span className="text-2xl font-black tracking-tight text-gray-900">
@@ -149,7 +149,7 @@ const Footer = () => {
                   className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
                 <button 
-                  className="absolute right-2 top-1.5 p-2 bg-primary text-white rounded-lg hover:brightness-90 transition-all shadow-sm active:scale-95"
+                  className="absolute right-2 top-1.5 p-2 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-lg hover:brightness-110 transition-all shadow-sm active:scale-95"
                   aria-label="Subscribe"
                 >
                   <Send size={16} />

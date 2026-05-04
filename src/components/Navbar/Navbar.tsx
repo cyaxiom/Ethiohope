@@ -175,7 +175,7 @@ export default function Navbar() {
               <Link 
                 to="/login"
                 state={{ from: location.pathname }}
-                className="px-4 py-2 text-sm font-semibold flex items-center gap-2 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors text-black"
+                className="px-6 py-2 text-sm font-bold flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
               >
                 <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">Sign In</span>

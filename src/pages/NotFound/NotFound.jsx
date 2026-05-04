@@ -20,13 +20,13 @@ const NotFound = () => {
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <Link
                     to="/"
-                    className="px-8 py-3 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all shadow-xl hover:scale-105"
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white rounded-full font-bold hover:opacity-90 transition-all shadow-xl hover:scale-105"
                 >
                     Back to Home
                 </Link>
                 <button
                     onClick={() => window.history.back()}
-                    className="px-8 py-3 border-2 border-blue-600 text-blue-600 rounded-full font-bold hover:bg-blue-50 transition-all hover:scale-105"
+                    className="px-8 py-3 border-2 border-blue-600 dark:border-[#3C12D4] text-blue-600 dark:text-[#3C12D4] rounded-full font-bold hover:bg-blue-50 dark:hover:bg-[#3C12D4]/10 transition-all hover:scale-105"
                 >
                     Go Back
                 </button>

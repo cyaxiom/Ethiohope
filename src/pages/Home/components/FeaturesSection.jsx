@@ -55,9 +55,8 @@ const FeaturesSection = () => {
               whileHover={{ scale: 1.07, boxShadow: "0px 8px 24px rgba(0,0,0,0.2)" }}
               whileTap={{ scale: 0.95 }}
               className="inline-block px-8 py-3 text-lg font-bold 
-                         text-primary-foreground bg-primary rounded-full 
-                         shadow-lg hover:bg-primary/90 
-                         transition duration-300"
+                         text-white bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] rounded-full 
+                         shadow-lg transition duration-300"
             >
               Book Your Free Class
             </motion.a>

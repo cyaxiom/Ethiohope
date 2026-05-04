@@ -46,7 +46,7 @@ function ProjectsShowcaseSection() {
           {/* Left Arrow */}
           <button
             onClick={handlePrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
             aria-label="Previous projects"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -55,7 +55,7 @@ function ProjectsShowcaseSection() {
           {/* Right Arrow */}
           <button
             onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
             aria-label="Next projects"
           >
             <ChevronRight className="w-6 h-6" />
