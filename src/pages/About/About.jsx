@@ -64,7 +64,12 @@ const HeroSection = () => {
         </p>
         <div className="flex flex-wrap gap-4">
           <Button 
-            onClick={() => navigate('/')}
+            onClick={() => {
+              navigate('/');
+              setTimeout(() => {
+                document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
             size="lg" 
             className="rounded-full px-10 py-5 text-xl font-black bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white shadow-[0_10px_30px_rgba(37,99,235,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 border-none"
           >
@@ -181,7 +186,12 @@ const TeachingSection = () => {
           ))}
         </ul>
         <Button 
-          onClick={() => navigate('/')}
+          onClick={() => {
+            navigate('/');
+            setTimeout(() => {
+              document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
           size="lg" 
           className="rounded-full px-10 font-bold group"
         >
