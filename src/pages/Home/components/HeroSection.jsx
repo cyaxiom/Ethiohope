@@ -10,9 +10,11 @@ const images = [
 ];
 
 const backgroundImages = [
-  "/hero_bg_1.png",
+  "/hero_bg_1.jpg",
   "/hero_bg_2.png",
-  "/hero_bg_3.png"
+  "/hero_bg_3.png",
+  "/hero_bg_4.jpg",
+  "/hero_bg_5.png"
 ];
 
 const HeroSection = () => {
@@ -31,22 +33,22 @@ const HeroSection = () => {
   const bgIndex = currentIndex % backgroundImages.length;
 
   return (
-    <section className="relative min-h-[95vh] flex items-center justify-center pt-20 pb-20 px-4 md:px-12 overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center pt-0 pb-20 px-4 md:px-12 overflow-hidden">
       {/* Background Carousel */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={bgIndex}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url('${backgroundImages[bgIndex]}')` }}
           />
         </AnimatePresence>
         {/* Persistent Dark Overlay for Readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 z-10"></div>
       </div>
       
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12 relative z-20 w-full">

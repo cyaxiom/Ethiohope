@@ -12,7 +12,7 @@ import Stats from '../../components/Home/Stats';
 
 function Home() {
   return (
-    <div className="w-full overflow-x-hidden pt-20 bg-muted/30 text-foreground">
+    <div className="w-full overflow-x-hidden pt-0 text-foreground">
       <HeroSection />
       <VideoSection />
       <CoursesSection />

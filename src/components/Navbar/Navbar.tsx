@@ -98,7 +98,7 @@ export default function Navbar() {
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 shadow-md bg-white text-black`}
+        className={`fixed top-0 left-0 right-0 z-50 bg-white text-black`}
         style={{
           backgroundColor: 'var(--header-bg, #fff)',
           color: '#181A20',

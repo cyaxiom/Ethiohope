@@ -115,7 +115,7 @@ const Footer = () => {
                   <MapPin size={18} className="text-blue-500 shrink-0 order-1 md:order-2" />
                 </div>
                 <div className="flex items-center md:justify-end space-x-3 text-[15px] text-gray-500 group cursor-pointer hover:text-blue-600 transition-colors">
-                  <span className="font-medium order-2 md:order-1">+1 (469) 803-6773</span>
+                  <span className="font-medium order-2 md:order-1">+1 (408) 444-5910</span>
                   <Phone size={18} className="text-blue-500 shrink-0 order-1 md:order-2" />
                 </div>
                 <div className="flex items-center md:justify-end space-x-3 text-[15px] text-gray-500 group cursor-pointer hover:text-blue-600 transition-colors">

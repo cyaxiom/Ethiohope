@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { SectionContainer } from '../../components/ui/Container';
 import { Heading, Text } from '../../components/ui/Typography';
 import { Button } from '../../components/ui/Button';
@@ -60,44 +59,93 @@ export default function HowItWorks() {
   ];
 
   return (
-    <div className="w-full pt-20 bg-muted/30 text-foreground min-h-screen">
+    <div className="w-full pt-0 bg-muted/30 text-foreground min-h-screen">
       {/* 1. HERO SECTION */}
-      <section className="relative py-16 md:py-24 bg-white">
+      <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-white">
+        {/* Decorative Background Glows */}
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-50/50 rounded-full blur-[120px] -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-green-50/50 rounded-full blur-[100px] -z-10"></div>
+
         <SectionContainer containerSize="lg">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <span className="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold tracking-wide border border-blue-200">
-                GUIDE FOR PARENTS & LEARNERS
-              </span>
-              <Heading variant="h1" className="text-4xl md:text-5xl font-extrabold leading-tight">
-                How EthioHope Works
-              </Heading>
-              <Text className="text-xl text-muted-foreground font-medium max-w-xl">
-                A simple step-by-step journey from registration to learning.
-              </Text>
-            </div>
-            <div className="relative isolate flex justify-center">
-              {/* Decorative Background */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-purple-100 rounded-[2rem] transform rotate-3 scale-105 -z-10 opacity-70"></div>
-              {/* Optional: Replace with actual image when available */}
-              <div className="w-full max-w-md aspect-video bg-muted rounded-[2rem] shadow-2xl flex items-center justify-center overflow-hidden border-4 border-white">
-                <img 
-                  src="/how-it-works.png" 
-                  alt="Process guide" 
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=60";
-                  }}
-                />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left Content */}
+            <div className="relative z-10 order-2 lg:order-1">
+               <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-blue-50 text-blue-600 text-xs md:text-sm font-bold tracking-widest border border-blue-100 mb-8 uppercase">
+                <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                Step-by-Step Guide
               </div>
+              <Heading variant="h1" className="text-4xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-8 tracking-tight">
+                Master the Path <br/>
+                to <span className="text-blue-600">Success</span>
+              </Heading>
+              <Text className="text-lg md:text-xl text-slate-600 font-medium max-w-xl mb-12 leading-relaxed">
+                We've simplified the journey. From your first click to your child's first project, here's how EthioHope empowers the next generation of tech leaders.
+              </Text>
+              <div className="flex flex-wrap gap-4">
+                 <Button 
+                  onClick={() => document.getElementById('steps')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-white border-none px-10 py-7 rounded-[2rem] shadow-2xl shadow-blue-500/20 text-lg font-bold transition-all hover:translate-y-[-4px] group"
+                  rightIcon={<ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
+                 >
+                    See How It Works
+                 </Button>
+              </div>
+
+              {/* Trust markers */}
+              <div className="mt-16 pt-8 border-t border-slate-100 flex items-center gap-8">
+                <div>
+                  <div className="text-2xl font-black text-slate-900">100%</div>
+                  <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Practical</div>
+                </div>
+                <div className="w-px h-10 bg-slate-100"></div>
+                <div>
+                  <div className="text-2xl font-black text-slate-900">24/7</div>
+                  <div className="text-sm text-slate-500 font-medium uppercase tracking-wider">Support</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Image Container - Optimized for Tall Image */}
+            <div className="relative group order-1 lg:order-2">
+               {/* Decorative outer rings */}
+               <div className="absolute -inset-10 border border-slate-100 rounded-[4rem] -z-10 group-hover:scale-105 transition-transform duration-1000"></div>
+               <div className="absolute -inset-20 border border-slate-50 rounded-[5rem] -z-20 group-hover:scale-110 transition-transform duration-1000 delay-75"></div>
+               
+               {/* Main stylized image container */}
+               <div className="relative bg-slate-50 rounded-[3.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border-8 border-white aspect-[2/3] max-w-[450px] mx-auto lg:ml-auto lg:mr-0 transform rotate-2 group-hover:rotate-0 transition-all duration-700">
+                  <img 
+                    src="/banner.jpg" 
+                    alt="EthioHope Student Learning" 
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Glassmorphic Overlay Card */}
+                  <div className="absolute bottom-10 left-6 right-6 bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/40 shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+                        <Users className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <div className="text-slate-900 font-black text-xl">Join the Tribe</div>
+                        <div className="text-slate-600 text-sm font-medium">Build your future today</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Gradient bottom overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent pointer-events-none"></div>
+               </div>
+
+               {/* Abstract decorative elements */}
+               <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+               <div className="absolute -bottom-16 -right-16 w-40 h-40 bg-green-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
             </div>
           </div>
         </SectionContainer>
       </section>
 
       {/* 2. STEP-BY-STEP FLOW */}
-      <section className="py-20 md:py-32 relative">
+      <section id="steps" className="py-20 md:py-32 relative bg-white overflow-hidden">
         <SectionContainer containerSize="md">
           <div className="relative">
             {/* Vertical Line */}
@@ -117,12 +165,24 @@ export default function HowItWorks() {
 
                     {/* Content Half */}
                     <div className={`w-full md:w-1/2 pl-[88px] md:pl-0 ${isEven ? 'md:pl-16' : 'md:pr-16 text-left md:text-right'}`}>
-                      <div className={`bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-border hover:shadow-xl transition-all duration-300 transform group-hover:-translate-y-1 relative ${isEven ? 'text-left' : 'text-left md:text-right'}`}>
-                        <div className={`text-sm font-bold tracking-widest text-primary mb-2 uppercase flex ${isEven ? '' : 'md:justify-end'}`}>Step {step.id}</div>
-                        <Heading variant="h4" className="mb-3">{step.title}</Heading>
-                        <Text className="text-muted-foreground">{step.description}</Text>
+                      <div className={`bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 transform group-hover:-translate-y-2 relative overflow-hidden group/card`}>
+                        {/* Subtle number background */}
+                        <div className={`absolute -top-6 ${isEven ? '-right-6' : '-left-6'} text-8xl font-black text-slate-50 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none`}>
+                          {step.id}
+                        </div>
+                        
+                        <div className={`text-xs font-bold tracking-[0.2em] text-blue-600 mb-4 uppercase flex ${isEven ? '' : 'md:justify-end'}`}>
+                          Step {step.id}
+                        </div>
+                        <Heading variant="h4" className="mb-4 text-2xl font-bold text-slate-900 leading-tight">
+                          {step.title}
+                        </Heading>
+                        <Text className="text-slate-600 text-lg leading-relaxed mb-4">
+                          {step.description}
+                        </Text>
                         {step.note && (
-                          <div className={`mt-4 p-3 bg-blue-50 text-blue-800 text-sm font-medium rounded-lg border border-blue-100 inline-block text-left`}>
+                          <div className={`mt-4 p-4 bg-blue-50/50 text-blue-700 text-sm font-semibold rounded-2xl border border-blue-100/50 inline-block text-left backdrop-blur-sm`}>
+                            <span className="text-blue-500 mr-2">●</span>
                             {step.note}
                           </div>
                         )}
@@ -136,25 +196,6 @@ export default function HowItWorks() {
         </SectionContainer>
       </section>
 
-      {/* 4. FINAL CTA SECTION */}
-      <section className="py-20 bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-center relative overflow-hidden">
-        {/* Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-full bg-blue-500/20 pointer-events-none blur-3xl"></div>
-        <SectionContainer containerSize="sm" className="relative z-10">
-          <Heading variant="h2" className="text-white mb-6">Ready to get started?</Heading>
-          <Text className="text-lg text-blue-100 mb-10 max-w-xl mx-auto">
-            Join EthioHope today and give your child the tools to build their future.
-          </Text>
-          <Link to="/register">
-            <Button 
-              className="text-lg bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white font-bold px-10 py-6 rounded-full shadow-xl transition-transform hover:scale-105"
-              rightIcon={<ArrowRight className="w-5 h-5 ml-2" />}
-            >
-              Create Your Account
-            </Button>
-          </Link>
-        </SectionContainer>
-      </section>
     </div>
   );
 }

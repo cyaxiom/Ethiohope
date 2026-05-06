@@ -352,6 +352,45 @@ const CourseDetail: React.FC = () => {
     );
   }
 
+  // 7.5 Check if course is Active
+  if (course.isActive === false) {
+    return (
+      <div className="max-w-4xl mx-auto py-32 px-4 text-center">
+        <div className="relative inline-block mb-10">
+          <div className="absolute inset-0 bg-blue-500 blur-[60px] opacity-20 rounded-full animate-pulse" />
+          <div className="relative w-32 h-32 bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center border-4 border-blue-50 overflow-hidden group">
+            <Lock className="w-14 h-14 text-blue-600 transition-transform duration-500 group-hover:scale-110" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-green-500" />
+          </div>
+        </div>
+        
+        <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 leading-tight">
+          This Course is <span className="text-blue-600">Coming Soon</span>
+        </h2>
+        
+        <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+          The course couldn't be opened yet in public. We are working hard to finalize the curriculum for you. <span className="font-bold text-slate-800">We will notify you soon when we launch publicly.</span>
+        </p>
+        
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link to="/student/courses">
+            <Button 
+              variant="outline" 
+              className="px-10 py-6 rounded-2xl font-bold text-lg border-2 hover:bg-gray-50 transition-all active:scale-95"
+              leftIcon={<ArrowLeft className="w-5 h-5 mr-2" />}
+            >
+              Back to My Courses
+            </Button>
+          </Link>
+          <div className="flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-700 rounded-full text-sm font-bold border border-blue-100">
+            <Clock className="w-4 h-4" />
+            Launching Publicly Soon
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // 8. Main Render
   return (
     <div className="max-w-7xl mx-auto pb-20 animate-fadeIn px-4">
