@@ -44,6 +44,7 @@ export const DashboardLayout: React.FC = () => {
         { path: '/admin/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/admin/sessions', icon: Video, label: 'Sessions' },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
+        { path: '/admin/tracks', icon: Activity, label: 'Analytics' },
       ];
     }
     

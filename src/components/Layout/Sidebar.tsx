@@ -82,6 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, isHover
         { path: '/admin/chat', icon: MessageCircle, label: 'Chat', permission: ['chat.read', 'chat.write', 'chat.direct.start'] },
         { path: '/admin/sessions', icon: Video, label: 'Session', permission: ['session.read', 'session.write'] },
         { path: '/admin/payments', icon: CreditCard, label: 'Payments', permission: 'payment.read' },
+        { path: '/admin/tracks', icon: Activity, label: 'Analytics', permission: 'dashboard.admin' },
       ];
       return items.filter(item => {
         if (!item.permission) return true;
