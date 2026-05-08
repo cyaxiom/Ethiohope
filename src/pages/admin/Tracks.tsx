@@ -17,7 +17,10 @@ import {
   AlertCircle,
   RefreshCw,
   Info,
-  ExternalLink
+  ExternalLink,
+  Link,
+  Copy,
+  Check
 } from 'lucide-react';
 import {
   AreaChart,
@@ -49,6 +52,22 @@ const Tracks = () => {
   const [timeFilter, setTimeFilter] = useState('month');
   const [platform, setPlatform] = useState('all');
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null);
+  const [baseUrl, setBaseUrl] = useState('https://ethiohope.com');
+  const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  
+  const generateLink = (source: string) => {
+    const url = new URL(baseUrl);
+    url.searchParams.set('utm_source', source.toLowerCase());
+    url.searchParams.set('utm_medium', 'social');
+    return url.toString();
+  };
+
+  const handleCopy = (source: string) => {
+    const link = generateLink(source);
+    navigator.clipboard.writeText(link);
+    setCopiedPlatform(source);
+    setTimeout(() => setCopiedPlatform(null), 2000);
+  };
   
   // Prepare dates based on filter
   const getDates = (filter: string) => {
@@ -62,13 +81,14 @@ const Tracks = () => {
   };
 
   const dates = getDates(timeFilter);
+  const queryParams = { ...dates, source: platform.toLowerCase() };
 
   // Queries
-  const { data: summaryData, isLoading: loadingSummary, refetch: refetchSummary } = useGetAnalyticsSummaryQuery(dates);
-  const { data: timelineData, isLoading: loadingTimeline } = useGetAnalyticsTimelineQuery(dates);
-  const { data: sourcesData, isLoading: loadingSources } = useGetAnalyticsSourcesQuery(dates);
-  const { data: topPagesData, isLoading: loadingPages } = useGetAnalyticsTopPagesQuery(dates);
-  const { data: countriesData, isLoading: loadingCountries } = useGetAnalyticsCountriesQuery(dates);
+  const { data: summaryData, isLoading: loadingSummary, refetch: refetchSummary } = useGetAnalyticsSummaryQuery(queryParams);
+  const { data: timelineData, isLoading: loadingTimeline } = useGetAnalyticsTimelineQuery(queryParams);
+  const { data: sourcesData, isLoading: loadingSources } = useGetAnalyticsSourcesQuery(dates); // Sources should show all, so we keep 'dates'
+  const { data: topPagesData, isLoading: loadingPages } = useGetAnalyticsTopPagesQuery(queryParams);
+  const { data: countriesData, isLoading: loadingCountries } = useGetAnalyticsCountriesQuery(queryParams);
   const { data: realtimeData, refetch: refetchRealtime } = useGetAnalyticsRealtimeQuery(undefined, {
     pollingInterval: 30000, // Poll every 30 seconds
   });
@@ -104,17 +124,6 @@ const Tracks = () => {
     }
   };
 
-  // Platform Filter Logic
-  const filteredSources = sourcesData?.data?.filter((s: any) => {
-    if (platform === 'all') return true;
-    const sourceName = s.source.toLowerCase();
-    if (platform === 'TikTok') return sourceName.includes('tiktok');
-    if (platform === 'Telegram') return sourceName.includes('t.me') || sourceName.includes('telegram');
-    if (platform === 'Facebook') return sourceName.includes('facebook');
-    if (platform === 'Instagram') return sourceName.includes('instagram');
-    if (platform === 'LinkedIn') return sourceName.includes('linkedin');
-    return true;
-  }) || [];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -427,7 +436,7 @@ const Tracks = () => {
                <div className="w-full h-full bg-gray-50 dark:bg-gray-900/50 animate-pulse rounded-3xl"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredSources} layout="vertical" margin={{left: 20}}>
+                <BarChart data={sourcesData?.data || []} layout="vertical" margin={{left: 20}}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" className="dark:stroke-gray-800" />
                   <XAxis type="number" hide />
                   <YAxis 
@@ -443,7 +452,7 @@ const Tracks = () => {
                     contentStyle={{borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
                   />
                   <Bar dataKey="visits" fill="#6366f1" radius={[0, 12, 12, 0]} barSize={32}>
-                    {filteredSources.map((entry: any, index: number) => (
+                    {sourcesData?.data?.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Bar>
@@ -452,7 +461,7 @@ const Tracks = () => {
             )}
           </div>
           <div className="mt-8 grid grid-cols-2 gap-4">
-            {filteredSources.slice(0, 4).map((source: any, i: number) => (
+            {sourcesData?.data?.slice(0, 4).map((source: any, i: number) => (
               <div key={i} className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl flex items-center justify-between border border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-900/30 transition-colors">
                 <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest truncate mr-2">{source.source}</span>
                 <span className="text-sm font-black text-blue-600 dark:text-blue-400">{source.percentage}</span>
@@ -514,6 +523,66 @@ const Tracks = () => {
               </div>
             </div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* Link Generator Tool */}
+      <motion.div 
+        variants={itemVariants}
+        className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+          <div>
+            <h3 className="text-xl font-bold tracking-tight">Tracking Link Generator</h3>
+            <p className="text-sm text-gray-500">Create special links for your social media posts to track them accurately</p>
+          </div>
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
+            <Link className="text-blue-600" size={24} />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Target Page URL</label>
+            <input 
+              type="text" 
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="https://ethiohope.com"
+              className="w-full p-4 bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {['Telegram', 'Instagram', 'TikTok', 'Facebook', 'LinkedIn'].map((p) => (
+              <button
+                key={p}
+                onClick={() => handleCopy(p)}
+                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group ${
+                  copiedPlatform === p 
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600' 
+                    : 'border-gray-100 dark:border-gray-800 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10'
+                }`}
+              >
+                {copiedPlatform === p ? <Check size={20} className="animate-bounce" /> : <Copy size={20} className="text-gray-400 group-hover:text-blue-500" />}
+                <span className="text-xs font-black uppercase tracking-widest">{p}</span>
+                <span className="text-[9px] font-medium opacity-60">
+                  {copiedPlatform === p ? 'Link Copied!' : 'Copy Tracking Link'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="mt-8 p-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl">
+           <p className="text-xs text-amber-800 dark:text-amber-400 font-medium leading-relaxed flex gap-3">
+              <Info size={24} className="shrink-0" />
+              <span>
+                <strong>Important:</strong> When you share your site on Telegram or Instagram, use the link generated above. 
+                This adds <code>?utm_source={'{platform}'}</code> to your URL, which forces Google Analytics to recognize the 
+                traffic correctly even if the app hides its identity.
+              </span>
+           </p>
         </div>
       </motion.div>
     </div>
