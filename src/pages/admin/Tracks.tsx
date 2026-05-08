@@ -39,6 +39,7 @@ import {
   useGetAnalyticsTimelineQuery,
   useGetAnalyticsSourcesQuery,
   useGetAnalyticsTopPagesQuery,
+  useGetAnalyticsCountriesQuery,
   useGetAnalyticsRealtimeQuery
 } from '../../features/analytics/analyticsApi';
 
@@ -67,6 +68,7 @@ const Tracks = () => {
   const { data: timelineData, isLoading: loadingTimeline } = useGetAnalyticsTimelineQuery(dates);
   const { data: sourcesData, isLoading: loadingSources } = useGetAnalyticsSourcesQuery(dates);
   const { data: topPagesData, isLoading: loadingPages } = useGetAnalyticsTopPagesQuery(dates);
+  const { data: countriesData, isLoading: loadingCountries } = useGetAnalyticsCountriesQuery(dates);
   const { data: realtimeData, refetch: refetchRealtime } = useGetAnalyticsRealtimeQuery(undefined, {
     pollingInterval: 30000, // Poll every 30 seconds
   });
@@ -82,7 +84,7 @@ const Tracks = () => {
     },
     activeUsers: {
       title: "Active Users (Engaged)",
-      desc: "Users who had an engaged session. An engaged session is one that lasted 10 seconds or longer, had 1 or more conversion events, or had 2 or more page views.",
+      desc: "Users who had an engaged visit. An engaged visit is one that lasted 10 seconds or longer, had 1 or more conversion events, or had 2 or more page views.",
       icon: <Activity className="text-emerald-500" />
     },
     pageViews: {
@@ -91,8 +93,8 @@ const Tracks = () => {
       icon: <Eye className="text-purple-500" />
     },
     sessions: {
-      title: "Sessions",
-      desc: "A session starts when a user opens your site and ends after 30 minutes of inactivity. It's a way to measure individual visits.",
+      title: "Visits",
+      desc: "A visit (session) starts when a user opens your site and ends after 30 minutes of inactivity. It's a way to measure individual trips to your site.",
       icon: <MousePointer2 className="text-orange-500" />
     },
     realtime: {
@@ -274,7 +276,7 @@ const Tracks = () => {
           setHovered={setHoveredMetric}
         />
         <SummaryCard 
-          title="Sessions" 
+          title="Visits" 
           value={summaryData?.data?.sessions.toLocaleString() || '0'} 
           icon={<MousePointer2 className="text-orange-500" />} 
           isLoading={loadingSummary}
@@ -298,7 +300,7 @@ const Tracks = () => {
           <div className="flex flex-wrap gap-6 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-2xl">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div> 
-              <span className="text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">Sessions</span>
+              <span className="text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">Visits</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div> 
@@ -361,7 +363,7 @@ const Tracks = () => {
                   labelStyle={{marginBottom: '8px', color: '#64748b', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase'}}
                 />
                 <Area type="monotone" dataKey="views" name="Page Views" stroke="#a855f7" strokeWidth={4} fillOpacity={1} fill="url(#colorViews)" dot={{r: 4, fill: '#a855f7', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6, strokeWidth: 0}} />
-                <Area type="monotone" dataKey="visits" name="Sessions" stroke="#2563eb" strokeWidth={4} fillOpacity={1} fill="url(#colorVisits)" dot={{r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6, strokeWidth: 0}} />
+                <Area type="monotone" dataKey="visits" name="Visits" stroke="#2563eb" strokeWidth={4} fillOpacity={1} fill="url(#colorVisits)" dot={{r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6, strokeWidth: 0}} />
                 <Area type="monotone" dataKey="users" name="Active Users" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorUsers)" dot={{r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff'}} activeDot={{r: 6, strokeWidth: 0}} />
               </AreaChart>
             </ResponsiveContainer>
@@ -459,6 +461,61 @@ const Tracks = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Top Countries Breakdown */}
+      <motion.div 
+        variants={itemVariants}
+        className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-xl font-bold tracking-tight">Top Countries</h3>
+            <p className="text-sm text-gray-500">Visitor locations ranked by visit count</p>
+          </div>
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
+            <Globe className="text-blue-600" size={24} />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {loadingCountries ? [1,2,3,4,5,6].map(i => (
+            <div key={i} className="h-20 bg-gray-50 dark:bg-gray-900/50 animate-pulse rounded-2xl"></div>
+          )) : countriesData?.data?.map((item: any, i: number) => (
+            <div key={i} className="p-6 bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 transition-all group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-black text-gray-400">0{i + 1}</span>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{item.country}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-black text-blue-600 dark:text-blue-400">{item.sessions}</span>
+                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Visits</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+                  <span>Relative Volume</span>
+                  <span>{((item.sessions / (countriesData?.data?.[0]?.sessions || 1)) * 100).toFixed(0)}%</span>
+                </div>
+                <div className="h-2 w-full bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(item.sessions / (countriesData?.data?.[0]?.sessions || 1)) * 100}%` }}
+                    transition={{ duration: 1, delay: i * 0.1 }}
+                    className="h-full bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]"
+                  />
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Users</span>
+                 <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{item.users}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 };

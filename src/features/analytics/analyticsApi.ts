@@ -27,6 +27,12 @@ export const analyticsApi = api.injectEndpoints({
         params,
       }),
     }),
+    getAnalyticsCountries: builder.query<any, { startDate?: string; endDate?: string }>({
+      query: (params) => ({
+        url: '/admin/dashboard/analytics/countries',
+        params,
+      }),
+    }),
     getAnalyticsRealtime: builder.query<any, void>({
       query: () => '/admin/dashboard/analytics/realtime',
     }),
@@ -39,5 +45,6 @@ export const {
   useGetAnalyticsTimelineQuery,
   useGetAnalyticsSourcesQuery,
   useGetAnalyticsTopPagesQuery,
+  useGetAnalyticsCountriesQuery,
   useGetAnalyticsRealtimeQuery,
 } = analyticsApi;
