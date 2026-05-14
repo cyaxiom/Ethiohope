@@ -44,7 +44,7 @@ const CourseDetail = () => {
     if (!profileData.phone.trim()) {
       newErrors.phone = "Phone number is required";
     } else if (!/^\+?[\d\s\-\(\)]{10,20}$/.test(profileData.phone.trim())) {
-      newErrors.phone = "Please enter a valid phone number (e.g., +251...)";
+      newErrors.phone = "Please enter a valid phone number (e.g., +1...)";
     }
 
     if (!profileData.country.trim()) {
@@ -471,7 +471,7 @@ const CourseDetail = () => {
                     <input
                       required
                       type="tel"
-                      placeholder="+251 911 234 567"
+                      placeholder="+1 (555) 000-0000"
                       value={profileData.phone}
                       onChange={e => {
                         setProfileData({...profileData, phone: e.target.value});
@@ -488,7 +488,7 @@ const CourseDetail = () => {
                       <input
                         required
                         type="text"
-                        placeholder="Ethiopia"
+                        placeholder="United States"
                         value={profileData.country}
                         onChange={e => {
                           setProfileData({...profileData, country: e.target.value});
@@ -503,7 +503,7 @@ const CourseDetail = () => {
                       <input
                         required
                         type="text"
-                        placeholder="Addis Ababa"
+                        placeholder="Texas"
                         value={profileData.state}
                         onChange={e => {
                           setProfileData({...profileData, state: e.target.value});
@@ -520,7 +520,7 @@ const CourseDetail = () => {
                     <input
                       required
                       type="text"
-                      placeholder="Addis Ababa"
+                      placeholder="Dallas"
                       value={profileData.city}
                       onChange={e => {
                         setProfileData({...profileData, city: e.target.value});

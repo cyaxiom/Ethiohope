@@ -3,11 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import pdf from "../../../assets/images/contact/pdf.svg";
 import { HiOutlineCloudArrowDown } from "react-icons/hi2";
 import getintouchicon5 from "../../../assets/images/contact/getIntouchicon5.png";
-import { FaTelegramPlane, FaTwitter } from "react-icons/fa";
-import { GrFacebookOption } from "react-icons/gr";
-import { IoLogoTwitter } from "react-icons/io5";
-import { FaInstagram } from "react-icons/fa";
-import { FaLinkedinIn } from "react-icons/fa";
+import { FaWhatsapp, FaYoutube, FaFacebookF, FaTelegramPlane } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 
 const Newsletter = ({ darkMode }) => {
@@ -193,41 +189,42 @@ const Newsletter = ({ darkMode }) => {
                </span>
             </Link>
             <div className="flex space-x-2 mt-4 text-white text-xl w-full justify-end max-[468px]:justify-start">
-               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
-                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
-                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
-                  }`}>
-                  <GrFacebookOption className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+               <a 
+                 href="https://www.facebook.com/share/1DVqEK2ZWV/?mibextid=wwXIfr" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                   ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                   : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                   }`}
+               >
+                  <FaFacebookF className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 hover:text-white'
                      }`} />
-               </span>
-               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
-                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
-                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
-                  }`}>
-                  <IoLogoTwitter className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+               </a>
+               <a 
+                 href="https://www.youtube.com/@EthioHope-z4r" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                   ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                   : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                   }`}
+               >
+                  <FaYoutube className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 hover:text-white'
                      }`} />
-               </span>
-               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
-                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
-                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
-                  }`}>
-                  <FaInstagram className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
+               </a>
+               <a 
+                 href="https://chat.whatsapp.com/FPdx6wKCWjGFag52lo5PGi" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
+                   ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
+                   : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
+                   }`}
+               >
+                  <FaWhatsapp className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 hover:text-white'
                      }`} />
-               </span>
-               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
-                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
-                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
-                  }`}>
-                  <FaLinkedinIn className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
-                     }`} />
-               </span>
-               <span className={`p-3 rounded-lg cursor-pointer inline-flex items-center justify-center transition-colors ${darkMode
-                  ? 'bg-[#1D1D3E] hover:bg-[#3C12D4]'
-                  : 'bg-gray-200 hover:bg-gradient-to-r from-blue-600 to-green-500'
-                  }`}>
-                  <FaTelegramPlane className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-gray-700 group-hover:text-white'
-                     }`} />
-               </span>
+               </a>
             </div>
          </div>
       </section>

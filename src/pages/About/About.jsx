@@ -60,7 +60,7 @@ const HeroSection = () => {
         <p className="text-lg md:text-xl text-white/90 mb-10 leading-relaxed font-medium drop-shadow-lg">
           From building sophisticated digital systems to mentoring future innovators, 
           EthioHope is bridging the gap between theoretical knowledge and real-world 
-          industry excellence in Ethiopia's growing tech landscape.
+          industry excellence in today's growing global tech landscape.
         </p>
         <div className="flex flex-wrap gap-4">
           <Button 
@@ -220,7 +220,7 @@ const WhyUsSection = () => (
           { 
             icon: <ShieldCheck className="w-8 h-8 text-blue-400" />, 
             title: "Industry Credibility", 
-            desc: "Our instructors are the same engineers building Ethiopia's digital infrastructure." 
+            desc: "Our instructors are the same engineers building sophisticated digital systems for global organizations." 
           },
           { 
             icon: <TrendingUp className="w-8 h-8 text-purple-400" />, 
@@ -259,9 +259,9 @@ const VisionSection = () => (
     <div className="text-center max-w-4xl mx-auto">
       <motion.div {...fadeInUp}>
         <h2 className="text-sm font-black uppercase tracking-[0.3em] text-primary mb-4">The Future</h2>
-        <h3 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white mb-10">Our Mission is to <br />Transform Ethiopia's Tech.</h3>
+        <h3 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white mb-10">Our Mission is to <br />Transform Tech Education.</h3>
         <p className="text-xl text-slate-600 dark:text-slate-400 mb-12 leading-relaxed font-medium italic">
-          "We envision an Ethiopia where every young person has the tools to build their own future, solving local problems with world-class technology solutions. EthioHope is here to provide those tools."
+          "We envision a world where every young person has the tools to build their own future, solving complex problems with world-class technology solutions. EthioHope is here to provide those tools."
         </p>
         <div className="inline-flex items-center p-2 pr-6 rounded-full bg-slate-100 dark:bg-slate-800 gap-4">
            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold">EH</div>

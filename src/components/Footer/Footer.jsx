@@ -2,15 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
   Youtube, 
   Mail, 
   Phone, 
   MapPin, 
   ArrowRight,
-  Send
+  Send,
+  MessageCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -28,11 +26,9 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook', color: 'hover:bg-[#1877F2]' },
-    { icon: Twitter, href: '#', label: 'Twitter', color: 'hover:bg-[#1DA1F2]' },
-    { icon: Instagram, href: '#', label: 'Instagram', color: 'hover:bg-gradient-to-tr from-[#FFB700] via-[#FF0069] to-[#7600C6]' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn', color: 'hover:bg-[#0A66C2]' },
-    { icon: Youtube, href: '#', label: 'YouTube', color: 'hover:bg-[#FF0000]' },
+    { icon: Facebook, href: 'https://www.facebook.com/share/1DVqEK2ZWV/?mibextid=wwXIfr', label: 'Facebook', color: 'hover:bg-[#1877F2]' },
+    { icon: Youtube, href: 'https://www.youtube.com/@EthioHope-z4r', label: 'YouTube', color: 'hover:bg-[#FF0000]' },
+    { icon: MessageCircle, href: 'https://chat.whatsapp.com/FPdx6wKCWjGFag52lo5PGi', label: 'WhatsApp', color: 'hover:bg-[#25D366]' },
   ];
 
   return (
@@ -60,7 +56,7 @@ const Footer = () => {
             </div>
             
             <p className="text-gray-500 leading-relaxed text-base max-w-[280px]">
-              Empowering the next generation of Ethiopian innovators through premium coding education and a supportive global community.
+              Empowering the next generation of innovators through premium coding education and a supportive global community.
             </p>
 
             <div className="flex items-center space-x-3">
@@ -68,6 +64,8 @@ const Footer = () => {
                 <motion.a
                   key={index}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ y: -5, scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className={`w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-gray-400 transition-all duration-300 hover:text-white border border-gray-100 ${social.color}`}
@@ -115,7 +113,7 @@ const Footer = () => {
                   <MapPin size={18} className="text-blue-500 shrink-0 order-1 md:order-2" />
                 </div>
                 <div className="flex items-center md:justify-end space-x-3 text-[15px] text-gray-500 group cursor-pointer hover:text-blue-600 transition-colors">
-                  <span className="font-medium order-2 md:order-1">+1 (408) 444-5910</span>
+                  <span className="font-medium order-2 md:order-1">+1 (945) 385-0556</span>
                   <Phone size={18} className="text-blue-500 shrink-0 order-1 md:order-2" />
                 </div>
                 <div className="flex items-center md:justify-end space-x-3 text-[15px] text-gray-500 group cursor-pointer hover:text-blue-600 transition-colors">
@@ -137,7 +135,7 @@ const Footer = () => {
             <span className="mx-2">•</span>
             <span>Built with</span>
             <span className="text-red-500 animate-pulse mx-1">❤️</span>
-            <span>for the future of Ethiopia</span>
+            <span>for the next generation of global innovators</span>
           </div>
           
           <div className="flex items-center space-x-8">

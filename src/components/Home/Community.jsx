@@ -17,7 +17,7 @@ export default function Community() {
             </Heading>
             
             <Text size="lg" className="text-slate-300 mb-10 max-w-2xl mx-auto text-base sm:text-lg font-medium leading-relaxed">
-              Join thousands of students building the future of technology in Ethiopia and beyond. It's your experience, lead.
+              Join thousands of students building the future of technology around the world. It's your experience, lead.
             </Text>
             
             <Button 

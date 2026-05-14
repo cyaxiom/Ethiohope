@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Facebook, Instagram, Linkedin, Twitter, ArrowRight } from 'lucide-react';
+import { Facebook, Youtube, MessageCircle, ArrowRight } from 'lucide-react';
 import { DS } from '@/constants/designSystem';
 import Container from '@/components/ui/Container';
 
@@ -9,32 +9,31 @@ import Container from '@/components/ui/Container';
 const Socials = () => (
   <div className="flex items-center gap-3 mt-4">
     <a
-      href="#"
-      className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
-      aria-label="Twitter"
-    >
-      <Twitter className="w-4 h-4" />
-    </a>
-    <a
-      href="#"
+      href="https://www.facebook.com/share/1DVqEK2ZWV/?mibextid=wwXIfr"
+      target="_blank"
+      rel="noopener noreferrer"
       className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
       aria-label="Facebook"
     >
       <Facebook className="w-4 h-4" />
     </a>
     <a
-      href="#"
+      href="https://www.youtube.com/@EthioHope-z4r"
+      target="_blank"
+      rel="noopener noreferrer"
       className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
-      aria-label="LinkedIn"
+      aria-label="YouTube"
     >
-      <Linkedin className="w-4 h-4" />
+      <Youtube className="w-4 h-4" />
     </a>
     <a
-      href="#"
+      href="https://chat.whatsapp.com/FPdx6wKCWjGFag52lo5PGi"
+      target="_blank"
+      rel="noopener noreferrer"
       className="w-10 h-10 rounded-full flex items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-primary hover:border-primary hover:text-primary-foreground"
-      aria-label="Instagram"
+      aria-label="WhatsApp"
     >
-      <Instagram className="w-4 h-4" />
+      <MessageCircle className="w-4 h-4" />
     </a>
   </div>
 );
@@ -282,10 +281,15 @@ function Teams() {
                 <h5 className="mt-5 text-2xl font-extrabold text-foreground">John Doe</h5>
                 <p className="text-muted-foreground">Founder & CEO</p>
                 <div className="flex items-center justify-center gap-4 mt-4">
-                  <Facebook className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
-                  <Linkedin className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
-                  <Twitter className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
-                  <Instagram className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  <a href="https://www.facebook.com/share/1DVqEK2ZWV/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer">
+                    <Facebook className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  </a>
+                  <a href="https://www.youtube.com/@EthioHope-z4r" target="_blank" rel="noopener noreferrer">
+                    <Youtube className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  </a>
+                  <a href="https://chat.whatsapp.com/FPdx6wKCWjGFag52lo5PGi" target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
+                  </a>
                 </div>
               </div>
             ))}
