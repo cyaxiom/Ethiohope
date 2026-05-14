@@ -95,7 +95,13 @@ export const ParentPayments: React.FC = () => {
     const date = new Date(payment.createdAt).toLocaleDateString(undefined, { 
       year: 'numeric', month: 'long', day: 'numeric' 
     });
-    const amount = (payment.amount || payment.phase?.price || 0).toLocaleString();
+    const subtotal = payment.amount || payment.phase?.price || 0;
+    const tax = subtotal * 0.15;
+    const total = subtotal + tax;
+    
+    const subtotalStr = subtotal.toLocaleString();
+    const taxStr = tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const totalStr = total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -120,8 +126,8 @@ export const ParentPayments: React.FC = () => {
                     <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-xl">E</div>
                     <span class="text-2xl font-black text-blue-900 tracking-tight">EthioHope Academy</span>
                   </div>
-                  <p class="text-gray-500 text-sm font-medium">Bole Road, Africa Avenue</p>
-                  <p class="text-gray-500 text-sm font-medium">Addis Ababa, Ethiopia</p>
+                  <p class="text-gray-500 text-sm font-medium">123 Tech Way, Suite 500</p>
+                  <p class="text-gray-500 text-sm font-medium">Dallas, TX 75201, USA</p>
                   <p class="text-gray-500 text-sm font-medium">contact@ethiohope.com</p>
                 </div>
                 <div class="text-right">
@@ -167,7 +173,7 @@ export const ParentPayments: React.FC = () => {
                           </td>
                           <td class="py-6 text-center">
                             <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg font-black text-[10px]">
-                              ${item.child?.firstname} ${item.child?.lastname}
+                              ${item.child?.firstname || item.child?.firstName || 'Student'} ${item.child?.lastname || item.child?.lastName || ''}
                             </span>
                           </td>
                           <td class="py-6 text-right">
@@ -183,11 +189,11 @@ export const ParentPayments: React.FC = () => {
                           </td>
                           <td class="py-8 text-center">
                             <span class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-black text-xs">
-                              ${payment.child?.firstname} ${payment.child?.lastname}
+                              ${payment.child?.firstname || payment.child?.firstName || 'Student'} ${payment.child?.lastname || payment.child?.lastName || ''}
                             </span>
                           </td>
                           <td class="py-8 text-right">
-                            <span class="text-xl font-black text-gray-800">$${amount}</span>
+                            <span class="text-xl font-black text-gray-800">$${subtotalStr}</span>
                           </td>
                         </tr>
                       `
@@ -201,15 +207,15 @@ export const ParentPayments: React.FC = () => {
                 <div class="w-full max-w-xs space-y-4">
                   <div class="flex justify-between items-center text-gray-500 font-medium">
                     <span>Subtotal</span>
-                    <span class="text-gray-800 font-bold">$${amount}</span>
+                    <span class="text-gray-800 font-bold">$${subtotalStr}</span>
                   </div>
                   <div class="flex justify-between items-center text-gray-500 font-medium">
-                    <span>Tax (0%)</span>
-                    <span class="text-gray-800 font-bold">$0.00</span>
+                    <span>Tax (15%)</span>
+                    <span class="text-gray-800 font-bold">$${taxStr}</span>
                   </div>
                   <div class="flex justify-between items-center pt-4 border-t-2 border-gray-100">
                     <span class="text-lg font-black text-gray-800">Total Amount</span>
-                    <span class="text-3xl font-black text-blue-600">$${amount}</span>
+                    <span class="text-3xl font-black text-blue-600">$${totalStr}</span>
                   </div>
                 </div>
               </div>
@@ -439,15 +445,15 @@ export const ParentPayments: React.FC = () => {
                         <h3 className="text-xl font-black text-gray-800 tracking-tight">
                           {payment.items.map((item: any, idx: number) => (
                             <React.Fragment key={item._id}>
-                              {item.child?.firstname}
-                              {idx < payment.items.length - 1 ? ', ' : ''}
-                            </React.Fragment>
+                            {item.child?.firstname || item.child?.firstName}
+                            {idx < payment.items.length - 1 ? ', ' : ''}
+                          </React.Fragment>
                           ))}
                           <span className="text-sm font-bold text-gray-400 ml-2">({payment.items.length} Students)</span>
                         </h3>
                       ) : (
                         <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
-                          {payment.child?.firstname} {payment.child?.lastname}
+                          {payment.child?.firstname || payment.child?.firstName || 'Student'} {payment.child?.lastname || payment.child?.lastName || ''}
                           <span className="text-sm font-bold text-gray-400">@{payment.child?.username}</span>
                         </h3>
                       )}

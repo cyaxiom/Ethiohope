@@ -110,7 +110,7 @@ const Checkout = () => {
 
                       <div className="flex-1 text-center sm:text-left">
                         <h3 className="font-bold text-lg text-gray-900">
-                          {enrollment.child?.firstname} {enrollment.child?.lastname}
+                          {enrollment.child?.firstname || enrollment.child?.firstName || 'Student'} {enrollment.child?.lastname || enrollment.child?.lastName || ''}
                         </h3>
                         <p className="text-blue-600 font-medium text-sm mt-1">{enrollment.program?.title}</p>
                         <p className="text-gray-500 text-sm mt-1 flex items-center justify-center sm:justify-start">
@@ -129,12 +129,19 @@ const Checkout = () => {
                 })}
 
                 <div className="mt-8 pt-6 border-t border-gray-200">
-                  <div className="flex justify-between items-center bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <div className="text-left">
-                      <span className="text-sm font-bold text-blue-600 uppercase">Selected Items: {selectedIds.length}</span>
-                      <p className="text-xl font-bold text-gray-800">Total Price</p>
+                  <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 space-y-3">
+                    <div className="flex justify-between items-center text-sm font-bold text-blue-600 uppercase">
+                      <span>Selected Items: {selectedIds.length}</span>
+                      <span>Subtotal: ${totalPrice.toLocaleString()}</span>
                     </div>
-                    <span className="text-3xl font-black text-blue-700">${totalPrice}</span>
+                    <div className="flex justify-between items-center text-sm font-bold text-gray-500 uppercase">
+                      <span>Tax (15%)</span>
+                      <span>${(totalPrice * 0.15).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="pt-3 border-t border-blue-100 flex justify-between items-center">
+                      <p className="text-xl font-black text-gray-800">Total Amount</p>
+                      <span className="text-3xl font-black text-blue-700">${(totalPrice * 1.15).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -248,7 +255,7 @@ const Checkout = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-0.5">Call Us</p>
-                              <p className="text-base font-bold text-gray-900">+1 (469) 803-6773</p>
+                              <p className="text-base font-bold text-gray-900">+1 (945) 385-0556</p>
                               <p className="text-xs text-gray-500">Available Mon-Fri, 9AM-5PM</p>
                             </div>
                           </div>
@@ -259,7 +266,7 @@ const Checkout = () => {
                             </div>
                             <div>
                               <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">WhatsApp Receipt</p>
-                              <p className="text-base font-bold text-gray-900">+1 (469) 803-6773</p>
+                              <p className="text-base font-bold text-gray-900">+1 (945) 385-0556</p>
                               <p className="text-xs text-gray-500">Send us a screenshot of your transfer</p>
                             </div>
                           </div>
@@ -287,7 +294,7 @@ const Checkout = () => {
                           <CheckCircle className="w-10 h-10" />
                         </div>
                         <h5 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h5>
-                        <p className="text-gray-600 mb-6">We've received your notice. Please make sure to send the screenshot to our WhatsApp <span className="font-bold text-purple-700">+1 (469) 803-6773</span> if you haven't already.</p>
+                        <p className="text-gray-600 mb-6">We've received your notice. Please make sure to send the screenshot to our WhatsApp <span className="font-bold text-purple-700">+1 (945) 385-0556</span> if you haven't already.</p>
                         <button
                           onClick={() => setShowZelleConfirmation(false)}
                           className="text-sm font-bold text-purple-600 hover:text-purple-700 underline"
