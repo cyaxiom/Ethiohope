@@ -7,6 +7,7 @@ export interface Program {
   image?: string;
   ageRange?: string;
   isActive: boolean;
+  orderIndex: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,6 +18,7 @@ export interface CreateProgramPayload {
   image?: string;
   ageRange?: string;
   isActive?: boolean;
+  orderIndex?: number;
 }
 
 export interface UpdateProgramPayload extends Partial<CreateProgramPayload> {

@@ -120,6 +120,7 @@ const Programs: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm">
               <tr>
+                <th className="px-6 py-4 font-medium">Order</th>
                 <th className="px-6 py-4 font-medium">Program Title</th>
                 <th className="px-6 py-4 font-medium">Age Range</th>
                 <th className="px-6 py-4 font-medium">Description</th>
@@ -131,20 +132,23 @@ const Programs: React.FC = () => {
             <tbody className="divide-y divide-gray-50">
               {isLoading || isFetching ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                     <Activity className="w-6 h-6 animate-spin mx-auto mb-2" />
                     Loading programs...
                   </td>
                 </tr>
               ) : programs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                     No programs found.
                   </td>
                 </tr>
               ) : (
                 programs.map((program: any) => (
                   <tr key={program._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-400">#{program.orderIndex}</span>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-blue-100 text-blue-600 flex items-center justify-center border border-gray-100 flex-shrink-0">
@@ -279,7 +283,8 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
       description: program?.description || '',
       image: program?.image || '',
       ageRange: program?.ageRange || 'All ages',
-      isActive: program?.isActive ?? true
+      isActive: program?.isActive ?? true,
+      orderIndex: program?.orderIndex || 0
     }
   });
 
@@ -317,7 +322,11 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
         finalImageUrl = uploadResult.data.url;
       }
 
-      const programData = { ...data, image: finalImageUrl };
+      const programData = { 
+        ...data, 
+        image: finalImageUrl,
+        orderIndex: Number(data.orderIndex)
+      };
 
       if (isEdit) {
         await updateProgram({ id: program._id, ...programData }).unwrap();
@@ -333,8 +342,8 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
           <h3 className="text-lg font-bold text-gray-800">{isEdit ? 'Edit Program' : 'Create New Program'}</h3>
           <button onClick={onClose} type="button" className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -437,7 +446,18 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
                 placeholder="e.g., 15-20 or All ages"
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Order Index (Unique)</label>
+              <input 
+                type="number"
+                {...register('orderIndex', { required: 'Order Index is required' })} 
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                  errors.orderIndex ? 'border-red-500 bg-red-50/50' : 'border-gray-300'
+                }`}
+                placeholder="e.g., 1"
+              />
+              {errors.orderIndex && <p className="text-xs text-red-500 mt-1">{errors.orderIndex.message as string}</p>}
+            </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <input 
                 type="checkbox" 
@@ -544,8 +564,8 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
   const phases = phasesData?.data || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10 relative">
         
         {/* Delete Confirmation Overlay */}
         {phaseToDelete && (
