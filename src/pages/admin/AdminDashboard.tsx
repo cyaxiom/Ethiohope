@@ -100,21 +100,21 @@ export const AdminDashboard: React.FC = () => {
               title="Total Parents" 
               value={stats?.totalParents?.toString() || "0"} 
               icon={<UserIcon className="w-6 h-6" />}
-              trend="Default List"
-              trendLabel="click to view"
+              trend={canSeeUserDetails ? "Default List" : "Parents"}
+              trendLabel={canSeeUserDetails ? "click to view" : "registered"}
               color="blue"
-              isActive={activeTab === 'parents'}
-              onClick={() => setActiveTab('parents')}
+              isActive={canSeeUserDetails && activeTab === 'parents'}
+              onClick={canSeeUserDetails ? () => setActiveTab('parents') : undefined}
             />
             <StatCard 
               title="Total Teachers" 
               value={stats?.totalTeachers?.toString() || "0"} 
               icon={<GraduationCap className="w-6 h-6" />}
-              trend="View Teachers"
-              trendLabel="click to switch"
+              trend={canSeeUserDetails ? "View Teachers" : "Instructors"}
+              trendLabel={canSeeUserDetails ? "click to switch" : "registered"}
               color="indigo"
-              isActive={activeTab === 'teachers'}
-              onClick={() => setActiveTab('teachers')}
+              isActive={canSeeUserDetails && activeTab === 'teachers'}
+              onClick={canSeeUserDetails ? () => setActiveTab('teachers') : undefined}
             />
             <StatCard 
               title="Total Users" 
@@ -186,14 +186,7 @@ export const AdminDashboard: React.FC = () => {
             )}
           </div>
         </div>
-      ) : (
-        <div className="p-8 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-center">
-          <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-bold">Access Restricted (ABAC)</h3>
-          <p className="text-sm mt-1">Missing required attribute: 'user.detail.view'</p>
-          <p className="text-xs mt-2 opacity-70">Role: {activeRole} | Token Permissions Cached</p>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 };
