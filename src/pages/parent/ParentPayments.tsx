@@ -95,11 +95,11 @@ export const ParentPayments: React.FC = () => {
     const date = new Date(payment.createdAt).toLocaleDateString(undefined, { 
       year: 'numeric', month: 'long', day: 'numeric' 
     });
-    const subtotal = payment.amount || payment.phase?.price || 0;
-    const tax = subtotal * 0.15;
-    const total = subtotal + tax;
+    const total = payment.amount || payment.phase?.price || 0;
+    const tax = total * 0.15;
+    const subtotal = total - tax;
     
-    const subtotalStr = subtotal.toLocaleString();
+    const subtotalStr = subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const taxStr = tax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const totalStr = total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
@@ -206,11 +206,11 @@ export const ParentPayments: React.FC = () => {
               <div class="flex justify-end">
                 <div class="w-full max-w-xs space-y-4">
                   <div class="flex justify-between items-center text-gray-500 font-medium">
-                    <span>Subtotal</span>
+                    <span>Course Price</span>
                     <span class="text-gray-800 font-bold">$${subtotalStr}</span>
                   </div>
                   <div class="flex justify-between items-center text-gray-500 font-medium">
-                    <span>Tax (15%)</span>
+                    <span>VAT (15% Inclusive)</span>
                     <span class="text-gray-800 font-bold">$${taxStr}</span>
                   </div>
                   <div class="flex justify-between items-center pt-4 border-t-2 border-gray-100">

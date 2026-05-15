@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useGetMyPendingEnrollmentsQuery } from '../../features/enrollments/enrollmentApi';
 import { useCreateCheckoutSessionMutation } from '../../features/payments/paymentApi';
-import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck, Phone, MessageCircle, Wallet } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck, Phone, MessageCircle, Wallet, ArrowLeft } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
   const location = useLocation();
-  const initialIds = location.state?.enrollmentIds || [];
+  const navigate = useNavigate();
+  const initialIds = React.useMemo(() => location.state?.enrollmentIds || [], [location.state?.enrollmentIds]);
   const { data: enrollmentsData, isLoading, error } = useGetMyPendingEnrollmentsQuery();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -18,16 +19,12 @@ const Checkout = () => {
 
   // Initialize selection
   useEffect(() => {
-    if (enrollments.length > 0) {
+    if (enrollments.length > 0 && selectedIds.length === 0) {
       if (initialIds.length > 0) {
         setSelectedIds(initialIds);
-      } else if (selectedIds.length === 0) {
-        // Only auto-select if we came from a specific enrollment flow
-        // Otherwise, let the user select manually to avoid accidental payments
-        setSelectedIds([]);
       }
     }
-  }, [enrollments, initialIds]);
+  }, [enrollments, initialIds, selectedIds.length]);
 
   const toggleSelection = (id: string) => {
     setSelectedIds(prev => 
@@ -70,6 +67,17 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
+        <button 
+          onClick={() => {
+            navigate('/');
+            window.scrollTo(0, 0);
+          }}
+          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full font-bold mb-10 transition-all hover:scale-105 shadow-lg shadow-blue-100 group self-start"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </button>
+
         <div className="text-center mb-10">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Checkout Details</h1>
           <p className="text-lg text-gray-600">Review your enrollments and proceed to secure payment.</p>
@@ -131,16 +139,16 @@ const Checkout = () => {
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 space-y-3">
                     <div className="flex justify-between items-center text-sm font-bold text-blue-600 uppercase">
-                      <span>Selected Items: {selectedIds.length}</span>
-                      <span>Subtotal: ${totalPrice.toLocaleString()}</span>
+                      <span>Course Price</span>
+                      <span>${(totalPrice * 0.85).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm font-bold text-gray-500 uppercase">
-                      <span>Tax (15%)</span>
+                      <span>VAT (15% Inclusive)</span>
                       <span>${(totalPrice * 0.15).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="pt-3 border-t border-blue-100 flex justify-between items-center">
                       <p className="text-xl font-black text-gray-800">Total Amount</p>
-                      <span className="text-3xl font-black text-blue-700">${(totalPrice * 1.15).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="text-3xl font-black text-blue-700">${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
