@@ -9,7 +9,8 @@ import { useForm } from 'react-hook-form';
 import { 
   useGetProgramsQuery, 
   useCreateProgramMutation, 
-  useUpdateProgramMutation 
+  useUpdateProgramMutation,
+  useDeleteProgramMutation
 } from '../../features/programs/programApi';
 import { 
   useGetPhasesByProgramQuery, 
@@ -35,12 +36,14 @@ const Programs: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPhasesModalOpen, setIsPhasesModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  const [programToDelete, setProgramToDelete] = useState<any>(null);
   
   // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'program.read');
   const canCreate = hasPermission(permissions, 'program.create');
   const canUpdate = hasPermission(permissions, 'program.update');
+  const canDelete = hasPermission(permissions, 'program.delete');
   const canReadPhase = hasPermission(permissions, 'phase.read');
 
   // Debounce effect
@@ -56,6 +59,18 @@ const Programs: React.FC = () => {
   );
 
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
+  const [deleteProgram, { isLoading: isDeleting }] = useDeleteProgramMutation();
+
+  const handleDeleteProgram = async () => {
+    if (!programToDelete) return;
+    try {
+      await deleteProgram(programToDelete._id).unwrap();
+      sonnerToast.success('Program deleted successfully');
+      setProgramToDelete(null);
+    } catch (err: any) {
+      sonnerToast.error(err?.data?.message || 'Failed to delete program');
+    }
+  };
 
   if (!canRead) {
     return (
@@ -212,6 +227,15 @@ const Programs: React.FC = () => {
                             </button>
                           </>
                         )}
+                        {canDelete && (
+                          <button 
+                            onClick={() => setProgramToDelete(program)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="Delete Program"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -264,6 +288,38 @@ const Programs: React.FC = () => {
           program={selectedProgram} 
           onClose={() => { setIsPhasesModalOpen(false); setSelectedProgram(null); }} 
         />
+      )}
+
+      {/* Delete Program Confirmation Modal */}
+      {programToDelete && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-8 text-center">
+            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Cascade Delete Program?</h3>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              Are you sure you want to delete <span className="font-bold text-gray-800">"{programToDelete.title}"</span>? <br/><br/>
+              <span className="text-red-500 font-bold bg-red-50 px-2 py-1 rounded text-xs uppercase tracking-wider">Warning:</span><br/>
+              This will permanently delete all related <strong>Phases</strong>, <strong>Batches</strong>, <strong>Courses</strong>, and <strong>Enrollments</strong>. This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setProgramToDelete(null)}
+                className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteProgram}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-100 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
