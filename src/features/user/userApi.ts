@@ -120,6 +120,13 @@ export const userApi = api.injectEndpoints({
       query: () => '/parent/dashboard/stats',
       providesTags: ['Users'],
     }),
+    deleteUser: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Users', 'DashboardParents', 'DashboardTeachers', 'DashboardStats'],
+    }),
   }),
 });
 
@@ -135,5 +142,6 @@ export const {
   useGetChildDetailsQuery,
   useGetChildMeQuery,
   useGetParentDashboardStatsQuery,
+  useDeleteUserMutation,
 } = userApi;
 
