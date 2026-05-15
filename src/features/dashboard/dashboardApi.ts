@@ -64,6 +64,13 @@ export const dashboardApi = api.injectEndpoints({
       transformResponse: (response: any) => response.data,
       providesTags: ['DashboardTeachers'],
     }),
+    resetDatabase: builder.mutation<{ success: boolean; message: string; deletedUsers: number }, void>({
+      query: () => ({
+        url: '/maintenance/reset-db',
+        method: 'POST',
+      }),
+      invalidatesTags: ['DashboardStats', 'DashboardParents', 'DashboardTeachers', 'Programs', 'Phases', 'Batches', 'Schedules', 'Courses', 'Users'],
+    }),
   }),
   overrideExisting: false,
 });
@@ -72,5 +79,6 @@ export const {
   useGetDashboardStatsQuery, 
   useGetInstructorStatsQuery,
   useGetParentsWithChildrenQuery,
-  useGetTeachersQuery
+  useGetTeachersQuery,
+  useResetDatabaseMutation
 } = dashboardApi;
