@@ -1,11 +1,16 @@
 import React, { useRef, useEffect, useState } from "react";
 import contactleftside from "../../../assets/images/contact/contactLeftSide.png";
 import contactrightside from "../../../assets/images/contact/contactRightSide.png";
+import { useSubmitContactFormMutation } from "../../../features/general/generalApi";
+import { toast } from "sonner";
 
 const ContactForm = ({ darkMode }) => {
    const sectionRef = useRef(null);
    const [scrollDirection, setScrollDirection] = useState('down');
    const [lastScrollY, setLastScrollY] = useState(0);
+
+   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+   const [submitContact, { isLoading }] = useSubmitContactFormMutation();
 
    useEffect(() => {
       let ticking = false;
@@ -29,6 +34,22 @@ const ContactForm = ({ darkMode }) => {
          window.removeEventListener('scroll', handleScroll);
       };
    }, [lastScrollY]);
+
+   const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.message) {
+         toast.error("Please fill in all fields");
+         return;
+      }
+
+      try {
+         const result = await submitContact(formData).unwrap();
+         toast.success(result.message);
+         setFormData({ name: '', email: '', message: '' });
+      } catch (err) {
+         toast.error(err?.data?.message || "Failed to send message. Please try again.");
+      }
+   };
 
    return (
       <section
@@ -72,11 +93,13 @@ const ContactForm = ({ darkMode }) => {
                   }`}>
                   Contact with Ethiohope
                </h3>
-               <form className="space-y-6">
+               <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid lg:grid-cols-2 gap-6">
                      <input
                         type="text"
                         placeholder="Enter Name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className={`p-4 rounded-xl outline-none border focus:border-[#3C12D4] transition-colors ${darkMode
                            ? 'bg-[#0B0B29] text-white border-gray-600'
                            : 'bg-gray-50 text-gray-800 border-gray-300'
@@ -85,6 +108,8 @@ const ContactForm = ({ darkMode }) => {
                      <input
                         type="email"
                         placeholder="Enter Mail"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className={`p-4 rounded-xl outline-none border focus:border-[#3C12D4] transition-colors ${darkMode
                            ? 'bg-[#0B0B29] text-white border-gray-600'
                            : 'bg-gray-50 text-gray-800 border-gray-300'
@@ -94,6 +119,8 @@ const ContactForm = ({ darkMode }) => {
                   <textarea
                      placeholder="Enter your message..."
                      rows="6"
+                     value={formData.message}
+                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                      className={`w-full p-4 rounded-xl outline-none border focus:border-[#3C12D4] transition-colors ${darkMode
                         ? 'bg-[#0B0B29] text-white border-gray-600'
                         : 'bg-gray-40 text-black-800 border-gray-300'
@@ -102,12 +129,13 @@ const ContactForm = ({ darkMode }) => {
                   <div className="text-center">
                      <button
                         type="submit"
+                        disabled={isLoading}
                         className={`px-8 py-4 rounded-xl text-white font-bold cursor-pointer transition-all transform ${darkMode
                            ? 'bg-[#3C12D4] hover:bg-[#2a0d9c]'
                            : 'bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600'
-                           }`}
+                           } ${isLoading ? 'opacity-70 scale-95 cursor-not-allowed' : ''}`}
                      >
-                        Send Message
+                        {isLoading ? 'Sending...' : 'Send Message'}
                      </button>
                   </div>
                </form>
