@@ -87,25 +87,6 @@ const ContactInfo = ({ darkMode }) => {
             </Card>
          </div>
 
-         {/* Map Section */}
-         <div className="max-w-full px-6 pb-8 mt-8">
-            <div className="h-lvh rounded-2xl overflow-hidden border-2">
-               <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3914.60918922887!2d38.76125207485697!3d9.030258290862423!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85f80bcb6a7f%3A0x8a5c92a68bb9ffb!2sAddis%20Ababa%20Science%20and%20Technology%20University!5e0!3m2!1sen!2set!4v1695845590000&style=feature:all|element:labels|visibility:off&style=feature:landscape|color:0x000000&style=feature:road|color:0x111111&style=feature:water|color:0x000000"
-                  width="100%"
-                  height="100%"
-                  style={{
-                     border: 0,
-                     filter: darkMode
-                        ? "invert(90%) hue-rotate(180deg) brightness(85%) contrast(120%)"
-                        : "none"
-                  }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-               ></iframe>
-            </div>
-         </div>
       </section>
    );
 };
