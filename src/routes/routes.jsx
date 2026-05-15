@@ -9,7 +9,6 @@ const Forbidden = React.lazy(() => import('@pages/NotFound/Forbidden'));
 // About routes
 const About = React.lazy(() => import('@pages/About/About'));
 const Contact = React.lazy(() => import('@pages/About/Contact'));
-const Teams = React.lazy(() => import('@pages/About/Teams'));
 const HowItWorks = React.lazy(() => import('@pages/HowItWorks/HowItWorks'));
 
 // Auth routes
@@ -120,7 +119,6 @@ export const routes = [
       { path: '/about', name: 'About', element: <About /> },
       { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
       { path: '/about/contact', name: 'Contact', element: <Contact /> },
-      { path: '/about/teams', name: 'Teams', element: <Teams /> },
       {
         path: '/academy/kids-programming/course/:id',
         name: 'CourseDetail',
