@@ -61,7 +61,7 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else if (!/^\+?[\d\s\-\(\)]{10,20}$/.test(formData.phone.trim())) {
-      newErrors.phone = 'Please enter a valid phone number (e.g., +251...)';
+      newErrors.phone = 'Please enter a valid phone number (e.g., +1...)';
     }
 
     if (!formData.country.trim()) {
@@ -251,7 +251,7 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
                               type="tel"
                               value={formData.phone}
                               onChange={(e) => handleChange('phone', e.target.value)}
-                              placeholder="+251 911 123 456"
+                              placeholder="+1 (555) 000-0000"
                               className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold transition-all"
                             />
                           </div>
@@ -277,7 +277,7 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
                           <label className="block text-[10px] font-black tracking-widest text-gray-400 uppercase mb-2 ml-1">Country</label>
                           <div className="relative group">
                             <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600" size={18} />
-                            <input value={formData.country} onChange={(e) => handleChange('country', e.target.value)} placeholder="Ethiopia" className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
+                            <input value={formData.country} onChange={(e) => handleChange('country', e.target.value)} placeholder="United States" className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
                           </div>
                           {errors.country && <p className="text-xs text-red-500 mt-1 font-bold ml-1">{errors.country}</p>}
                         </div>
@@ -287,7 +287,7 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
                             <label className="block text-[10px] font-black tracking-widest text-gray-400 uppercase mb-2 ml-1">State/Region</label>
                             <div className="relative group">
                               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600" size={18} />
-                              <input value={formData.state} onChange={(e) => handleChange('state', e.target.value)} placeholder="Addis Ababa" className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
+                              <input value={formData.state} onChange={(e) => handleChange('state', e.target.value)} placeholder="Texas" className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
                             </div>
                             {errors.state && <p className="text-xs text-red-500 mt-1 font-bold ml-1">{errors.state}</p>}
                           </div>
@@ -295,7 +295,7 @@ const CompleteProfileModal: React.FC<CompleteProfileModalProps> = ({ isOpen, onC
                             <label className="block text-[10px] font-black tracking-widest text-gray-400 uppercase mb-2 ml-1">City</label>
                             <div className="relative group">
                               <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-600" size={18} />
-                              <input value={formData.city} onChange={(e) => handleChange('city', e.target.value)} placeholder="Bole" className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
+                              <input value={formData.city} onChange={(e) => handleChange('city', e.target.value)} placeholder="Dallas" className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none text-sm font-bold" />
                             </div>
                             {errors.city && <p className="text-xs text-red-500 mt-1 font-bold ml-1">{errors.city}</p>}
                           </div>

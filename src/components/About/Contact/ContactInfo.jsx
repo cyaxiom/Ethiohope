@@ -30,7 +30,7 @@ const ContactInfo = ({ darkMode }) => {
                   <div className="flex flex-col gap-2 items-center md:items-start">
                      <p className={`text-2xl md:text-xl xl:text-3xl font-bold cursor-pointer hover:underline ${darkMode ? 'text-white' : 'text-blue-600'
                         }`}>
-                        +1 (469) 803-6773
+                        +1 (945) 385-0556
                      </p>
                   </div>
                </div>

@@ -7,6 +7,7 @@ export interface Program {
   image?: string;
   ageRange?: string;
   isActive: boolean;
+  orderIndex: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,6 +18,7 @@ export interface CreateProgramPayload {
   image?: string;
   ageRange?: string;
   isActive?: boolean;
+  orderIndex?: number;
 }
 
 export interface UpdateProgramPayload extends Partial<CreateProgramPayload> {
@@ -76,6 +78,13 @@ export const programApi = api.injectEndpoints({
       query: (id) => `/programs/${id}`,
       providesTags: (result, error, id) => [{ type: 'Programs' as const, id }],
     }),
+    deleteProgram: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/admin/programs/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Programs'],
+    }),
   }),
 });
 
@@ -85,4 +94,5 @@ export const {
   useGetPublicProgramByIdQuery,
   useCreateProgramMutation,
   useUpdateProgramMutation,
+  useDeleteProgramMutation,
 } = programApi;

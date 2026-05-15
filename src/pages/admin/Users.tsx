@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { 
   UsersRound, Search, Filter, Plus, Edit2, 
   ShieldAlert, Activity, Ban, CheckCircle2,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Trash2
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { 
   useGetUsersQuery, 
   useCreateUserMutation, 
   useUpdateUserStatusMutation, 
-  useUpdateUserRolesMutation 
+  useUpdateUserRolesMutation,
+  useDeleteUserMutation
 } from '../../features/user/userApi';
 import { useGetRolesQuery } from '../../features/role/roleApi';
 import { useSelector } from 'react-redux';
@@ -37,12 +38,16 @@ const Users: React.FC = () => {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; userId: string; newStatus: 'active' | 'suspended' | 'blocked' }>({
     isOpen: false, userId: '', newStatus: 'active'
   });
+  const [userToDelete, setUserToDelete] = useState<any>(null);
   
   // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
-  const canRead = hasPermission(permissions, 'user.read');
-  const canCreate = hasPermission(permissions, 'user.create');
-  const canUpdate = hasPermission(permissions, 'user.update');
+  const activeRole = useSelector((state: RootState) => state.auth.activeRole);
+
+  const canRead = hasPermission(permissions, 'user.read') || activeRole === 'super_admin';
+  const canCreate = hasPermission(permissions, 'user.create') || activeRole === 'super_admin';
+  const canUpdate = hasPermission(permissions, 'user.update') || activeRole === 'super_admin';
+  const canDelete = hasPermission(permissions, 'user.delete') || activeRole === 'super_admin';
 
   // Debounce effect
   React.useEffect(() => {
@@ -57,8 +62,19 @@ const Users: React.FC = () => {
   );
 
   const { data: rolesData } = useGetRolesQuery();
-
   const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateUserStatusMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      await deleteUser(userToDelete.id).unwrap();
+      sonnerToast.success('User and all related data deleted successfully');
+      setUserToDelete(null);
+    } catch (err: any) {
+      sonnerToast.error(err?.data?.message || 'Failed to delete user');
+    }
+  };
 
   if (!canRead) {
     return (
@@ -318,6 +334,15 @@ const Users: React.FC = () => {
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
+                          {canDelete && (
+                            <button 
+                              onClick={() => setUserToDelete(user)}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                              title="Delete User"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>
@@ -372,8 +397,8 @@ const Users: React.FC = () => {
 
       {/* Confirm Status Change Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-6">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-6 my-10">
             <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
               <ShieldAlert className="w-6 h-6" />
             </div>
@@ -394,6 +419,46 @@ const Users: React.FC = () => {
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 {isUpdatingStatus ? 'Updating...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cascade Delete Confirmation Modal */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-8 text-center">
+            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Cascade Delete User?</h3>
+            <div className="text-gray-500 mb-8 space-y-4">
+              <p>Are you sure you want to delete <span className="font-bold text-gray-800">"{userToDelete.name}"</span>?</p>
+              <div className="bg-red-50 p-4 rounded-xl text-left border border-red-100">
+                <p className="text-red-600 text-xs font-black uppercase tracking-widest mb-2">Warning: Data Cleanup</p>
+                <ul className="text-xs text-red-500 space-y-1 list-disc list-inside font-medium">
+                  <li>Permanently delete user account</li>
+                  <li>Remove all linked <strong>Children</strong></li>
+                  <li>Cancel all <strong>Enrollments</strong></li>
+                  <li>Unlink from any <strong>Batches</strong></li>
+                </ul>
+              </div>
+              <p className="text-xs text-gray-400 italic">This action cannot be undone.</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setUserToDelete(null)}
+                className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteUser}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-100 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Everything'}
               </button>
             </div>
           </div>
@@ -433,8 +498,8 @@ const CreateUserModal: React.FC<{ onClose: () => void, roles: any[] }> = ({ onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h3 className="text-lg font-bold text-gray-800">Create New User</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -511,8 +576,8 @@ const EditRolesModal: React.FC<{ user: any, onClose: () => void, rolesList: any[
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h3 className="text-lg font-bold text-gray-800">Edit Roles: {user.name}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">

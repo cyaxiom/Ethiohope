@@ -44,7 +44,7 @@ const CourseDetail = () => {
     if (!profileData.phone.trim()) {
       newErrors.phone = "Phone number is required";
     } else if (!/^\+?[\d\s\-\(\)]{10,20}$/.test(profileData.phone.trim())) {
-      newErrors.phone = "Please enter a valid phone number (e.g., +251...)";
+      newErrors.phone = "Please enter a valid phone number (e.g., +1...)";
     }
 
     if (!profileData.country.trim()) {
@@ -75,21 +75,8 @@ const CourseDetail = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegisterClick = async () => {
-    if (!isAuthenticated) {
-      navigate("/login", { state: { from: window.location.pathname } });
-      return;
-    }
-    try {
-      const res = await checkProfileInit().unwrap();
-      if (res.profileCompleted) {
-        phasesRef.current?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        setIsProfileModalOpen(true);
-      }
-    } catch (err) {
-      console.error("Failed to check profile", err);
-    }
+  const handleRegisterClick = () => {
+    phasesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleEnrollClick = async (phase) => {
@@ -97,10 +84,10 @@ const CourseDetail = () => {
       navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
       return;
     }
-
     try {
       const response = await checkProfileInit().unwrap();
       if (!response.profileCompleted) {
+        setSelectedPhaseForEnrollment(phase);
         setIsProfileModalOpen(true);
       } else {
         setSelectedPhaseForEnrollment(phase);
@@ -124,7 +111,12 @@ const CourseDetail = () => {
       if (res && res.user) {
         dispatch(updateUser({ user: res.user, roles: res.roleCodes || [] }));
         setIsProfileModalOpen(false);
-        setTimeout(() => phasesRef.current?.scrollIntoView({ behavior: 'smooth' }), 300);
+        
+        if (selectedPhaseForEnrollment) {
+          setIsEnrollModalOpen(true);
+        } else {
+          setTimeout(() => phasesRef.current?.scrollIntoView({ behavior: 'smooth' }), 300);
+        }
       }
     } catch (err) {
       console.error("Failed to complete profile", err);
@@ -213,12 +205,10 @@ const CourseDetail = () => {
             </p>
             <motion.button
               onClick={handleRegisterClick}
-              disabled={isCheckingProfile}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-4 bg-primary text-primary-foreground rounded-lg shadow-lg font-semibold hover:bg-accent self-start flex items-center gap-2"
             >
-              {isCheckingProfile ? <Activity className="w-5 h-5 animate-spin" /> : null}
               Enroll Your Child
             </motion.button>
           </div>
@@ -471,7 +461,7 @@ const CourseDetail = () => {
                     <input
                       required
                       type="tel"
-                      placeholder="+251 911 234 567"
+                      placeholder="+1 (555) 000-0000"
                       value={profileData.phone}
                       onChange={e => {
                         setProfileData({...profileData, phone: e.target.value});
@@ -488,7 +478,7 @@ const CourseDetail = () => {
                       <input
                         required
                         type="text"
-                        placeholder="Ethiopia"
+                        placeholder="United States"
                         value={profileData.country}
                         onChange={e => {
                           setProfileData({...profileData, country: e.target.value});
@@ -503,7 +493,7 @@ const CourseDetail = () => {
                       <input
                         required
                         type="text"
-                        placeholder="Addis Ababa"
+                        placeholder="Texas"
                         value={profileData.state}
                         onChange={e => {
                           setProfileData({...profileData, state: e.target.value});
@@ -520,7 +510,7 @@ const CourseDetail = () => {
                     <input
                       required
                       type="text"
-                      placeholder="Addis Ababa"
+                      placeholder="Dallas"
                       value={profileData.city}
                       onChange={e => {
                         setProfileData({...profileData, city: e.target.value});

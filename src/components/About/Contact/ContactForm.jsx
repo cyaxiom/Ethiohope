@@ -70,7 +70,7 @@ const ContactForm = ({ darkMode }) => {
             <div className="rounded-2xl p-8 md:p-12 max-w-4xl md:max-w-sm lg:max-w-2xl xl:max-w-4xl mx-auto relative z-1">
                <h3 className={`text-3xl md:text-4xl font-bold mb-8 text-center ${darkMode ? 'text-white' : 'text-gray-800'
                   }`}>
-                  Contact with Cyaxiom
+                  Contact with Ethiohope
                </h3>
                <form className="space-y-6">
                   <div className="grid lg:grid-cols-2 gap-6">

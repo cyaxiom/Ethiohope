@@ -88,7 +88,7 @@ const CoursesSection = () => {
                   key={program._id}
                   onClick={() => {
                     if (isActive) {
-                      navigate(`/academy/kids-programming/course/${program._id}`);
+                      navigate(`/academy/kids-programming/course/${program._id}#program-phases`);
                     }
                   }}
                   className={`bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 group h-full flex flex-col relative ${isActive ? 'hover:shadow-xl hover:scale-105 cursor-pointer' : 'cursor-default'}`}

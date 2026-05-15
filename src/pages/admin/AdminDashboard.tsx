@@ -10,15 +10,20 @@ import {
   User as UserIcon,
   Mail,
   Phone,
-  Clock
+  Clock,
+  RotateCcw,
+  AlertTriangle,
+  Trash2
 } from 'lucide-react';
 import { 
   useGetDashboardStatsQuery, 
   useGetParentsWithChildrenQuery,
   useGetTeachersQuery,
+  useResetDatabaseMutation,
   ParentWithChildren,
   ChildDetail
 } from '../../features/dashboard/dashboardApi';
+import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 
@@ -36,6 +41,10 @@ export const AdminDashboard: React.FC = () => {
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const activeRole = useSelector((state: RootState) => state.auth.activeRole);
   const canSeeUserDetails = permissions.includes('user.detail.view') || activeRole === 'super_admin';
+  const canResetSystem = activeRole === 'super_admin';
+
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [confirmInput, setConfirmInput] = useState('');
 
   const {
     data: parentsData,
@@ -55,11 +64,30 @@ export const AdminDashboard: React.FC = () => {
     skip: !canSeeUserDetails || activeTab !== 'teachers'
   });
 
+  const [resetDatabase, { isLoading: isResetting }] = useResetDatabaseMutation();
+
   const handleRefresh = () => {
     refetchStats();
     if (canSeeUserDetails) {
       if (activeTab === 'parents') refetchParents();
       else refetchTeachers();
+    }
+  };
+
+  const handleResetSystem = async () => {
+    if (confirmInput !== 'RESET') {
+      toast.error('Please type RESET to confirm');
+      return;
+    }
+    
+    try {
+      const result = await resetDatabase().unwrap();
+      toast.success(result.message);
+      setIsResetModalOpen(false);
+      setConfirmInput('');
+      window.location.reload(); // Reload to ensure clean state
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to reset system');
     }
   };
 
@@ -71,14 +99,26 @@ export const AdminDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800">Welcome back, Admin 👋</h1>
           <p className="text-gray-500 mt-1">Manage your platform and view real-time insights.</p>
         </div>
-        <button 
-          onClick={handleRefresh}
-          disabled={isStatsFetching}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm disabled:opacity-70"
-        >
-          <RefreshCw className={`w-4 h-4 ${isStatsFetching ? 'animate-spin' : ''}`} />
-          <span>Refresh All</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {canResetSystem && (
+            <button 
+              onClick={() => setIsResetModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold transition-all border border-red-100"
+              title="Factory Reset System"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span className="hidden sm:inline">Reset DB</span>
+            </button>
+          )}
+          <button 
+            onClick={handleRefresh}
+            disabled={isStatsFetching}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm disabled:opacity-70"
+          >
+            <RefreshCw className={`w-4 h-4 ${isStatsFetching ? 'animate-spin' : ''}`} />
+            <span>Refresh All</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -100,21 +140,21 @@ export const AdminDashboard: React.FC = () => {
               title="Total Parents" 
               value={stats?.totalParents?.toString() || "0"} 
               icon={<UserIcon className="w-6 h-6" />}
-              trend="Default List"
-              trendLabel="click to view"
+              trend={canSeeUserDetails ? "Default List" : "Parents"}
+              trendLabel={canSeeUserDetails ? "click to view" : "registered"}
               color="blue"
-              isActive={activeTab === 'parents'}
-              onClick={() => setActiveTab('parents')}
+              isActive={canSeeUserDetails && activeTab === 'parents'}
+              onClick={canSeeUserDetails ? () => setActiveTab('parents') : undefined}
             />
             <StatCard 
               title="Total Teachers" 
               value={stats?.totalTeachers?.toString() || "0"} 
               icon={<GraduationCap className="w-6 h-6" />}
-              trend="View Teachers"
-              trendLabel="click to switch"
+              trend={canSeeUserDetails ? "View Teachers" : "Instructors"}
+              trendLabel={canSeeUserDetails ? "click to switch" : "registered"}
               color="indigo"
-              isActive={activeTab === 'teachers'}
-              onClick={() => setActiveTab('teachers')}
+              isActive={canSeeUserDetails && activeTab === 'teachers'}
+              onClick={canSeeUserDetails ? () => setActiveTab('teachers') : undefined}
             />
             <StatCard 
               title="Total Users" 
@@ -186,12 +226,66 @@ export const AdminDashboard: React.FC = () => {
             )}
           </div>
         </div>
-      ) : (
-        <div className="p-8 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-center">
-          <Shield className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <h3 className="text-lg font-bold">Access Restricted (ABAC)</h3>
-          <p className="text-sm mt-1">Missing required attribute: 'user.detail.view'</p>
-          <p className="text-xs mt-2 opacity-70">Role: {activeRole} | Token Permissions Cached</p>
+      ) : null}
+
+      {/* Database Reset Modal */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-red-600 p-8 text-center text-white relative">
+              <div className="absolute top-4 right-4 cursor-pointer hover:opacity-70" onClick={() => setIsResetModalOpen(false)}>✕</div>
+              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                <AlertTriangle className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-black uppercase tracking-tight">Factory Reset</h3>
+              <p className="text-red-100 text-sm mt-2 opacity-90">This action is irreversible and will wipe the system.</p>
+            </div>
+            
+            <div className="p-8">
+              <div className="bg-red-50 p-4 rounded-2xl border border-red-100 mb-6">
+                <p className="text-red-700 text-xs font-bold uppercase mb-2 flex items-center gap-2">
+                  <Trash2 className="w-3 h-3" />
+                  What will be deleted?
+                </p>
+                <ul className="text-xs text-red-600 space-y-1 font-medium list-disc list-inside opacity-80">
+                  <li>All Student/Child profiles</li>
+                  <li>All Program, Phase, and Batch data</li>
+                  <li>All Course content and files</li>
+                  <li>All Enrollment and Payment history</li>
+                  <li>All Chat messages and Group history</li>
+                  <li>All non-admin user accounts</li>
+                </ul>
+              </div>
+
+              <p className="text-gray-500 text-sm mb-4 text-center">
+                Type <span className="font-black text-red-600 select-none">RESET</span> below to confirm this destructive operation.
+              </p>
+
+              <input 
+                type="text" 
+                value={confirmInput}
+                onChange={(e) => setConfirmInput(e.target.value.toUpperCase())}
+                placeholder="Type RESET here..."
+                className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-red-500 focus:bg-white outline-none text-center font-black tracking-widest text-red-600 transition-all mb-6"
+              />
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => { setIsResetModalOpen(false); setConfirmInput(''); }}
+                  className="flex-1 py-4 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleResetSystem}
+                  disabled={isResetting || confirmInput !== 'RESET'}
+                  className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition-all disabled:opacity-50 disabled:grayscale"
+                >
+                  {isResetting ? 'Wiping System...' : 'WIPE SYSTEM'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -9,7 +9,8 @@ import { useForm } from 'react-hook-form';
 import { 
   useGetProgramsQuery, 
   useCreateProgramMutation, 
-  useUpdateProgramMutation 
+  useUpdateProgramMutation,
+  useDeleteProgramMutation
 } from '../../features/programs/programApi';
 import { 
   useGetPhasesByProgramQuery, 
@@ -35,12 +36,14 @@ const Programs: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPhasesModalOpen, setIsPhasesModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  const [programToDelete, setProgramToDelete] = useState<any>(null);
   
   // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'program.read');
   const canCreate = hasPermission(permissions, 'program.create');
   const canUpdate = hasPermission(permissions, 'program.update');
+  const canDelete = hasPermission(permissions, 'program.delete');
   const canReadPhase = hasPermission(permissions, 'phase.read');
 
   // Debounce effect
@@ -56,6 +59,18 @@ const Programs: React.FC = () => {
   );
 
   const [updateProgram, { isLoading: isUpdating }] = useUpdateProgramMutation();
+  const [deleteProgram, { isLoading: isDeleting }] = useDeleteProgramMutation();
+
+  const handleDeleteProgram = async () => {
+    if (!programToDelete) return;
+    try {
+      await deleteProgram(programToDelete._id).unwrap();
+      sonnerToast.success('Program deleted successfully');
+      setProgramToDelete(null);
+    } catch (err: any) {
+      sonnerToast.error(err?.data?.message || 'Failed to delete program');
+    }
+  };
 
   if (!canRead) {
     return (
@@ -120,6 +135,7 @@ const Programs: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm">
               <tr>
+                <th className="px-6 py-4 font-medium">Order</th>
                 <th className="px-6 py-4 font-medium">Program Title</th>
                 <th className="px-6 py-4 font-medium">Age Range</th>
                 <th className="px-6 py-4 font-medium">Description</th>
@@ -131,20 +147,23 @@ const Programs: React.FC = () => {
             <tbody className="divide-y divide-gray-50">
               {isLoading || isFetching ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                     <Activity className="w-6 h-6 animate-spin mx-auto mb-2" />
                     Loading programs...
                   </td>
                 </tr>
               ) : programs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
                     No programs found.
                   </td>
                 </tr>
               ) : (
                 programs.map((program: any) => (
                   <tr key={program._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-gray-400">#{program.orderIndex}</span>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-blue-100 text-blue-600 flex items-center justify-center border border-gray-100 flex-shrink-0">
@@ -208,6 +227,15 @@ const Programs: React.FC = () => {
                             </button>
                           </>
                         )}
+                        {canDelete && (
+                          <button 
+                            onClick={() => setProgramToDelete(program)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="Delete Program"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -261,6 +289,38 @@ const Programs: React.FC = () => {
           onClose={() => { setIsPhasesModalOpen(false); setSelectedProgram(null); }} 
         />
       )}
+
+      {/* Delete Program Confirmation Modal */}
+      {programToDelete && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-8 text-center">
+            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-10 h-10" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">Cascade Delete Program?</h3>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              Are you sure you want to delete <span className="font-bold text-gray-800">"{programToDelete.title}"</span>? <br/><br/>
+              <span className="text-red-500 font-bold bg-red-50 px-2 py-1 rounded text-xs uppercase tracking-wider">Warning:</span><br/>
+              This will permanently delete all related <strong>Phases</strong>, <strong>Batches</strong>, <strong>Courses</strong>, and <strong>Enrollments</strong>. This action cannot be undone.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setProgramToDelete(null)}
+                className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteProgram}
+                disabled={isDeleting}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-100 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -279,7 +339,8 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
       description: program?.description || '',
       image: program?.image || '',
       ageRange: program?.ageRange || 'All ages',
-      isActive: program?.isActive ?? true
+      isActive: program?.isActive ?? true,
+      orderIndex: program?.orderIndex || 0
     }
   });
 
@@ -317,7 +378,11 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
         finalImageUrl = uploadResult.data.url;
       }
 
-      const programData = { ...data, image: finalImageUrl };
+      const programData = { 
+        ...data, 
+        image: finalImageUrl,
+        orderIndex: Number(data.orderIndex)
+      };
 
       if (isEdit) {
         await updateProgram({ id: program._id, ...programData }).unwrap();
@@ -333,8 +398,8 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
           <h3 className="text-lg font-bold text-gray-800">{isEdit ? 'Edit Program' : 'Create New Program'}</h3>
           <button onClick={onClose} type="button" className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -437,7 +502,18 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
                 placeholder="e.g., 15-20 or All ages"
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Order Index (Unique)</label>
+              <input 
+                type="number"
+                {...register('orderIndex', { required: 'Order Index is required' })} 
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                  errors.orderIndex ? 'border-red-500 bg-red-50/50' : 'border-gray-300'
+                }`}
+                placeholder="e.g., 1"
+              />
+              {errors.orderIndex && <p className="text-xs text-red-500 mt-1">{errors.orderIndex.message as string}</p>}
+            </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <input 
                 type="checkbox" 
@@ -544,8 +620,8 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
   const phases = phasesData?.data || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10 relative">
         
         {/* Delete Confirmation Overlay */}
         {phaseToDelete && (

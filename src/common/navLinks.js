@@ -11,11 +11,6 @@ export const navLinks = [
     description: 'See how our platform works',
   },
   {
-    name: 'Team',
-    path: '/about/teams',
-    description: 'Meet our talented professionals',
-  },
-  {
     name: 'Contact',
     path: '/about/contact',
     description: 'Get in touch with us',
