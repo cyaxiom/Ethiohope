@@ -42,10 +42,12 @@ const Users: React.FC = () => {
   
   // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
-  const canRead = hasPermission(permissions, 'user.read');
-  const canCreate = hasPermission(permissions, 'user.create');
-  const canUpdate = hasPermission(permissions, 'user.update');
-  const canDelete = hasPermission(permissions, 'user.delete');
+  const activeRole = useSelector((state: RootState) => state.auth.activeRole);
+
+  const canRead = hasPermission(permissions, 'user.read') || activeRole === 'super_admin';
+  const canCreate = hasPermission(permissions, 'user.create') || activeRole === 'super_admin';
+  const canUpdate = hasPermission(permissions, 'user.update') || activeRole === 'super_admin';
+  const canDelete = hasPermission(permissions, 'user.delete') || activeRole === 'super_admin';
 
   // Debounce effect
   React.useEffect(() => {
