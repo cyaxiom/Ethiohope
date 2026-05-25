@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, CheckCircle2, RefreshCw, Phone, Home } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 import { useSignupMutation, useVerifyEmailMutation } from '../../features/auth/authApi';
+import { setCredentials } from '../../features/auth/authSlice';
 import FormInput from '../../components/ui/FormInput';
 import { getErrorMessage } from '../../lib/error-handler';
 
@@ -19,14 +21,16 @@ interface RegisterFormInputs {
 
 const Register: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [signup, { isLoading: isSigningUp }] = useSignupMutation();
-  const [verifyEmail, { isLoading: isResending }] = useVerifyEmailMutation();
+  // const [verifyEmail, { isLoading: isResending }] = useVerifyEmailMutation();
   const [serverError, setServerError] = useState<string | null>(null);
-  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
-  const [resendSuccess, setResendSuccess] = useState(false);
+  // const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  // const [resendSuccess, setResendSuccess] = useState(false);
 
   // Get the return path from location state
-  const from = location.state?.from;
+  const from = location.state?.from || '/dashboard';
 
   const {
     register,
@@ -42,20 +46,46 @@ const Register: React.FC = () => {
     setServerError(null);
     try {
       const cleanEmail = data.email.trim().toLowerCase();
-      await signup({
+      const result = await signup({
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
         email: cleanEmail,
         password: data.password,
       }).unwrap();
 
-      // Show the "check your email" screen
-      setRegisteredEmail(cleanEmail);
+      dispatch(
+        setCredentials({
+          token: result.token,
+          user: result.user,
+          roles: result.roles,
+          permissions: result.permissions,
+        })
+      );
 
-      toast.success('Account created! Check your email to verify.', {
+      toast.success('Account created successfully! Redirecting...', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
-        duration: 5000,
+        duration: 3000,
       });
+
+      const roles = result.roles || [];
+      let targetUrl = from;
+
+      if (from === '/dashboard') {
+        if (roles.includes('super_admin') || roles.includes('admin')) {
+          targetUrl = '/admin/dashboard';
+        } else if (roles.includes('instructor')) {
+          targetUrl = '/instructor/dashboard';
+        } else if (roles.includes('parent')) {
+          targetUrl = '/parent/dashboard';
+        } else if (roles.includes('student') || roles.includes('child')) {
+          targetUrl = '/student/courses';
+        } else {
+          targetUrl = result.redirectTo || '/';
+        }
+      }
+
+      navigate(targetUrl, { replace: true });
+
     } catch (err) {
       const message = getErrorMessage(err, 'Failed to register account.');
       setServerError(message);
@@ -63,6 +93,8 @@ const Register: React.FC = () => {
     }
   };
 
+  // ─── COMMENTED OUT: SUCCESS "Check Your Email" Screen ────────────────
+  /*
   const handleResendEmail = async () => {
     if (!registeredEmail) return;
     setResendSuccess(false);
@@ -76,7 +108,6 @@ const Register: React.FC = () => {
     }
   };
 
-  // ─── SUCCESS: "Check Your Email" Screen ────────────────────────────
   if (registeredEmail) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn relative">
@@ -193,6 +224,7 @@ const Register: React.FC = () => {
       </div>
     );
   }
+  */
 
   // ─── REGISTRATION FORM ─────────────────────────────────────────────
   return (
