@@ -164,7 +164,7 @@ const Register: React.FC = () => {
               </p>
             </div>
 
-            {/* Resend button */}
+            // Resend button
             <AnimatePresence>
               {resendSuccess && (
                 <motion.div
