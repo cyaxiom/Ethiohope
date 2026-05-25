@@ -32,6 +32,7 @@ const Register: React.FC = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormInputs>();
 
@@ -40,15 +41,16 @@ const Register: React.FC = () => {
   const onSubmit = async (data: RegisterFormInputs) => {
     setServerError(null);
     try {
+      const cleanEmail = data.email.trim().toLowerCase();
       await signup({
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
-        email: data.email.trim(),
+        email: cleanEmail,
         password: data.password,
       }).unwrap();
 
       // Show the "check your email" screen
-      setRegisteredEmail(data.email.trim());
+      setRegisteredEmail(cleanEmail);
 
       toast.success('Account created! Check your email to verify.', {
         icon: <ShieldCheck className="text-success h-5 w-5" />,
@@ -240,9 +242,22 @@ const Register: React.FC = () => {
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-6 overflow-hidden"
               >
-                <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-xl text-sm font-medium flex items-center">
-                  <div className="mr-3 w-1.5 h-1.5 bg-error rounded-full" />
-                  {serverError}
+                <div className="bg-error/10 border border-error/20 text-error px-4 py-4 rounded-xl text-sm font-medium flex flex-col gap-3">
+                  <div className="flex items-center">
+                    <div className="mr-3 w-1.5 h-1.5 bg-error rounded-full shrink-0" />
+                    <span className="flex-1">{serverError}</span>
+                  </div>
+                  {serverError.toLowerCase().includes('already registered') && (
+                    <div className="mt-1 pl-4 text-xs font-semibold flex items-center gap-3 border-t border-error/10 pt-2">
+                      <Link to="/login" className="text-primary hover:underline font-bold">
+                        Go to Login &rarr;
+                      </Link>
+                      <span className="text-muted-foreground">|</span>
+                      <Link to="/forgot-password" className="text-primary hover:underline font-bold">
+                        Forgot Password? &rarr;
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -277,6 +292,9 @@ const Register: React.FC = () => {
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: 'Invalid email address',
+                },
+                onBlur: (e) => {
+                  setValue('email', e.target.value.trim().toLowerCase(), { shouldValidate: true });
                 }
               })}
             />

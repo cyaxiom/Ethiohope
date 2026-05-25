@@ -34,6 +34,7 @@ const Login: React.FC = () => {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<LoginFormInputs>({
     defaultValues: {
       emailOrUsername: '',
@@ -50,8 +51,12 @@ const Login: React.FC = () => {
     setResendSuccess(false);
 
     try {
+      const cleanIdentifier = data.emailOrUsername.includes('@')
+        ? data.emailOrUsername.trim().toLowerCase()
+        : data.emailOrUsername.trim();
+
       const credentials = {
-        identifier: data.emailOrUsername.trim(),
+        identifier: cleanIdentifier,
         password: data.passwordOrPin.trim(),
       };
 
@@ -239,6 +244,13 @@ const Login: React.FC = () => {
               error={errors.emailOrUsername?.message}
               {...register('emailOrUsername', { 
                 required: 'Email or username is required',
+                onBlur: (e) => {
+                  if (e.target.value.includes('@')) {
+                    setValue('emailOrUsername', e.target.value.trim().toLowerCase(), { shouldValidate: true });
+                  } else {
+                    setValue('emailOrUsername', e.target.value.trim(), { shouldValidate: true });
+                  }
+                }
               })}
             />
 
