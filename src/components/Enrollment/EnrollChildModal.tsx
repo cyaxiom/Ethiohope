@@ -16,6 +16,20 @@ interface EnrollChildModalProps {
 
 import { Country, State } from 'country-state-city';
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length < 2) return time;
+  const [hours, minutes] = parts;
+  let h = parseInt(hours, 10);
+  if (isNaN(h)) return time;
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  return `${h}:${m} ${ampm}`;
+};
+
 const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, program, phase }) => {
   const [step, setStep] = useState(1);
   const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
@@ -412,7 +426,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                                               </div>
                                               <div className="flex items-center gap-1.5 text-gray-500">
                                                 <Clock className="w-3.5 h-3.5" />
-                                                <span className="text-xs font-bold tracking-tight">{slot.startTime} - {slot.endTime}</span>
+                                                <span className="text-xs font-bold tracking-tight">{formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}</span>
                                               </div>
                                               
                                               {hasConflict && (

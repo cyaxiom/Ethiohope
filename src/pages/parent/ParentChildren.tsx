@@ -11,6 +11,20 @@ import { useRegisterChildMutation } from '../../features/user/userApi';
 import { toast } from 'sonner';
 import { Country, State } from 'country-state-city';
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length < 2) return time;
+  const [hours, minutes] = parts;
+  let h = parseInt(hours, 10);
+  if (isNaN(h)) return time;
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  return `${h}:${m} ${ampm}`;
+};
+
 export const ParentChildren: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -282,7 +296,7 @@ export const ParentChildren: React.FC = () => {
                                 <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-100 rounded-lg shadow-sm">
                                   <Clock className="w-3 h-3 text-blue-500" />
                                   <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{s.sessionLabel}:</span>
-                                  <span className="text-[10px] font-bold text-gray-700">{s.dayOfWeek?.substring(0, 3)} {s.startTime}</span>
+                                  <span className="text-[10px] font-bold text-gray-700">{s.dayOfWeek?.substring(0, 3)} {formatTime12h(s.startTime)}</span>
                                 </div>
                               ))}
                             </div>

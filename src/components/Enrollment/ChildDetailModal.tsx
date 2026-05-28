@@ -12,6 +12,20 @@ interface ChildDetailModalProps {
   childId: string | null;
 }
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length < 2) return time;
+  const [hours, minutes] = parts;
+  let h = parseInt(hours, 10);
+  if (isNaN(h)) return time;
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  return `${h}:${m} ${ampm}`;
+};
+
 const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, childId }) => {
   const { data: response, isLoading, error } = useGetChildDetailsQuery(childId!, { skip: !childId });
   const [selectedEnrollmentForEdit, setSelectedEnrollmentForEdit] = React.useState<any>(null);
@@ -212,7 +226,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                                         <span className="text-gray-400 font-black uppercase tracking-tight text-[9px] min-w-[70px]">{s.sessionLabel}:</span>
                                         <span className="text-blue-600">{s.dayOfWeek}</span>
                                         <span className="text-gray-400">•</span>
-                                        <span>{s.startTime}</span>
+                                        <span>{formatTime12h(s.startTime)}</span>
                                       </div>
                                     ))}
                                   </div>
