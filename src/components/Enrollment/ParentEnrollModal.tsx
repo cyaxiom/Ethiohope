@@ -9,12 +9,19 @@ import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
-interface ParentEnrollModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  program: any;
-  initialPhaseId?: string;
-}
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length < 2) return time;
+  const [hours, minutes] = parts;
+  let h = parseInt(hours, 10);
+  if (isNaN(h)) return time;
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  return `${h}:${m} ${ampm}`;
+};
 
 const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, program, initialPhaseId }) => {
   const navigate = useNavigate();
@@ -330,7 +337,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                                             >
                                               <span className="text-xs font-black uppercase tracking-widest text-gray-800">{slot.dayOfWeek}</span>
                                               <div className="flex items-center gap-1.5 text-gray-500 font-bold text-[10px]">
-                                                <Clock className="w-3 h-3" /> {slot.startTime} - {slot.endTime}
+                                                <Clock className="w-3 h-3" /> {formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}
                                               </div>
                                               {hasConflict && <div className="absolute inset-0 bg-red-50/70 flex items-center justify-center p-2"><AlertTriangle className="w-4 h-4 text-red-600" /></div>}
                                             </button>

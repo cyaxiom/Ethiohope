@@ -10,6 +10,20 @@ interface EditScheduleModalProps {
   enrollment: any;
 }
 
+const formatTime12h = (time: string) => {
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length < 2) return time;
+  const [hours, minutes] = parts;
+  let h = parseInt(hours, 10);
+  if (isNaN(h)) return time;
+  const m = minutes;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  return `${h}:${m} ${ampm}`;
+};
+
 const EditScheduleModal: React.FC<EditScheduleModalProps> = ({ isOpen, onClose, enrollment }) => {
   const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
   const [updateSchedule, { isLoading }] = useUpdateEnrollmentScheduleMutation();
@@ -157,7 +171,7 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({ isOpen, onClose, 
                             {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
                           </div>
                           <div className={`flex items-center gap-1.5 font-bold text-[10px] ${isSelected ? 'text-blue-500' : 'text-gray-500'}`}>
-                            <Clock className="w-3 h-3" /> {slot.startTime} - {slot.endTime}
+                            <Clock className="w-3 h-3" /> {formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}
                           </div>
                           
                           {/* Capacity info if available */}
