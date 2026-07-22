@@ -1,0 +1,57 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "bundler",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "isolatedModules": true,
+    "paths": {
+      "@/*": ["./src/*"],
+
+      // Core system paths
+      "@core/*": ["./src/core/*"],
+      "@config/*": ["./src/core/config/*"],
+      "@common/*": ["./src/core/common/*"],
+      "@base/*": ["./src/core/base/*"],
+
+      "@infra/*": ["./src/infra/*"],
+
+      "@database/*": ["./src/core/config/*"],
+      "@exceptions/*": ["./src/core/exceptions/*"],
+      "@middlewares/*": ["./src/core/common/middlewares/*"],
+      "@utils/*": ["./src/core/common/utils/*"],
+      "@errors/*": ["./src/core/common/errors/*"],
+      "@services/*": ["./src/core/services/*"],
+
+      // Application modules
+      "@modules/*": ["./src/modules/*"],
+      "@accessControll/*": ["./src/modules/AccessControl/*"],
+      "@auth/*": ["./src/modules/Authentication/*"],
+      "@user/*": ["./src/modules/User/*"],
+      "@projects/*": ["./src/modules/projects/*"],
+      "@tasks/*": ["./src/modules/tasks/*"],
+      "@notifications/*": ["./src/modules/notifications/*"]
+    },
+    "pretty": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "typeRoots": ["node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

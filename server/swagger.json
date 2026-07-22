@@ -1,0 +1,351 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "EthioHope API",
+    "description": "API documentation for EthioHope LMS Backend"
+  },
+  "host": "localhost:2707",
+  "basePath": "/api/v1",
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter your Bearer token in the format: Bearer <token>"
+    }
+  },
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User Signup",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "firstname": { "type": "string", "example": "Muba" },
+                "lastname": { "type": "string", "example": "Keven" },
+                "email": { "type": "string", "example": "kevenmubarek@gmail.com" },
+                "password": { "type": "string", "example": "securePassword123" },
+                "roleCodes": { "type": "array", "items": { "type": "string" }, "example": [] }
+              }
+            }
+          }
+        ],
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User Login",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "identifier": { "type": "string", "example": "kevenmubarek@gmail.com" },
+                "password": { "type": "string", "example": "securePassword123" }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User Logout",
+        "security": [{ "Bearer": [] }],
+        "responses": { "200": { "description": "Successfully logged out" } }
+      }
+    },
+    "/auth/refresh": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Refresh Access Token",
+        "description": "Uses the refresh token in cookies to generate a new access token",
+        "responses": { "200": { "description": "Token refreshed" } }
+      }
+    },
+    "/auth/forget": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request Password Reset",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string", "example": "kevenmubarek@gmail.com" }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Email sent" } }
+      }
+    },
+    "/auth/reset": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Reset Password",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": { "type": "string", "example": "reset_token_from_email" },
+                "password": { "type": "string", "example": "newPassword123" }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Password reset success" } }
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request Email Verification",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string", "example": "kevenmubarek@gmail.com" }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Verification email sent" } }
+      }
+    },
+    "/auth/verify/confirm": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Confirm Email Verification",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": { "type": "string", "example": "verification_token_from_email" }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Verified" } }
+      }
+    },
+    "/parent/complete-profile": {
+      "post": {
+        "tags": ["Parent"],
+        "summary": "Complete Parent Profile",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "parentType": { "type": "string", "enum": ["mother", "father", "guardian", "other"] },
+                "phone": { "type": "string" },
+                "country": { "type": "string" },
+                "state": { "type": "string" },
+                "city": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Profile Completed" } }
+      }
+    },
+    "/admin/dashboard/stats": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Admin Dashboard Statistics",
+        "security": [{ "Bearer": [] }],
+        "responses": { "200": { "description": "Dashboard stats fetched successfully" } }
+      }
+    },
+    "/users": {
+        "get": {
+            "tags": ["Users"],
+            "summary": "Get All Users (Paginated)",
+            "security": [{ "Bearer": [] }],
+            "parameters": [
+                { "name": "page", "in": "query", "required": false, "type": "string", "default": "1" },
+                { "name": "limit", "in": "query", "required": false, "type": "string", "default": "10" },
+                { "name": "search", "in": "query", "required": false, "type": "string" },
+                { "name": "role", "in": "query", "required": false, "type": "string" },
+                { "name": "status", "in": "query", "required": false, "type": "string", "enum": ["active", "suspended", "blocked"] }
+            ],
+            "responses": { "200": { "description": "Users fetched successfully" } }
+        },
+        "post": {
+            "tags": ["Users"],
+            "summary": "Create a New User",
+            "security": [{ "Bearer": [] }],
+            "parameters": [
+                {
+                    "name": "body",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "firstname": { "type": "string", "example": "John" },
+                            "lastname": { "type": "string", "example": "Doe" },
+                            "email": { "type": "string", "example": "johndoe@example.com" },
+                            "password": { "type": "string", "example": "password123" },
+                            "roles": { "type": "array", "items": { "type": "string" }, "example": ["parent"] }
+                        }
+                    }
+                }
+            ],
+            "responses": { "201": { "description": "User created successfully" } }
+        }
+    },
+    "/users/{id}/roles": {
+        "patch": {
+            "tags": ["Users"],
+            "summary": "Update User Roles",
+            "security": [{ "Bearer": [] }],
+            "parameters": [
+                { "name": "id", "in": "path", "required": true, "type": "string" },
+                {
+                    "name": "body",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "roles": { "type": "array", "items": { "type": "string" }, "example": ["admin", "teacher"] }
+                        }
+                    }
+                }
+            ],
+            "responses": { "200": { "description": "User roles updated successfully" } }
+        }
+    },
+    "/users/{id}/status": {
+        "patch": {
+            "tags": ["Users"],
+            "summary": "Update User Status",
+            "security": [{ "Bearer": [] }],
+            "parameters": [
+                { "name": "id", "in": "path", "required": true, "type": "string" },
+                {
+                    "name": "body",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "status": { "type": "string", "enum": ["active", "suspended", "blocked"], "example": "active" }
+                        }
+                    }
+                }
+            ],
+            "responses": { "200": { "description": "User status updated successfully" } }
+        }
+    },
+    "/access/permissions": {
+      "get": {
+        "tags": ["Access Control"],
+        "summary": "Get All Available Permission Keys",
+        "security": [{ "Bearer": [] }],
+        "responses": { "200": { "description": "List of permissions" } }
+      }
+    },
+    "/access/roles": {
+      "get": {
+        "tags": ["Access Control"],
+        "summary": "Get All Roles",
+        "security": [{ "Bearer": [] }],
+        "responses": { "200": { "description": "List of roles" } },
+        "parameters": [
+          { "name": "roleId", "in": "query", "required": false, "type": "string" }
+        ]
+      },
+      "post": {
+        "tags": ["Access Control"],
+        "summary": "Create a New Role",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "example": "Teacher" },
+                "code": { "type": "string", "example": "teacher" },
+                "permissions": { "type": "array", "items": { "type": "string" }, "example": ["course.create", "course.read"] }
+              }
+            }
+          }
+        ],
+        "responses": { "201": { "description": "Role created" } }
+      }
+    },
+    "/access/roles/{id}": {
+      "patch": {
+        "tags": ["Access Control"],
+        "summary": "Update Role Permissions",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "permissions": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        ],
+        "responses": { "200": { "description": "Role updated" } }
+      },
+      "delete": {
+        "tags": ["Access Control"],
+        "summary": "Delete a Role",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" }
+        ],
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    }
+  }
+}
