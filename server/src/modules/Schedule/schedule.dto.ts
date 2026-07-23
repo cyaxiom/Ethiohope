@@ -11,6 +11,11 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateScheduleDTO {
+  /** Optional in body — server sets/validates from the batch's program. Prefer sending it from the admin UI. */
+  @IsOptional()
+  @IsMongoId()
+  program?: string;
+
   @IsMongoId()
   @IsNotEmpty()
   batch!: string;
@@ -64,6 +69,10 @@ export class CreateScheduleDTO {
 }
 
 export class UpdateScheduleDTO {
+  @IsOptional()
+  @IsMongoId()
+  program?: string;
+
   @IsOptional()
   @IsMongoId()
   batch?: string;

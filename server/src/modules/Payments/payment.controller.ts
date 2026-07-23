@@ -110,16 +110,19 @@ export class PaymentController {
 
   public getAllPayments = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { search, status } = req.query;
+      const { search, status, programId, enrolleeType } = req.query;
 
-      const payments = await this.paymentService.getAllPayments(
+      const result = await this.paymentService.getAllPayments(
         search as string,
-        status as string
+        status as string,
+        programId as string,
+        enrolleeType as string
       );
 
       res.status(200).json({
         success: true,
-        data: payments
+        data: result.applications,
+        summary: result.summary,
       });
     } catch (error) {
       next(error);
@@ -148,6 +151,9 @@ export class PaymentController {
 
         // Trigger post-activation logic (credentials, etc.)
         await this.paymentService.activateEnrollments({ enrollmentIds: JSON.stringify([enrollmentId]) });
+      } else if (status === 'CANCELLED') {
+        enrollment.status = 'CANCELLED';
+        await enrollment.save();
       } else {
         enrollment.status = status;
         await enrollment.save();
@@ -172,6 +178,29 @@ export class PaymentController {
       }
 
       const result = await this.paymentService.confirmPaymentSession(sessionId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public reportZellePayment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { enrollmentIds } = req.body;
+      const userPayload = (req as RequestWithTokenPayload).tokenPayload;
+      const userId = userPayload?._id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'User not authenticated' });
+        return;
+      }
+
+      if (!enrollmentIds || !Array.isArray(enrollmentIds) || enrollmentIds.length === 0) {
+        res.status(400).json({ success: false, message: 'enrollmentIds are required' });
+        return;
+      }
+
+      const result = await this.paymentService.reportZellePayment(enrollmentIds, userId.toString());
       res.status(200).json(result);
     } catch (error) {
       next(error);

@@ -3,15 +3,19 @@ import { Types } from "mongoose";
 
 export class ScheduleDao {
   /**
-   * Find all schedules (populating batch)
+   * Find schedules, optionally filtered by program and/or batch
    */
-  public async findSchedules(params: { batchId?: string }): Promise<ISchedule[]> {
-    let query: any = {};
+  public async findSchedules(params: { batchId?: string; programId?: string }): Promise<ISchedule[]> {
+    const query: any = {};
+    if (params.programId && Types.ObjectId.isValid(params.programId)) {
+      query.program = new Types.ObjectId(params.programId);
+    }
     if (params.batchId && Types.ObjectId.isValid(params.batchId)) {
       query.batch = new Types.ObjectId(params.batchId);
     }
 
     const schedules = await ScheduleModel.find(query)
+      .populate('program', 'title ageRange')
       .populate({
         path: 'batch',
         populate: [
@@ -37,6 +41,7 @@ export class ScheduleDao {
    */
   public async findById(id: string): Promise<ISchedule | null> {
     const schedule = await ScheduleModel.findById(id)
+      .populate('program', 'title ageRange')
       .populate({
         path: 'batch',
         populate: [
@@ -52,6 +57,7 @@ export class ScheduleDao {
    */
   public async update(id: string, data: Partial<ISchedule>): Promise<ISchedule | null> {
     const updatedSchedule = await ScheduleModel.findByIdAndUpdate(id, { $set: data }, { new: true })
+      .populate('program', 'title')
       .populate('batch')
       .lean();
     return updatedSchedule as unknown as ISchedule | null;

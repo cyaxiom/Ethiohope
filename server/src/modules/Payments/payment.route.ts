@@ -29,6 +29,9 @@ export class PaymentRoute implements Routes {
     // Confirm payment session
     this.router.get('/confirm/:sessionId', authMiddleware as any, this.paymentController.confirmPaymentSession as any);
 
+    // User reports Zelle transfer sent (notifies admins)
+    this.router.post('/zelle-submitted', authMiddleware as any, this.paymentController.reportZellePayment as any);
+
     // Webhook route - needs raw body for Stripe signature verification
     this.router.post('/webhook', webhookRawMiddleware, this.paymentController.handleWebhook as any);
   }

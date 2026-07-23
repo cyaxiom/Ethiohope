@@ -1,27 +1,37 @@
 import React, { useState } from 'react';
-import { Menu, User } from 'lucide-react';
+import { Menu, User, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import UserProfileDropdown from '../Navbar/UserProfileDropdown';
+import { useTheme } from '../../provider/ThemeProvider/ThemeProvider';
+import { clsx } from 'clsx';
 
 interface HeaderProps {
-  toggleSidebar: () => void;
-  isOpen: boolean;
+  toggleMobileSidebar: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
+export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
   const location = useLocation();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const { isDashboardDark, toggleDashboardTheme } = useTheme();
 
-  // Simple title mapping based on route
   const getPageTitle = () => {
     const path = location.pathname;
     if (path.includes('/admin/dashboard')) return 'Admin Dashboard';
     if (path.includes('/admin/roles')) return 'Role Management';
     if (path.includes('/admin/users')) return 'User Management';
+    if (path.includes('/admin/programs')) return 'Programs';
+    if (path.includes('/admin/batches')) return 'Batches';
+    if (path.includes('/admin/schedules')) return 'Schedules';
+    if (path.includes('/admin/courses')) return 'Courses';
+    if (path.includes('/admin/payments')) return 'Applications';
+    if (path.includes('/admin/chat')) return 'Chat';
+    if (path.includes('/admin/sessions')) return 'Sessions';
+    if (path.includes('/admin/tracks')) return 'Analytics';
     if (path.includes('/teacher/dashboard')) return 'Teacher Dashboard';
     if (path.includes('/parent/dashboard')) return 'Parent Portal';
     if (path.includes('/student/dashboard')) return 'Student Dashboard';
-    
+    if (path.includes('/instructor/')) return 'Instructor Portal';
+
     return 'Ethiohope Portal';
   };
 
@@ -34,34 +44,67 @@ export const Header: React.FC<HeaderProps> = ({ toggleSidebar, isOpen }) => {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-[100] w-full transition-all duration-300">
+    <header
+      className={clsx(
+        'h-16 border-b flex items-center justify-between px-6 sticky top-0 z-[100] w-full transition-colors duration-300',
+        isDashboardDark
+          ? 'bg-[#0B1121] border-slate-800/80 text-slate-100'
+          : 'bg-white border-gray-100 text-gray-800'
+      )}
+    >
       <div className="flex items-center gap-4">
         <button
-          onClick={toggleSidebar}
-          className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none"
+          onClick={toggleMobileSidebar}
+          className={clsx(
+            'lg:hidden p-2 rounded-md focus:outline-none transition-colors',
+            isDashboardDark
+              ? 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.05]'
+              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+          )}
         >
           <Menu className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-semibold text-gray-800 tracking-tight">
+        <h1
+          className={clsx(
+            'text-xl font-semibold tracking-tight',
+            isDashboardDark ? 'text-white' : 'text-gray-800'
+          )}
+        >
           {getPageTitle()}
         </h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div 
-              onClick={handleProfileClick}
-              className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:shadow-md transition-all sm:ml-2"
-            >
-              <User className="w-5 h-5" />
-            </div>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={toggleDashboardTheme}
+          aria-label={isDashboardDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          className={clsx(
+            'p-2 rounded-lg transition-colors',
+            isDashboardDark
+              ? 'text-slate-300 hover:text-white hover:bg-white/[0.05] bg-slate-800/60'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-gray-100 bg-gray-50'
+          )}
+        >
+          {isDashboardDark ? (
+            <Sun className="w-[18px] h-[18px]" />
+          ) : (
+            <Moon className="w-[18px] h-[18px]" />
+          )}
+        </button>
 
-            <UserProfileDropdown
-              isOpen={isProfileDropdownOpen}
-              onClose={handleProfileDropdownClose}
-            />
+        <div className="relative">
+          <div
+            onClick={handleProfileClick}
+            className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-900/30 cursor-pointer hover:shadow-md transition-all"
+          >
+            <User className="w-5 h-5" />
           </div>
+
+          <UserProfileDropdown
+            isOpen={isProfileDropdownOpen}
+            onClose={handleProfileDropdownClose}
+          />
         </div>
       </div>
     </header>

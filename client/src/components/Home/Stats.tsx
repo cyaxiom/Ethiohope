@@ -21,30 +21,30 @@ export default function Stats() {
       title: "1. Create Account",
       description: "Sign up and verify your email to secure your account.",
       icon: <UserPlus className="w-5 h-5" />,
-      color: "bg-blue-100 text-blue-600"
+      color: "bg-blue-500/20 text-blue-300"
     },
     {
       title: "2. Choose Program",
       description: "Browse and select the best coding program for your child.",
       icon: <BookOpen className="w-5 h-5" />,
-      color: "bg-purple-100 text-purple-600"
+      color: "bg-violet-500/20 text-violet-300"
     },
     {
       title: "3. Enroll & Schedule",
       description: "Add your child, pick a schedule, and complete payment.",
       icon: <CreditCard className="w-5 h-5" />,
-      color: "bg-cyan-100 text-cyan-600"
+      color: "bg-cyan-500/20 text-cyan-300"
     },
     {
       title: "4. Start Learning",
       description: "Get credentials and begin the exciting coding journey.",
       icon: <Rocket className="w-5 h-5 text-white" />,
-      color: "bg-primary text-white scale-110 shadow-lg shadow-primary/30"
+      color: "bg-gradient-to-br from-blue-600 to-emerald-500 text-white scale-110 shadow-lg shadow-blue-900/40"
     }
   ];
 
   return (
-    <section className="relative py-16 md:py-24 bg-white">
+    <section className="relative py-16 md:py-24 bg-[#070b16]">
       <SectionContainer containerSize="xl">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <Heading variant="h2" className="text-foreground">
@@ -62,7 +62,7 @@ export default function Stats() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
             {steps.map((step, idx) => (
               <div key={idx} className="flex flex-col items-center text-center group">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-6 transition-all duration-300 group-hover:-translate-y-1 ${step.color} outline outline-4 outline-white shadow-sm z-10`}>
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-6 transition-all duration-300 group-hover:-translate-y-1 ${step.color} outline outline-4 outline-[#070b16] shadow-sm z-10`}>
                   {step.icon}
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">

@@ -6,67 +6,145 @@ import { isEmpty } from "@common/utils/util";
 import { EnrollmentModel } from "../Enrollments/enrollment.model";
 
 export class CourseService {
-  public async getStudentCourses(childId: string) {
-    // 1. Get active enrollments for the child
-    const enrollments = await EnrollmentModel.find({ 
-      child: childId, 
-      status: 'ACTIVE',
-      paymentStatus: 'PAID'
-    }).lean();
+  public async getStudentCourses(learnerId: string) {
+    // Include unpaid pending enrollments so the dashboard can show locked courses
+    const enrollments = await EnrollmentModel.find({
+      $or: [{ child: learnerId }, { user: learnerId }],
+      status: { $in: ['PENDING', 'ACTIVE', 'COMPLETED'] },
+    })
+      .populate('program', 'title image')
+      .populate('phase', 'title durationWeeks price orderIndex')
+      .lean();
 
     if (!enrollments.length) {
       return { data: [], meta: { total: 0, page: 1, limit: 10 } };
     }
 
-    // 2. Extract program and phase pairs
-    const programPhases = enrollments.map(e => ({
-      program: e.program,
-      phase: e.phase
+    // Prefer a paid enrollment when multiple exist for the same program/phase
+    const enrollmentByKey = new Map<string, any>();
+    for (const e of enrollments) {
+      const programId = (e.program as any)?._id?.toString() || e.program?.toString();
+      const phaseId = (e.phase as any)?._id?.toString() || e.phase?.toString();
+      const key = `${programId}:${phaseId}`;
+      const existing = enrollmentByKey.get(key);
+      const ePaid = e.paymentStatus === 'PAID';
+      if (!existing || (ePaid && existing.paymentStatus !== 'PAID')) {
+        enrollmentByKey.set(key, e);
+      }
+    }
+
+    const programPhases = [...enrollmentByKey.values()].map(e => ({
+      program: (e.program as any)?._id || e.program,
+      phase: (e.phase as any)?._id || e.phase,
     }));
 
-    // 3. Find courses matching these programs and phases
-    const query = {
-      $or: programPhases
-    };
-
-    const courses = await CourseModel.find(query)
-      .populate('program', 'title')
-      .populate('phase', 'title')
+    const courses = await CourseModel.find({ $or: programPhases })
+      .populate('program', 'title image')
+      .populate('phase', 'title durationWeeks price orderIndex')
       .sort({ createdAt: -1 })
       .lean();
 
+    const coveredKeys = new Set<string>();
+    const data: any[] = courses.map((course: any) => {
+      const key = `${course.program._id.toString()}:${course.phase._id.toString()}`;
+      coveredKeys.add(key);
+      const enrollment = enrollmentByKey.get(key);
+      const isPaid = enrollment?.paymentStatus === 'PAID';
+
+      return {
+        ...course,
+        enrollmentId: enrollment?._id?.toString(),
+        paymentStatus: enrollment?.paymentStatus || 'UNPAID',
+        enrollmentStatus: enrollment?.status || 'PENDING',
+        isLocked: !isPaid,
+        isPlaceholder: false,
+      };
+    });
+
+    // Enrollments with no curriculum yet still appear as locked cards (so unpaid apps show up)
+    for (const [key, enrollment] of enrollmentByKey.entries()) {
+      if (coveredKeys.has(key)) continue;
+
+      const program = enrollment.program as any;
+      const phase = enrollment.phase as any;
+      const isPaid = enrollment.paymentStatus === 'PAID';
+
+      data.push({
+        _id: `enrollment-${enrollment._id}`,
+        title: phase?.title || 'Course coming soon',
+        description: program?.title
+          ? `Your enrollment in ${program.title}${phase?.title ? ` — ${phase.title}` : ''} is ready. Course materials will appear here once published.`
+          : 'Course materials will appear here once published.',
+        thumbnail: program?.image || '',
+        program: program?._id
+          ? { _id: program._id, title: program.title || 'Program' }
+          : { _id: enrollment.program, title: 'Program' },
+        phase: phase?._id
+          ? { _id: phase._id, title: phase.title || 'Phase' }
+          : { _id: enrollment.phase, title: 'Phase' },
+        weeks: [],
+        isActive: true,
+        enrollmentId: enrollment._id.toString(),
+        paymentStatus: enrollment.paymentStatus || 'UNPAID',
+        enrollmentStatus: enrollment.status || 'PENDING',
+        isLocked: !isPaid,
+        isPlaceholder: true,
+        createdAt: enrollment.createdAt,
+        updatedAt: enrollment.updatedAt,
+      });
+    }
+
+    data.sort((a, b) => {
+      // Unlocked first, then unpaid locked, then by date
+      if (a.isLocked !== b.isLocked) return a.isLocked ? 1 : -1;
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
+
     return {
-      data: courses,
+      data,
       meta: {
-        total: courses.length,
+        total: data.length,
         page: 1,
-        limit: courses.length,
+        limit: data.length,
       },
     };
   }
 
-  public async getStudentCourseById(childId: string, courseId: string): Promise<{ course: ICourse; enrollmentId: string }> {
-    // 1. Verify student is enrolled in the program/phase of this course
+  public async getStudentCourseById(learnerId: string, courseId: string): Promise<{ course: ICourse; enrollmentId: string }> {
     const course = await CourseModel.findById(courseId)
       .populate('program', 'title')
       .populate('phase', 'title')
       .lean();
-    
+
     if (!course) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Course not found");
 
-    const enrollment = await EnrollmentModel.findOne({
-      child: childId,
-      program: course.program._id,
-      phase: course.phase._id,
-      status: 'ACTIVE',
-      paymentStatus: 'PAID'
+    const paidEnrollment = await EnrollmentModel.findOne({
+      $or: [{ child: learnerId }, { user: learnerId }],
+      program: (course.program as any)._id,
+      phase: (course.phase as any)._id,
+      status: { $in: ['ACTIVE', 'COMPLETED'] },
+      paymentStatus: 'PAID',
     });
 
-    if (!enrollment) {
-      throw new HttpException(HttpStatusCodes.FORBIDDEN, "You are not enrolled in this course");
+    if (paidEnrollment) {
+      return { course: course as unknown as ICourse, enrollmentId: paidEnrollment._id.toString() };
     }
 
-    return { course: course as unknown as ICourse, enrollmentId: enrollment._id.toString() };
+    const unpaidEnrollment = await EnrollmentModel.findOne({
+      $or: [{ child: learnerId }, { user: learnerId }],
+      program: (course.program as any)._id,
+      phase: (course.phase as any)._id,
+      status: { $in: ['PENDING', 'ACTIVE', 'COMPLETED'] },
+    });
+
+    if (unpaidEnrollment) {
+      throw new HttpException(
+        HttpStatusCodes.PAYMENT_REQUIRED,
+        "Payment required to access this course. Please complete payment first."
+      );
+    }
+
+    throw new HttpException(HttpStatusCodes.FORBIDDEN, "You are not enrolled in this course");
   }
 
   public async getCourses(params: { page: number; limit: number; search?: string; programId?: string; phaseId?: string }) {

@@ -2,7 +2,8 @@ import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IProgress extends Document {
   enrollment: Types.ObjectId;
-  child: Types.ObjectId;
+  child?: Types.ObjectId;
+  user?: Types.ObjectId;
   program: Types.ObjectId;
   phase: Types.ObjectId;
   completedLessons: {
@@ -28,7 +29,13 @@ const ProgressSchema = new Schema<IProgress>(
     child: {
       type: Schema.Types.ObjectId,
       ref: 'Child',
-      required: true,
+      required: false,
+      index: true,
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
       index: true,
     },
     program: {

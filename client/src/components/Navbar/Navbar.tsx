@@ -2,58 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, LogIn } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { dashboardLinks, navLinks } from '../../common/navLinks';
+import { navLinks } from '../../common/navLinks';
 import UserProfileDropdown from './UserProfileDropdown';
 
-import {
-  auth_btn_border,
-  auth_btn_border_2,
-  profile_bg,
-} from '../../assets/images/z-index.img';
+import { profile_bg } from '../../assets/images/z-index.img';
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [openSections, setOpenSections] = useState<Record<any, boolean>>({});
-  const [drawerTop, setDrawerTop] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [drawerTop, setDrawerTop] = useState(0);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  
-  // Real implementation of authentication state using Redux
+
   const authState = useSelector((state: any) => state.auth);
   const isLoggedIn = !!authState?.token && !!authState?.user;
 
   const navRef = useRef(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    let ticking = false;
-    const throttledHandleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', throttledHandleScroll);
-  }, []);
 
   const handleProfileClick = () => {
     if (isLoggedIn) {
@@ -91,21 +58,21 @@ export default function Navbar() {
     };
   }, [isDragging]);
 
-
-
+  const isNavActive = (path?: string) => {
+    if (!path) return false;
+    if (path === '/') return location.pathname === '/';
+    // Exact match for /about so Contact (/about/contact) stays separate
+    if (path === '/about') return location.pathname === '/about';
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   return (
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 bg-white text-black`}
-        style={{
-          backgroundColor: 'var(--header-bg, #fff)',
-          color: '#181A20',
-        }}
+        className="fixed top-0 left-0 right-0 z-50 bg-[#0b1224]/90 backdrop-blur-xl border-b border-white/10 text-slate-100"
       >
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Left: hamburger (mobile) + Logo + Ethiohope text */}
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
             <button
               aria-label="Open menu"
@@ -113,69 +80,59 @@ export default function Navbar() {
                 e.stopPropagation();
                 setIsDrawerOpen(true);
               }}
-              className="p-2 rounded-md bg-white/80 hover:bg-muted/50 focus:outline-none focus:ring-2 md:hidden border border-border shadow cursor-pointer"
+              className="p-2 rounded-md bg-white/5 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/40 md:hidden border border-white/10 cursor-pointer"
             >
-              <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm text-black">C</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-900/40">
+              <span className="text-white font-bold text-sm">E</span>
             </div>
-            <span className="text-foreground font-bold text-xl tracking-tight" style={{ color: '#181A20', fontWeight: 700 }}>
-              Ethiohope
-            </span>
+            <span className="font-bold text-xl tracking-tight text-white">Ethiohope</span>
           </div>
 
-          {/* Navigation: only visible on md+ */}
-          <ul className="hidden md:flex space-x-6 text-foreground font-medium" style={{ color: '#181A20' }}>
-            {navLinks.map((link: any, index: number) => (
-              <li
-                key={index}
-                className="relative"
-              >
-                {link.path ? (
-                  <Link
+          <ul className="hidden md:flex items-center space-x-1 text-slate-300 font-medium">
+            {navLinks.map((link: any, index: number) => {
+              const active = isNavActive(link.path);
+              return (
+                <li key={index} className="relative">
+                  {link.path ? (
+                    <Link
                       to={link.path}
-                      className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2"
+                      className={`relative text-sm transition-colors duration-200 flex items-center px-3 py-2 rounded-lg ${
+                        active ? 'text-white font-semibold' : 'hover:text-white'
+                      }`}
                     >
-                      <span className="flex items-center">
-                        <span>{link.name}</span>
-                      </span>
+                      {link.name}
+                      {active && (
+                        <span className="absolute left-3 right-3 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-blue-500 to-emerald-400" />
+                      )}
                     </Link>
-                ) : (
-                  <div className="text-sm hover:text-primary transition-colors duration-200 flex items-center py-2 cursor-pointer">
-                    {link.name}
-                  </div>
-                )}
-              </li>
-            ))}
+                  ) : (
+                    <div className="text-sm hover:text-white transition-colors duration-200 flex items-center px-3 py-2 cursor-pointer">
+                      {link.name}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
 
-          {/* Right Side: always visible, profile icon always shown */}
           <div className="flex items-center space-x-4">
-            {/* Profile icon or Login Link conditionally rendered */}
             {isLoggedIn ? (
               <div className="relative cursor-pointer" onClick={handleProfileClick}>
                 <div className="flex items-center justify-center w-10 h-10 transition-all duration-200">
-                  <img
-                    src={profile_bg}
-                    alt=""
-                    className="transition-transform duration-200 group-hover:scale-105"
-                  />
+                  <img src={profile_bg} alt="" className="transition-transform duration-200 group-hover:scale-105" />
                   <User className="w-5 h-5 absolute text-white" />
                 </div>
-
-                <UserProfileDropdown
-                  isOpen={isProfileDropdownOpen}
-                  onClose={handleProfileDropdownClose}
-                />
+                <UserProfileDropdown isOpen={isProfileDropdownOpen} onClose={handleProfileDropdownClose} />
               </div>
             ) : (
-              <Link 
+              <Link
                 to="/login"
                 state={{ from: location.pathname }}
-                className="px-6 py-2 text-sm font-bold flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
+                className="px-6 py-2 text-sm font-bold flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-emerald-500 text-white shadow-md shadow-blue-900/30 hover:shadow-lg hover:scale-105 transition-all duration-300"
               >
                 <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">Sign In</span>
@@ -185,76 +142,92 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Left-side Drawer Overlay + Panel */}
       <div aria-hidden={!isDrawerOpen}>
-        {/* overlay */}
         <div
-          className={`fixed inset-0 bg-black/40 z-50 transition-opacity ${isDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 bg-black/60 z-50 transition-opacity ${
+            isDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
           onClick={() => setIsDrawerOpen(false)}
         />
 
-        {/* drawer panel */}
         <aside
-          className={`fixed top-0 left-0 h-full w-72 bg-white z-60 transform transition-transform duration-300 ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`fixed top-0 left-0 h-full w-72 bg-[#0b1224] border-r border-white/10 z-60 transform transition-transform duration-300 ${
+            isDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
           aria-hidden={!isDrawerOpen}
+          style={{ top: drawerTop || 0 }}
         >
-          <div className="p-4 flex items-center justify-between border-b border-gray-200">
+          <div className="p-4 flex items-center justify-between border-b border-white/10">
             <div className="flex items-center space-x-3">
-              <div className="w-7 h-7 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm text-black">C</span>
+              <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-emerald-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">E</span>
               </div>
-              <span className="font-bold text-gray-900">Ethiohope</span>
+              <span className="font-bold text-white">Ethiohope</span>
             </div>
-            <button onClick={() => setIsDrawerOpen(false)} aria-label="Close menu" className="p-2 rounded-md hover:bg-muted/50">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <button
+              onClick={() => setIsDrawerOpen(false)}
+              aria-label="Close menu"
+              className="p-2 rounded-md hover:bg-white/5 text-slate-300"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
           <nav className="p-4 overflow-y-auto max-h-[calc(100vh-64px)]">
-            <ul className="space-y-3">
-              {navLinks.map((link: any, idx: number) => (
-                <li key={idx}>
-                  <div className="flex items-center justify-between">
-                    {link.path && !link.dropdown ? (
-                      <Link to={link.path} onClick={() => setIsDrawerOpen(false)} className="py-3 px-3 rounded-md hover:bg-gray-50 text-gray-800 font-medium w-full text-left">
-                        {link.name}
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={() => toggleSection(idx)}
-                        className="w-full text-left py-3 px-3 rounded-md hover:bg-gray-50 text-gray-800 font-medium"
-                      >
-                        <span>{link.name}</span>
-                      </button>
-                    )}
-                  </div>
-
-                      {link.dropdown && (
-                        <div className={`mt-2 pl-4 space-y-1 ${openSections[idx] ? 'block' : 'hidden'}`}>
-                          {link.dropdown.map((sub: any, sidx: number) => (
+            <ul className="space-y-2">
+              {navLinks.map((link: any, idx: number) => {
+                const active = isNavActive(link.path);
+                return (
+                  <li key={idx}>
+                    <div className="flex items-center justify-between">
+                      {link.path && !link.dropdown ? (
                         <Link
-                          key={sidx}
-                          to={sub.path}
+                          to={link.path}
                           onClick={() => setIsDrawerOpen(false)}
-                          className="block py-2 px-3 rounded-md hover:bg-gray-50 text-sm text-gray-800"
+                          className={`py-3 px-3 rounded-lg font-medium w-full text-left flex items-center justify-between gap-2 ${
+                            active
+                              ? 'bg-blue-500/15 text-white border border-blue-400/30'
+                              : 'hover:bg-white/5 text-slate-200'
+                          }`}
                         >
-                          {sub.name}
+                          <span>{link.name}</span>
+                          {active && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-400 to-emerald-400 flex-shrink-0" />
+                          )}
                         </Link>
-                      ))}
+                      ) : (
+                        <button
+                          onClick={() => toggleSection(idx)}
+                          className="w-full text-left py-3 px-3 rounded-lg hover:bg-white/5 text-slate-200 font-medium"
+                        >
+                          <span>{link.name}</span>
+                        </button>
+                      )}
                     </div>
-                  )}
-                </li>
-              ))}
-            </ul>
 
-            </nav>
+                    {link.dropdown && (
+                      <div className={`mt-2 pl-4 space-y-1 ${openSections[idx] ? 'block' : 'hidden'}`}>
+                        {link.dropdown.map((sub: any, sidx: number) => (
+                          <Link
+                            key={sidx}
+                            to={sub.path}
+                            onClick={() => setIsDrawerOpen(false)}
+                            className="block py-2 px-3 rounded-lg hover:bg-white/5 text-sm text-slate-400"
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
         </aside>
       </div>
-
-
-
     </>
   );
 }

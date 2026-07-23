@@ -156,6 +156,84 @@ export class EmailService {
       replyTo: data.email
     });
   }
+
+  /**
+   * Notify admins that a user reported a Zelle transfer
+   */
+  public async sendZellePaymentSubmittedEmail(
+    to: string | string[],
+    data: {
+      payerName: string;
+      payerEmail: string;
+      payerPhone?: string;
+      totalAmount: number;
+      enrollments: Array<{
+        learnerName: string;
+        programTitle: string;
+        phaseTitle: string;
+        amount: number;
+      }>;
+      adminUrl: string;
+    }
+  ): Promise<void> {
+    const rows = data.enrollments
+      .map(
+        (e) => `
+        <tr>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #eee;">${e.learnerName}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #eee;">${e.programTitle} · ${e.phaseTitle}</td>
+          <td style="padding: 10px 12px; border-bottom: 1px solid #eee; text-align: right;">$${e.amount.toFixed(2)}</td>
+        </tr>`
+      )
+      .join('');
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 640px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; padding: 28px;">
+        <h2 style="color: #0b1224; margin: 0 0 8px;">Zelle payment reported</h2>
+        <p style="color: #555; margin: 0 0 20px;">A user marked that they sent a Zelle transfer. Please verify the receipt and mark the application(s) as paid.</p>
+
+        <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+          <p style="margin: 4px 0;"><strong>Payer:</strong> ${data.payerName}</p>
+          <p style="margin: 4px 0;"><strong>Email:</strong> ${data.payerEmail}</p>
+          ${data.payerPhone ? `<p style="margin: 4px 0;"><strong>Phone:</strong> ${data.payerPhone}</p>` : ''}
+          <p style="margin: 4px 0;"><strong>Total claimed:</strong> $${data.totalAmount.toFixed(2)}</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px;">
+          <thead>
+            <tr style="background: #0b1224; color: #fff;">
+              <th style="text-align: left; padding: 10px 12px;">Learner</th>
+              <th style="text-align: left; padding: 10px 12px;">Program</th>
+              <th style="text-align: right; padding: 10px 12px;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+
+        <div style="text-align: center;">
+          <a href="${data.adminUrl}" style="background: #2563eb; color: #fff; padding: 12px 22px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            Open Applications
+          </a>
+        </div>
+
+        <p style="font-size: 12px; color: #888; margin-top: 28px; text-align: center;">
+          EthioHope Academy · Confirm Zelle receipt before activating enrollments
+        </p>
+      </div>
+    `;
+
+    const recipients = Array.isArray(to) ? to : [to];
+    await Promise.all(
+      recipients.filter(Boolean).map((email) =>
+        this.provider.sendEmail({
+          to: email,
+          subject: `Zelle payment reported — $${data.totalAmount.toFixed(2)} from ${data.payerName}`,
+          html,
+          replyTo: data.payerEmail,
+        })
+      )
+    );
+  }
 }
 
 // Export a singleton instance

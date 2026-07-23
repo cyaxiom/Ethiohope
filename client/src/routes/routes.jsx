@@ -84,11 +84,13 @@ const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
 const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
 const StudentCourseDetail = React.lazy(() => import('@pages/student/CourseDetail'));
 const StudentSessions = React.lazy(() => import('@pages/student/StudentSessions'));
+const StudentPayments = React.lazy(() => import('@pages/student/StudentPayments'));
 
-import { ProtectedRoute, PermissionRoute } from './Guard';
+import { ProtectedRoute, PermissionRoute, GuestRoute } from './Guard';
 
 // Helper for protecting sub-routes
 const wrapInAuth = (element) => <ProtectedRoute>{element}</ProtectedRoute>;
+const wrapAsGuest = (element) => <GuestRoute>{element}</GuestRoute>;
 
 const DashboardRedirect = () => {
   const { roles, activeRole } = useSelector((state) => state.auth);
@@ -130,12 +132,12 @@ export const routes = [
     ],
   },
 
-  // Auth routes (No Navbar/Footer)
-  { path: '/login', name: 'Login', element: <Login /> },
-  { path: '/register', name: 'Register', element: <Register /> },
-  { path: '/forgot-password', name: 'ForgotPassword', element: <ForgotPassword /> },
-  { path: '/reset-password', name: 'ResetPassword', element: <ResetPassword /> },
-  { path: '/auth/verify-email', name: 'VerifyEmail', element: <VerifyEmail /> },
+  // Auth routes (No Navbar/Footer) — guests only; logged-in users are redirected
+  { path: '/login', name: 'Login', element: wrapAsGuest(<Login />) },
+  { path: '/register', name: 'Register', element: wrapAsGuest(<Register />) },
+  { path: '/forgot-password', name: 'ForgotPassword', element: wrapAsGuest(<ForgotPassword />) },
+  { path: '/reset-password', name: 'ResetPassword', element: wrapAsGuest(<ResetPassword />) },
+  { path: '/auth/verify-email', name: 'VerifyEmail', element: wrapAsGuest(<VerifyEmail />) },
   { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
   { path: '/checkout', name: 'Checkout', element: wrapInAuth(<Checkout />) },
   { path: '/payment/success', name: 'PaymentSuccess', element: wrapInAuth(<PaymentSuccess />) },
@@ -372,6 +374,11 @@ export const routes = [
         path: '/student/sessions',
         name: 'StudentSessions',
         element: <StudentSessions />,
+      },
+      {
+        path: '/student/payments',
+        name: 'StudentPayments',
+        element: <StudentPayments />,
       },
       {
         path: '*',

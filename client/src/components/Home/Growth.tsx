@@ -12,7 +12,7 @@ export default function Growth() {
   ];
 
   return (
-    <section className="relative py-16 md:py-24 bg-muted/30">
+    <section className="relative py-16 md:py-24 bg-[#0b1224]">
       <SectionContainer containerSize="xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           
@@ -26,7 +26,7 @@ export default function Growth() {
             />
             
             {/* Floating card */}
-            <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 border border-border">
+            <div className="absolute -bottom-6 -right-6 md:bottom-10 md:-right-10 bg-[#070b16] p-4 rounded-2xl shadow-xl flex items-center gap-4 border border-white/10">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-6 h-6 text-green-600" />
               </div>

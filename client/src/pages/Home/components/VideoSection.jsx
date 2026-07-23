@@ -3,7 +3,7 @@ React;
 
 const VideoSection = () => {
   return (
-    <section className="relative pt-16 md:pt-20 pb-16 px-4 overflow-hidden bg-background">
+    <section className="relative pt-16 md:pt-20 pb-16 px-4 overflow-hidden bg-[#070b16]">
       {/* No decorative gradients - matching CoursesSection style */}
       
       <div className="max-w-6xl mx-auto relative z-10">

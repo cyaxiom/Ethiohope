@@ -6,6 +6,7 @@ import { PhaseModel } from "@modules/Phases/phase.model";
 import { BatchModel } from "@modules/Batches/batch.model";
 import { ScheduleModel } from "@modules/Schedule/schedule.model";
 import { User } from "@modules/User/user.schema";
+import { RoleModel } from "@modules/AccessControl/role.model";
 import { HttpException } from "@common/errors/HttpException";
 import HttpStatusCodes from "@common/utils/HttpStatusCodes";
 import { logger } from "@utils/logger";
@@ -15,53 +16,76 @@ import bcrypt from 'bcryptjs';
 export class EnrollmentService {
   private enrollmentDao = new EnrollmentDao();
 
-  public async prepareEnrollment(parentId: string, data: CreateEnrollmentDTO): Promise<IEnrollment[]> {
-    logger.info(`EnrollmentService: Preparing enrollment for parent ${parentId}`);
+  public async prepareEnrollment(userId: string, data: CreateEnrollmentDTO): Promise<IEnrollment[]> {
+    const enrolleeType = data.enrolleeType === 'SELF' ? 'SELF' : 'CHILD';
+
+    if (enrolleeType === 'SELF') {
+      return this.prepareSelfEnrollment(userId, data);
+    }
+    return this.prepareChildEnrollment(userId, data);
+  }
+
+  /** Adult applies for themselves — no parent profile / child record required. */
+  private async prepareSelfEnrollment(userId: string, data: CreateEnrollmentDTO): Promise<IEnrollment[]> {
+    logger.info(`EnrollmentService: Preparing SELF enrollment for user ${userId}`);
+
+    const user = await User.findById(userId);
+    if (!user) throw new HttpException(HttpStatusCodes.NOT_FOUND, "User not found");
+
+    const phone = data.phone?.trim() || user.phone?.trim();
+    if (!phone) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Phone number is required for self enrollment");
+    }
+
+    // Persist only when provided or profile had none yet
+    if (user.phone !== phone) {
+      user.phone = phone;
+      await user.save();
+    }
+
+    const { phase } = await this.validateProgramBatchSchedules(data);
+
+    await this.assertNotAlreadyApplied({
+      userId,
+      phaseId: data.phaseId,
+    });
+
+    await this.ensureStudentRole(user);
+
+    const enrollment = await this.enrollmentDao.create({
+      enrolleeType: 'SELF',
+      user: new Types.ObjectId(userId) as any,
+      parent: new Types.ObjectId(userId) as any,
+      program: new Types.ObjectId(data.programId) as any,
+      phase: new Types.ObjectId(data.phaseId) as any,
+      batch: new Types.ObjectId(data.batchId) as any,
+      selectedSchedules: (data.selectedSchedules || []).map(id => new Types.ObjectId(id)),
+      status: 'PENDING',
+      paymentStatus: 'UNPAID',
+      amount: phase.price || 0,
+      isExistingChild: false,
+    });
+
+    logger.info(`EnrollmentService: SELF enrollment prepared ${enrollment._id}`);
+    return [enrollment];
+  }
+
+  /** Parent enrolls one or more children (existing or new). DOB/age optional. */
+  private async prepareChildEnrollment(parentId: string, data: CreateEnrollmentDTO): Promise<IEnrollment[]> {
+    logger.info(`EnrollmentService: Preparing CHILD enrollment for parent ${parentId}`);
 
     try {
-      // 1. Validate Parent Profile
       const parent = await User.findById(parentId).lean();
       if (!parent) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Parent not found");
       if (!parent.isProfileComplete) {
         throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Please complete your parent profile before enrolling a child");
       }
 
-      // 2. Validate Phase
-      const phase = await PhaseModel.findById(data.phaseId).lean();
-      if (!phase) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Selected phase not found");
-      if (!phase.isActive) throw new HttpException(HttpStatusCodes.BAD_REQUEST, "This phase is currently closed for enrollment");
+      const { phase } = await this.validateProgramBatchSchedules(data);
 
-      // 3. Validate Batch
-      const batch = await BatchModel.findById(data.batchId).lean();
-      if (!batch) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Selected batch not found");
-      if (batch.program.toString() !== data.programId) {
-        throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Selected batch does not belong to the selected program");
-      }
-
-      // Check capacity if applicable
-      if (batch.capacity) {
-        const activeEnrollmentsCount = await EnrollmentModel.countDocuments({ batch: data.batchId, status: { $ne: 'CANCELLED' } });
-        if (activeEnrollmentsCount >= batch.capacity) {
-          // Auto-deactivate batch if it's full
-          await BatchModel.findByIdAndUpdate(data.batchId, { isActive: false });
-          throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Selected batch is full. Please choose another one.");
-        }
-        
-        // If this enrollment will fill the batch, deactivate it
-        if (activeEnrollmentsCount + 1 >= batch.capacity) {
-          await BatchModel.findByIdAndUpdate(data.batchId, { isActive: false });
-          logger.info(`Batch ${data.batchId} is now full and has been deactivated.`);
-        }
-      }
-
-      // 4. Validate Selected Schedules
-      await this.validateSelectedSchedules(data.batchId, data.selectedSchedules);
-
-      // 5. Handle Child Selection/Creation
       let childrenToEnroll: any[] = [];
-      
+
       if (data.childIds && data.childIds.length > 0) {
-        // Use existing children
         const children = await ChildModel.find({ _id: { $in: data.childIds }, parent: parentId });
         if (children.length !== data.childIds.length) {
           throw new HttpException(HttpStatusCodes.NOT_FOUND, "One or more children not found or do not belong to you");
@@ -69,55 +93,53 @@ export class EnrollmentService {
         childrenToEnroll = children;
         logger.info(`EnrollmentService: Enrolling ${children.length} existing children`);
       } else {
-        // Create new child (Original flow)
-        if (!data.firstName || !data.lastName || !data.dob || !data.grade) {
-          throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Missing required child information for new enrollment");
+        if (!data.firstName || !data.lastName) {
+          throw new HttpException(HttpStatusCodes.BAD_REQUEST, "First name and last name are required for new child enrollment");
         }
 
-        const dobDate = new Date(data.dob);
-        const currentYear = new Date().getFullYear();
-        const age = currentYear - dobDate.getFullYear();
-        logger.info(`Enrolling new child aged ${age}`);
+        const dobDate = data.dob ? new Date(data.dob) : undefined;
+        if (dobDate) {
+          const currentYear = new Date().getFullYear();
+          const age = currentYear - dobDate.getFullYear();
+          logger.info(`Enrolling new child aged ${age}`);
+        }
 
         const generatedUsername = `${data.firstName.toLowerCase()}${Math.floor(100 + Math.random() * 900)}`;
         const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
         const hashedPin = await bcrypt.hash(randomPin, 10);
 
-        const newChild = await ChildModel.create({
+        const childPayload: any = {
           firstname: data.firstName,
           lastname: data.lastName,
           username: generatedUsername,
           pin: hashedPin,
           plainPin: randomPin,
           parent: new Types.ObjectId(parentId),
-          gender: 'male', 
-          birthdate: dobDate,
+          gender: 'male',
           grade: data.grade,
           isUSA: data.isUSA || false,
           country: data.country,
           region: data.region,
-          status: 'active'
-        });
+          status: 'active',
+        };
+        if (dobDate) childPayload.birthdate = dobDate;
+
+        const newChild = await ChildModel.create(childPayload);
         childrenToEnroll = [newChild];
         logger.info(`EnrollmentService: Created new child ${newChild._id}`);
       }
 
-      // 7. Create Enrollments (PENDING)
       const enrollments: IEnrollment[] = [];
       const isExistingChild = !!(data.childIds && data.childIds.length > 0);
-      
+
       for (const child of childrenToEnroll) {
-        // 6. Cancel any existing duplicate pending enrollments for this specific child and phase
-        await EnrollmentModel.updateMany(
-          {
-            child: child._id,
-            phase: data.phaseId,
-            status: 'PENDING'
-          },
-          { status: 'CANCELLED' }
-        );
+        await this.assertNotAlreadyApplied({
+          childId: child._id.toString(),
+          phaseId: data.phaseId,
+        });
 
         const enrollment = await this.enrollmentDao.create({
+          enrolleeType: 'CHILD',
           child: child._id as any,
           parent: new Types.ObjectId(parentId) as any,
           program: new Types.ObjectId(data.programId) as any,
@@ -127,12 +149,12 @@ export class EnrollmentService {
           status: 'PENDING',
           paymentStatus: 'UNPAID',
           amount: phase.price || 0,
-          isExistingChild: isExistingChild
+          isExistingChild,
         });
         enrollments.push(enrollment);
       }
 
-      logger.info(`EnrollmentService: ${enrollments.length} enrollments prepared successfully.`);
+      logger.info(`EnrollmentService: ${enrollments.length} CHILD enrollments prepared successfully.`);
       return enrollments;
     } catch (error) {
       logger.error(`EnrollmentService Error: ${error}`);
@@ -140,12 +162,44 @@ export class EnrollmentService {
     }
   }
 
-  public async getMyPendingEnrollments(parentId: string): Promise<IEnrollment[]> {
+  /**
+   * Block duplicate applications for the same learner + phase
+   * (PENDING, ACTIVE, or COMPLETED — cancelled does not count).
+   */
+  private async assertNotAlreadyApplied(opts: {
+    userId?: string;
+    childId?: string;
+    phaseId: string;
+  }): Promise<void> {
+    const filter: any = {
+      phase: new Types.ObjectId(opts.phaseId),
+      status: { $in: ['PENDING', 'ACTIVE', 'COMPLETED'] },
+    };
+
+    if (opts.userId) {
+      filter.user = new Types.ObjectId(opts.userId);
+    } else if (opts.childId) {
+      filter.child = new Types.ObjectId(opts.childId);
+    } else {
+      return;
+    }
+
+    const existing = await EnrollmentModel.findOne(filter).lean();
+    if (existing) {
+      throw new HttpException(
+        HttpStatusCodes.CONFLICT,
+        'You already applied for that phase'
+      );
+    }
+  }
+
+  public async getMyPendingEnrollments(userId: string): Promise<IEnrollment[]> {
     return EnrollmentModel.find({
-      parent: parentId,
+      parent: userId,
       status: 'PENDING',
     })
       .populate('child')
+      .populate('user', 'firstname lastname email')
       .populate('program')
       .populate('phase')
       .populate('batch')
@@ -153,37 +207,95 @@ export class EnrollmentService {
   }
 
   /**
-   * Update enrollment schedules for a parent's child
+   * Current user's enrollments for a program (self as learner, or as payer/parent).
+   * Used by program detail to show Enrolled / Pay Pending / Enroll.
    */
+  public async getMyEnrollmentsForProgram(userId: string, programId: string): Promise<IEnrollment[]> {
+    if (!Types.ObjectId.isValid(programId)) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'Invalid program id');
+    }
+
+    return EnrollmentModel.find({
+      program: new Types.ObjectId(programId),
+      status: { $in: ['PENDING', 'ACTIVE', 'COMPLETED'] },
+      $or: [
+        { user: new Types.ObjectId(userId) },
+        { parent: new Types.ObjectId(userId) },
+      ],
+    })
+      .populate('child', 'firstname lastname')
+      .populate('user', 'firstname lastname email')
+      .populate('phase', 'title price orderIndex')
+      .populate('batch', 'batchName')
+      .sort({ createdAt: -1 })
+      .lean() as any;
+  }
+
   public async updateEnrollmentSchedule(parentId: string, enrollmentId: string, selectedScheduleIds: string[]): Promise<IEnrollment> {
     logger.info(`EnrollmentService: Updating schedule for enrollment ${enrollmentId} (parent: ${parentId})`);
 
-    const enrollment = await EnrollmentModel.findOne({ 
-      _id: enrollmentId, 
-      parent: new Types.ObjectId(parentId) 
+    const enrollment = await EnrollmentModel.findOne({
+      _id: enrollmentId,
+      parent: new Types.ObjectId(parentId),
     });
-    
+
     if (!enrollment) {
       throw new HttpException(HttpStatusCodes.NOT_FOUND, "Enrollment not found or access denied");
     }
 
-    // Validate new schedules against the same batch
     await this.validateSelectedSchedules(enrollment.batch.toString(), selectedScheduleIds, enrollmentId);
 
-    // Update enrollment
     enrollment.selectedSchedules = selectedScheduleIds.map(id => new Types.ObjectId(id));
     await enrollment.save();
 
     return enrollment.populate('selectedSchedules');
   }
 
-  /**
-   * Shared logic to validate selected schedules
-   */
+  private async validateProgramBatchSchedules(data: CreateEnrollmentDTO) {
+    const phase = await PhaseModel.findById(data.phaseId).lean();
+    if (!phase) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Selected phase not found");
+    if (!phase.isActive) throw new HttpException(HttpStatusCodes.BAD_REQUEST, "This phase is currently closed for enrollment");
+
+    const batch = await BatchModel.findById(data.batchId).lean();
+    if (!batch) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Selected batch not found");
+    if (batch.program.toString() !== data.programId) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Selected batch does not belong to the selected program");
+    }
+
+    if (batch.capacity) {
+      const activeEnrollmentsCount = await EnrollmentModel.countDocuments({
+        batch: data.batchId,
+        status: { $ne: 'CANCELLED' },
+      });
+      if (activeEnrollmentsCount >= batch.capacity) {
+        await BatchModel.findByIdAndUpdate(data.batchId, { isActive: false });
+        throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Selected batch is full. Please choose another one.");
+      }
+      if (activeEnrollmentsCount + 1 >= batch.capacity) {
+        await BatchModel.findByIdAndUpdate(data.batchId, { isActive: false });
+        logger.info(`Batch ${data.batchId} is now full and has been deactivated.`);
+      }
+    }
+
+    await this.validateSelectedSchedules(data.batchId, data.selectedSchedules);
+    return { phase, batch };
+  }
+
+  private async ensureStudentRole(user: any): Promise<void> {
+    const studentRole = await RoleModel.findOne({ code: 'student' });
+    if (!studentRole) return;
+
+    const roleIds = (user.roles || []).map((r: any) => r.toString());
+    if (!roleIds.includes(studentRole._id.toString())) {
+      user.roles = [...(user.roles || []), studentRole._id];
+      await user.save();
+      logger.info(`Assigned student role to user ${user._id}`);
+    }
+  }
+
   private async validateSelectedSchedules(batchId: string, selectedScheduleIds: string[] = [], excludeEnrollmentId?: string): Promise<void> {
     const availableSchedules = await ScheduleModel.find({ batch: batchId }).lean();
-    
-    // Group available schedules by sessionLabel
+
     const groupedAvailable = availableSchedules.reduce((acc: any, s) => {
       if (!acc[s.sessionLabel]) acc[s.sessionLabel] = [];
       acc[s.sessionLabel].push(s);
@@ -191,11 +303,15 @@ export class EnrollmentService {
     }, {});
 
     const requiredLabels = Object.keys(groupedAvailable);
-    
+
     if (requiredLabels.length > 0) {
-      // Ensure one slot is picked from each required label
       const selectedSlots = await ScheduleModel.find({ _id: { $in: selectedScheduleIds } }).lean();
-      
+
+      const wrongBatch = selectedSlots.find((s) => s.batch.toString() !== batchId);
+      if (wrongBatch) {
+        throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Selected schedules must belong to the chosen batch for this program");
+      }
+
       if (selectedSlots.length !== requiredLabels.length) {
         throw new HttpException(HttpStatusCodes.BAD_REQUEST, `Please select exactly one slot from each session group: ${requiredLabels.join(', ')}`);
       }
@@ -205,14 +321,12 @@ export class EnrollmentService {
         throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Each selected slot must belong to a different session group");
       }
 
-      // Check for time conflicts among selected slots
       for (let i = 0; i < selectedSlots.length; i++) {
         for (let j = i + 1; j < selectedSlots.length; j++) {
           const s1 = selectedSlots[i];
           const s2 = selectedSlots[j];
 
           if (s1.dayOfWeek === s2.dayOfWeek) {
-            // Check for overlap
             if (
               (s1.startTime >= s2.startTime && s1.startTime < s2.endTime) ||
               (s2.startTime >= s1.startTime && s2.startTime < s1.endTime)
@@ -223,11 +337,10 @@ export class EnrollmentService {
         }
       }
 
-      // Check capacity for each selected slot
       for (const slot of selectedSlots) {
-        const query: any = { 
-          selectedSchedules: slot._id, 
-          status: { $ne: 'CANCELLED' } 
+        const query: any = {
+          selectedSchedules: slot._id,
+          status: { $ne: 'CANCELLED' },
         };
         if (excludeEnrollmentId) {
           query._id = { $ne: excludeEnrollmentId };

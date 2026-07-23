@@ -35,15 +35,34 @@ export const paymentApi = api.injectEndpoints({
       },
       providesTags: ['Users'],
     }),
-    getAllPayments: builder.query<PaymentHistoryResponse, { search?: string; status?: string } | void>({
+    getAllPayments: builder.query<
+      {
+        success: boolean;
+        data: any[];
+        summary?: {
+          total: number;
+          pending: number;
+          paid: number;
+          unpaid: number;
+          cancelled: number;
+          zellePending?: number;
+          self: number;
+          child: number;
+          revenue: number;
+        };
+      },
+      { search?: string; status?: string; programId?: string; enrolleeType?: string } | void
+    >({
       query: (params) => {
         const queryParams = new URLSearchParams();
         if (params && 'search' in params && params.search) queryParams.append('search', params.search);
         if (params && 'status' in params && params.status) queryParams.append('status', params.status);
+        if (params && 'programId' in params && params.programId) queryParams.append('programId', params.programId);
+        if (params && 'enrolleeType' in params && params.enrolleeType) queryParams.append('enrolleeType', params.enrolleeType);
         const queryString = queryParams.toString();
         return `/payments/admin/all${queryString ? `?${queryString}` : ''}`;
       },
-      providesTags: ['Users'],
+      providesTags: ['Users', 'Enrollments'],
     }),
     updatePaymentStatus: builder.mutation<any, { enrollmentId: string; status: string }>({
       query: (data) => ({
@@ -51,14 +70,25 @@ export const paymentApi = api.injectEndpoints({
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: ['Users'],
+      invalidatesTags: ['Users', 'Enrollments'],
     }),
     confirmPaymentSession: builder.mutation<{ success: boolean; status: string }, string>({
       query: (sessionId) => ({
         url: `/payments/confirm/${sessionId}`,
         method: 'GET',
       }),
-      invalidatesTags: ['Users'],
+      invalidatesTags: ['Users', 'Enrollments'],
+    }),
+    reportZellePayment: builder.mutation<
+      { success: boolean; message: string; count: number },
+      CheckoutPayload
+    >({
+      query: (data) => ({
+        url: '/payments/zelle-submitted',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Users', 'Enrollments'],
     }),
   }),
 });
@@ -69,4 +99,5 @@ export const {
   useGetAllPaymentsQuery,
   useUpdatePaymentStatusMutation,
   useConfirmPaymentSessionMutation,
+  useReportZellePaymentMutation,
 } = paymentApi;

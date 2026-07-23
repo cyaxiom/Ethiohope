@@ -84,7 +84,7 @@ const HeroSection = () => {
 
 
 const ExperienceSection = () => (
-  <SectionContainer sectionSpacing="xl" className="bg-slate-50 dark:bg-slate-950/50">
+  <SectionContainer sectionSpacing="xl" className="bg-[#0b1224]">
     <div className="text-center max-w-3xl mx-auto mb-20">
       <motion.div {...fadeInUp}>
         <h2 className="text-sm font-black uppercase tracking-[0.3em] text-primary mb-4">Real-World Expertise</h2>
@@ -122,7 +122,7 @@ const ExperienceSection = () => (
           key={i}
           {...fadeInUp}
           transition={{ delay: i * 0.1 }}
-          className="p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 hover:scale-105 transition-transform duration-300"
+          className="p-8 bg-[#070b16] rounded-3xl shadow-xl border border-white/10 hover:scale-105 transition-transform duration-300"
         >
           <div className="mb-6 text-primary">{item.icon}</div>
           <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{item.title}</h4>
@@ -204,7 +204,7 @@ const TeachingSection = () => {
 };
 
 const WhyUsSection = () => (
-  <SectionContainer sectionSpacing="xl" className="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white rounded-[4rem] my-20 border border-slate-200 dark:border-slate-800">
+  <SectionContainer sectionSpacing="xl" className="bg-[#0b1224] text-white rounded-[4rem] my-20 border border-white/10">
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
       <div className="lg:col-span-1">
         <motion.div {...fadeInUp}>
@@ -242,7 +242,7 @@ const WhyUsSection = () => (
             key={i} 
             {...fadeInUp} 
             transition={{ delay: 0.2 + (i * 0.1) }}
-            className="p-8 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm"
+            className="p-8 bg-[#070b16] border border-white/10 rounded-3xl shadow-sm"
           >
             <div className="mb-6">{item.icon}</div>
             <h4 className="text-xl font-bold mb-3">{item.title}</h4>
@@ -275,7 +275,7 @@ const VisionSection = () => (
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 overflow-x-hidden">
+    <div className="min-h-screen bg-[#070b16] overflow-x-hidden text-slate-100">
       <HeroSection />
       <ExperienceSection />
       <TeachingSection />

@@ -1,4 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  clearAuthStorage,
+  isRememberedSession,
+  loadAuthFromStorage,
+  patchAuthStorage,
+  persistAuth,
+} from './authStorage';
 
 export interface User {
   id: string;
@@ -8,7 +15,7 @@ export interface User {
   name?: string;
   email?: string;
   username?: string;
-  type?: "adult" | "child";
+  type?: 'adult' | 'child';
   status?: string;
   isEmailVerified?: boolean;
   isProfileComplete?: boolean;
@@ -23,32 +30,33 @@ export interface AuthState {
   permissions: string[];
   isAuthenticated: boolean;
   loading: boolean;
+  rememberMe: boolean;
 }
 
-const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null;
-const token = localStorage.getItem('token') || null;
-const roles = localStorage.getItem('roles') ? JSON.parse(localStorage.getItem('roles')!) : [];
-const activeRole = localStorage.getItem('activeRole') || null;
-const permissions = localStorage.getItem('permissions') ? JSON.parse(localStorage.getItem('permissions')!) : [];
+const stored = loadAuthFromStorage();
 
 const initialState: AuthState = {
-  user,
-  token,
-  roles,
-  activeRole,
-  permissions,
-  isAuthenticated: !!token,
+  user: stored.user,
+  token: stored.token,
+  roles: stored.roles,
+  activeRole: stored.activeRole,
+  permissions: stored.permissions,
+  isAuthenticated: !!stored.token,
   loading: false,
+  rememberMe: stored.rememberMe,
 };
 
-const determineActiveRole = (roles: string[]): string | null => {
-  const storedActiveRole = localStorage.getItem('activeRole');
-  const meaningfulRoles = roles.filter(r => r !== 'user');
-  
-  if (storedActiveRole && roles.includes(storedActiveRole) && !(storedActiveRole === 'user' && meaningfulRoles.length > 0)) {
-    return storedActiveRole;
+const determineActiveRole = (roles: string[], preferred?: string | null): string | null => {
+  const meaningfulRoles = roles.filter((r) => r !== 'user');
+
+  if (
+    preferred &&
+    roles.includes(preferred) &&
+    !(preferred === 'user' && meaningfulRoles.length > 0)
+  ) {
+    return preferred;
   }
-  return meaningfulRoles.length > 0 ? meaningfulRoles[0] : (roles.length > 0 ? roles[0] : null);
+  return meaningfulRoles.length > 0 ? meaningfulRoles[0] : roles.length > 0 ? roles[0] : null;
 };
 
 const authSlice = createSlice({
@@ -57,27 +65,39 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; token: string; roles?: string[]; permissions?: string[] }>
+      action: PayloadAction<{
+        user: User;
+        token: string;
+        roles?: string[];
+        permissions?: string[];
+        /** When omitted, keep the current remember preference (e.g. token refresh). */
+        rememberMe?: boolean;
+      }>
     ) => {
       const { user, token, roles, permissions } = action.payload;
+      const rememberMe =
+        typeof action.payload.rememberMe === 'boolean'
+          ? action.payload.rememberMe
+          : state.rememberMe ?? isRememberedSession();
+
       state.user = user;
       state.token = token;
       state.roles = roles ?? [];
-      state.activeRole = determineActiveRole(state.roles);
-      
+      state.activeRole = determineActiveRole(state.roles, state.activeRole);
       state.permissions = permissions ?? [];
       state.isAuthenticated = true;
+      state.rememberMe = rememberMe;
 
-      // Persist to localStorage
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-      localStorage.setItem('roles', JSON.stringify(roles ?? []));
-      if (state.activeRole) {
-        localStorage.setItem('activeRole', state.activeRole);
-      } else {
-        localStorage.removeItem('activeRole');
-      }
-      localStorage.setItem('permissions', JSON.stringify(permissions ?? []));
+      persistAuth(
+        {
+          user,
+          token,
+          roles: state.roles,
+          activeRole: state.activeRole,
+          permissions: state.permissions,
+        },
+        rememberMe
+      );
     },
     updateUser: (
       state,
@@ -86,25 +106,22 @@ const authSlice = createSlice({
       const { user, roles } = action.payload;
       if (user && state.user) {
         state.user = { ...state.user, ...user };
-        localStorage.setItem('user', JSON.stringify(state.user));
+        patchAuthStorage({ user: JSON.stringify(state.user) });
       }
       if (roles) {
         state.roles = roles;
-        localStorage.setItem('roles', JSON.stringify(roles));
-        
-        // Re-evaluate active role when roles are updated (e.g. during child registration)
-        const newActiveRole = determineActiveRole(roles);
-        if (newActiveRole !== state.activeRole) {
-          state.activeRole = newActiveRole;
-          if (newActiveRole) localStorage.setItem('activeRole', newActiveRole);
-          else localStorage.removeItem('activeRole');
-        }
+        const newActiveRole = determineActiveRole(roles, state.activeRole);
+        state.activeRole = newActiveRole;
+        patchAuthStorage({
+          roles: JSON.stringify(roles),
+          activeRole: newActiveRole,
+        });
       }
     },
     setActiveRole: (state, action: PayloadAction<string>) => {
       if (state.roles.includes(action.payload)) {
         state.activeRole = action.payload;
-        localStorage.setItem('activeRole', action.payload);
+        patchAuthStorage({ activeRole: action.payload });
       }
     },
     logout: (state) => {
@@ -114,13 +131,8 @@ const authSlice = createSlice({
       state.activeRole = null;
       state.permissions = [];
       state.isAuthenticated = false;
-
-      // Clear from localStorage
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      localStorage.removeItem('roles');
-      localStorage.removeItem('activeRole');
-      localStorage.removeItem('permissions');
+      state.rememberMe = true;
+      clearAuthStorage();
     },
   },
 });

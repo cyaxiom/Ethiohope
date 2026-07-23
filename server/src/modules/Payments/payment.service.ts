@@ -1,10 +1,13 @@
 import { EnrollmentModel } from '@modules/Enrollments/enrollment.model';
 import { ChildModel } from '@modules/Child/child.model'; // Ensure Child model is registered
 import stripe from '@utils/stripe';
-import { CLIENT_URL } from '@config/env';
+import { CLIENT_URL, COMPANY_EMAIL, SENDER_MAIL } from '@config/env';
 import { logger } from '@utils/logger';
 import { HttpException } from '@common/errors/HttpException';
 import { Types } from 'mongoose';
+import { emailService } from '@infra/mail/email.service';
+import { User } from '@modules/User/user.schema';
+import { RoleModel } from '@modules/AccessControl/role.model';
 
 export class PaymentService {
   public async createCheckoutSession(enrollmentIds: string[], userId: string): Promise<{ url: string | null }> {
@@ -13,6 +16,7 @@ export class PaymentService {
       _id: { $in: enrollmentIds },
     })
       .populate('child')
+      .populate('user', 'firstname lastname email')
       .populate('program')
       .populate('phase')
       .lean();
@@ -34,9 +38,15 @@ export class PaymentService {
       }
 
       // 3. Build Stripe line items
-      const childName = e.child?.firstname || e.child?.firstName || 'Student';
-      const childLast = e.child?.lastname || e.child?.lastName || '';
-      const fullName = `${childName} ${childLast}`.trim();
+      let fullName = 'Student';
+      if (e.enrolleeType === 'SELF' || e.user) {
+        const u = e.user;
+        fullName = `${u?.firstname || ''} ${u?.lastname || ''}`.trim() || u?.email || 'You';
+      } else {
+        const childName = e.child?.firstname || e.child?.firstName || 'Student';
+        const childLast = e.child?.lastname || e.child?.lastName || '';
+        fullName = `${childName} ${childLast}`.trim();
+      }
 
       return {
         price_data: {
@@ -64,6 +74,124 @@ export class PaymentService {
     });
 
     return { url: session.url };
+  }
+
+  /**
+   * User reports they sent a Zelle transfer for selected pending enrollments.
+   * Marks enrollments for admin review and emails admins.
+   */
+  public async reportZellePayment(
+    enrollmentIds: string[],
+    userId: string
+  ): Promise<{ success: boolean; message: string; count: number }> {
+    const enrollments = await EnrollmentModel.find({
+      _id: { $in: enrollmentIds },
+      parent: userId,
+      status: 'PENDING',
+      paymentStatus: 'UNPAID',
+    })
+      .populate('child', 'firstname lastname')
+      .populate('user', 'firstname lastname email')
+      .populate('program', 'title')
+      .populate('phase', 'title price')
+      .populate('parent', 'firstname lastname email phone');
+
+    if (enrollments.length === 0) {
+      throw new HttpException(404, 'No pending unpaid enrollments found for this payment');
+    }
+
+    if (enrollments.length !== enrollmentIds.length) {
+      throw new HttpException(400, 'Some selected enrollments are invalid or already paid');
+    }
+
+    const now = new Date();
+    await EnrollmentModel.updateMany(
+      { _id: { $in: enrollments.map((e) => e._id) } },
+      {
+        $set: {
+          paymentMethod: 'ZELLE',
+          zelleSubmittedAt: now,
+        },
+      }
+    );
+
+    const parent = enrollments[0].parent as any;
+    const payerName =
+      `${parent?.firstname || ''} ${parent?.lastname || ''}`.trim() || parent?.email || 'Unknown payer';
+    const payerEmail = parent?.email || '';
+    const payerPhone = parent?.phone;
+
+    const enrollmentRows = enrollments.map((enrollment: any) => {
+      let learnerName = 'Student';
+      if (enrollment.enrolleeType === 'SELF' || enrollment.user) {
+        const u = enrollment.user;
+        learnerName = `${u?.firstname || ''} ${u?.lastname || ''}`.trim() || u?.email || 'You';
+      } else {
+        learnerName =
+          `${enrollment.child?.firstname || ''} ${enrollment.child?.lastname || ''}`.trim() || 'Child';
+      }
+
+      return {
+        learnerName,
+        programTitle: enrollment.program?.title || 'Program',
+        phaseTitle: enrollment.phase?.title || 'Phase',
+        amount: enrollment.amount || enrollment.phase?.price || 0,
+      };
+    });
+
+    const totalAmount = enrollmentRows.reduce((sum, row) => sum + row.amount, 0);
+
+    const adminEmails = new Set<string>();
+    if (COMPANY_EMAIL) adminEmails.add(COMPANY_EMAIL);
+    if (SENDER_MAIL) adminEmails.add(SENDER_MAIL);
+
+    try {
+      const adminRoles = await RoleModel.find({
+        code: { $in: ['super_admin', 'admin'] },
+      })
+        .select('_id')
+        .lean();
+      const roleIds = adminRoles.map((r) => r._id);
+      if (roleIds.length > 0) {
+        const admins = await User.find({ roles: { $in: roleIds }, status: 'active' })
+          .select('email')
+          .lean();
+        admins.forEach((a: any) => {
+          if (a.email) adminEmails.add(a.email);
+        });
+      }
+    } catch (err) {
+      logger.warn(`[PaymentService] Could not resolve admin users for Zelle notice: ${err}`);
+    }
+
+    if (adminEmails.size === 0) {
+      logger.error('[PaymentService] No admin email configured for Zelle notification');
+    } else {
+      const adminUrl = `${(CLIENT_URL || '').replace(/\/$/, '')}/admin/payments`;
+      try {
+        await emailService.sendZellePaymentSubmittedEmail(Array.from(adminEmails), {
+          payerName,
+          payerEmail,
+          payerPhone,
+          totalAmount,
+          enrollments: enrollmentRows,
+          adminUrl,
+        });
+      } catch (err) {
+        logger.error(`[PaymentService] Failed to send Zelle admin email: ${err}`);
+        // Still succeed for the user — enrollments are flagged in DB for admin review
+      }
+    }
+
+    logger.info(
+      `[PaymentService] Zelle payment reported by ${userId} for ${enrollments.length} enrollment(s)`
+    );
+
+    return {
+      success: true,
+      message: 'Zelle payment reported. An admin will verify and activate your enrollment shortly.',
+      count: enrollments.length,
+    };
   }
 
   public async updatePaymentStatus(sessionId: string, status: string): Promise<void> {
@@ -99,10 +227,12 @@ export class PaymentService {
         // Add to chat groups
         try {
           const chatService = new (await import('@modules/Chat/chat.service')).ChatService();
-          // Add to batch-specific discussion groups
-          await chatService.addStudentToBatchGroup(enrollment.batch.toString(), enrollment.child.toString());
-          
-          // Also ensure they are added to the general program announcement group
+          if (enrollment.enrolleeType === 'SELF' && enrollment.user) {
+            await chatService.addAdultStudentToBatchGroup(enrollment.batch.toString(), enrollment.user.toString());
+          } else if (enrollment.child) {
+            await chatService.addStudentToBatchGroup(enrollment.batch.toString(), enrollment.child.toString());
+          }
+
           const programGroup = await chatService.ensureProgramGroupExists(enrollment.program.toString());
           if (programGroup) {
             await chatService.syncProgramGroupMembers(programGroup._id, enrollment.program.toString());
@@ -111,45 +241,48 @@ export class PaymentService {
           logger.error(`[PaymentService] Failed to sync chat groups for enrollment ${enrollment._id}: ${err}`);
         }
 
-        // Step 1: Cancel any other duplicate pending enrollments for the same child and phase
-        const otherPending = await EnrollmentModel.updateMany(
-          {
-            _id: { $ne: enrollment._id },
-            child: enrollment.child,
-            phase: enrollment.phase,
-            status: 'PENDING',
-            paymentStatus: 'UNPAID'
-          },
-          { status: 'CANCELLED' }
-        );
-        logger.info(`[PaymentService] Cancelled ${otherPending.modifiedCount} duplicate pending enrollments for child ${enrollment.child}`);
+        // Cancel duplicate pending enrollments for same learner + phase
+        const duplicateFilter: any = {
+          _id: { $ne: enrollment._id },
+          phase: enrollment.phase,
+          status: 'PENDING',
+          paymentStatus: 'UNPAID',
+        };
+        if (enrollment.enrolleeType === 'SELF' && enrollment.user) {
+          duplicateFilter.user = enrollment.user;
+        } else if (enrollment.child) {
+          duplicateFilter.child = enrollment.child;
+        }
 
-        // Step 2: Generate Child Credentials (if needed)
-        const ChildModel = (await import('@modules/Child/child.model')).ChildModel;
-        const child = await ChildModel.findById(enrollment.child);
+        const otherPending = await EnrollmentModel.updateMany(duplicateFilter, { status: 'CANCELLED' });
+        logger.info(`[PaymentService] Cancelled ${otherPending.modifiedCount} duplicate pending enrollments`);
 
-        if (child && parent && parent.email) {
-          // Only generate credentials and send email if it's a NEW child
-          if (!enrollment.isExistingChild) {
-            const rawPin = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit pin
-            const bcrypt = await import('bcryptjs');
-            const hashedPin = await bcrypt.hash(rawPin, 10);
-            
-            child.pin = hashedPin;
-            await child.save();
+        // Child credentials only for CHILD enrollments
+        if (enrollment.enrolleeType !== 'SELF' && enrollment.child) {
+          const ChildModel = (await import('@modules/Child/child.model')).ChildModel;
+          const child = await ChildModel.findById(enrollment.child);
 
-            // Step 2: Email parent asynchronously 
-            const emailService = (await import('@infra/mail/email.service')).emailService;
-            emailService.sendChildCredentialsEmail(
-              parent.email, 
-              child.firstname || 'Student', 
-              child.username, 
-              rawPin
-            ).catch(err => {
-              logger.error(`[PaymentService] Failed to send credentials email to ${parent.email}: ${err}`);
-            });
-          } else {
-            logger.info(`[PaymentService] Skipping credentials for existing child ${child.username}`);
+          if (child && parent && parent.email) {
+            if (!enrollment.isExistingChild) {
+              const rawPin = Math.floor(100000 + Math.random() * 900000).toString();
+              const bcrypt = await import('bcryptjs');
+              const hashedPin = await bcrypt.hash(rawPin, 10);
+
+              child.pin = hashedPin;
+              await child.save();
+
+              const emailService = (await import('@infra/mail/email.service')).emailService;
+              emailService.sendChildCredentialsEmail(
+                parent.email,
+                child.firstname || 'Student',
+                child.username,
+                rawPin
+              ).catch(err => {
+                logger.error(`[PaymentService] Failed to send credentials email to ${parent.email}: ${err}`);
+              });
+            } else {
+              logger.info(`[PaymentService] Skipping credentials for existing child ${child.username}`);
+            }
           }
         }
       }
@@ -190,6 +323,7 @@ export class PaymentService {
 
     let enrollments = await EnrollmentModel.find(query)
       .populate('child', 'firstname lastname username')
+      .populate('user', 'firstname lastname email')
       .populate('program', 'title description image')
       .populate('phase', 'title orderIndex price')
       .sort({ createdAt: -1 })
@@ -197,9 +331,12 @@ export class PaymentService {
 
     if (search) {
       const searchLower = search.toLowerCase();
-      enrollments = enrollments.filter((e: any) => 
+      enrollments = enrollments.filter((e: any) =>
         e.child?.firstname?.toLowerCase().includes(searchLower) ||
         e.child?.lastname?.toLowerCase().includes(searchLower) ||
+        e.user?.firstname?.toLowerCase().includes(searchLower) ||
+        e.user?.lastname?.toLowerCase().includes(searchLower) ||
+        e.user?.email?.toLowerCase().includes(searchLower) ||
         e.program?.title?.toLowerCase().includes(searchLower) ||
         e.phase?.title?.toLowerCase().includes(searchLower)
       );
@@ -211,40 +348,82 @@ export class PaymentService {
     };
   }
 
-  public async getAllPayments(search?: string, status?: string): Promise<any[]> {
+  public async getAllPayments(
+    search?: string,
+    status?: string,
+    programId?: string,
+    enrolleeType?: string
+  ): Promise<{ applications: any[]; summary: Record<string, number> }> {
     const query: any = {};
 
     if (status) {
       if (status === 'PAID') query.paymentStatus = 'PAID';
       else if (status === 'UNPAID') query.paymentStatus = 'UNPAID';
-      
-      if (status === 'ACTIVE') query.status = 'ACTIVE';
+      else if (status === 'ACTIVE') query.status = 'ACTIVE';
       else if (status === 'PENDING') query.status = 'PENDING';
       else if (status === 'CANCELLED') query.status = 'CANCELLED';
+      else if (status === 'ZELLE') {
+        query.paymentMethod = 'ZELLE';
+        query.paymentStatus = 'UNPAID';
+        query.status = 'PENDING';
+        query.zelleSubmittedAt = { $exists: true, $ne: null };
+      }
     }
 
-    const enrollments = await EnrollmentModel.find(query)
+    if (programId) {
+      query.program = programId;
+    }
+
+    if (enrolleeType === 'SELF' || enrolleeType === 'CHILD') {
+      query.enrolleeType = enrolleeType;
+    }
+
+    let enrollments = await EnrollmentModel.find(query)
       .populate('parent', 'firstname lastname email phone')
       .populate('child', 'firstname lastname username')
-      .populate('program', 'title description image')
+      .populate('user', 'firstname lastname email phone')
+      .populate('program', 'title description image isForChildren')
       .populate('phase', 'title orderIndex price')
+      .populate('batch', 'batchName')
       .sort({ createdAt: -1 })
       .lean();
 
     if (search) {
       const searchLower = search.toLowerCase();
-      return enrollments.filter((e: any) => 
+      enrollments = enrollments.filter((e: any) =>
         e.child?.firstname?.toLowerCase().includes(searchLower) ||
         e.child?.lastname?.toLowerCase().includes(searchLower) ||
+        e.child?.username?.toLowerCase().includes(searchLower) ||
+        e.user?.firstname?.toLowerCase().includes(searchLower) ||
+        e.user?.lastname?.toLowerCase().includes(searchLower) ||
+        e.user?.email?.toLowerCase().includes(searchLower) ||
         e.parent?.firstname?.toLowerCase().includes(searchLower) ||
         e.parent?.lastname?.toLowerCase().includes(searchLower) ||
         e.parent?.email?.toLowerCase().includes(searchLower) ||
         e.program?.title?.toLowerCase().includes(searchLower) ||
-        e.phase?.title?.toLowerCase().includes(searchLower)
+        e.phase?.title?.toLowerCase().includes(searchLower) ||
+        e.batch?.batchName?.toLowerCase().includes(searchLower)
       );
     }
 
-    return enrollments;
+    // Summary across filtered results
+    const summary = {
+      total: enrollments.length,
+      pending: enrollments.filter((e: any) => e.status === 'PENDING').length,
+      paid: enrollments.filter((e: any) => e.paymentStatus === 'PAID').length,
+      unpaid: enrollments.filter((e: any) => e.paymentStatus === 'UNPAID' && e.status !== 'CANCELLED').length,
+      cancelled: enrollments.filter((e: any) => e.status === 'CANCELLED').length,
+      zellePending: enrollments.filter(
+        (e: any) => e.paymentMethod === 'ZELLE' && e.zelleSubmittedAt && e.paymentStatus === 'UNPAID' && e.status === 'PENDING'
+      ).length,
+      self: enrollments.filter((e: any) => e.enrolleeType === 'SELF' || (!e.child && e.user)).length,
+      child: enrollments.filter((e: any) => e.enrolleeType === 'CHILD' || !!e.child).length,
+      revenue: enrollments
+        .filter((e: any) => e.paymentStatus === 'PAID')
+        .reduce((sum: number, e: any) => sum + (e.amount || e.phase?.price || 0), 0),
+    };
+
+    return { applications: enrollments, summary };
   }
 
   public async confirmPaymentSession(sessionId: string): Promise<any> {

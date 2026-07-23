@@ -11,8 +11,9 @@ export class ScheduleController {
    */
   public getSchedules = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const batchId = req.query.batchId as string;
-      const schedules = await this.scheduleService.getSchedules(batchId);
+      const batchId = req.query.batchId as string | undefined;
+      const programId = req.query.programId as string | undefined;
+      const schedules = await this.scheduleService.getSchedules(batchId, programId);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,

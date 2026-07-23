@@ -71,7 +71,7 @@ const HeroSection = () => {
                 onClick={() => document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' })}
                 className="group relative px-12 py-5 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white font-black text-xl rounded-2xl shadow-[0_10px_30px_rgba(37,99,235,0.3)] dark:shadow-[0_10px_30px_rgba(60,18,212,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
               >
-                <span className="relative z-10">Register Your Child</span>
+                <span className="relative z-10">Explore Courses</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </button>
             </div>

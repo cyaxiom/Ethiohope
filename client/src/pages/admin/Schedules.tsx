@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { 
   Calendar, Clock, Plus, Edit2, 
   ShieldAlert, Activity, 
@@ -17,6 +17,7 @@ import {
   useDeleteScheduleMutation 
 } from '../../features/batches/scheduleApi';
 import { useGetBatchesQuery } from '../../features/batches/batchApi';
+import { useGetProgramsQuery } from '../../features/programs/programApi';
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
@@ -27,33 +28,50 @@ const formatTime12h = (time: string) => {
   const m = minutes;
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12;
-  h = h ? h : 12; // the hour '0' should be '12'
+  h = h ? h : 12;
   return `${h}:${m} ${ampm}`;
 };
 
+const programTitle = (scheduleOrGroup: any) =>
+  scheduleOrGroup?.program?.title ||
+  scheduleOrGroup?.batch?.program?.title ||
+  'Program';
+
 const Schedules: React.FC = () => {
+  const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [selectedBatchId, setSelectedBatchId] = useState<string>('');
   
-  // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedScheduleGroup, setSelectedScheduleGroup] = useState<any>(null);
   const [scheduleGroupToDelete, setScheduleGroupToDelete] = useState<any>(null);
   
-  // Permissions
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'schedule.read');
   const canCreate = hasPermission(permissions, 'schedule.create');
-  const canUpdate = hasPermission(permissions, 'schedule.update');
-  const canDelete = hasPermission(permissions, 'schedule.delete');
 
-  // Queries
+  const { data: programsData } = useGetProgramsQuery({ page: 1, limit: 100 });
   const { data: batchesData } = useGetBatchesQuery({ page: 1, limit: 100 });
   const { data: schedulesData, isLoading, isFetching } = useGetSchedulesQuery(
-    { batchId: selectedBatchId },
+    {
+      programId: selectedProgramId || undefined,
+      batchId: selectedBatchId || undefined,
+    },
     { skip: !canRead }
   );
 
   const [deleteSchedule, { isLoading: isDeleting }] = useDeleteScheduleMutation();
+
+  const batchesForFilter = useMemo(() => {
+    const all = batchesData?.data || [];
+    if (!selectedProgramId) return all;
+    return all.filter((b: any) => (b.program?._id || b.program) === selectedProgramId);
+  }, [batchesData, selectedProgramId]);
+
+  useEffect(() => {
+    if (selectedBatchId && !batchesForFilter.some((b: any) => b._id === selectedBatchId)) {
+      setSelectedBatchId('');
+    }
+  }, [selectedProgramId, batchesForFilter, selectedBatchId]);
 
   const handleDeleteGroup = async () => {
     if (!scheduleGroupToDelete) return;
@@ -62,7 +80,7 @@ const Schedules: React.FC = () => {
       await Promise.all(promises);
       sonnerToast.success('Schedule group deleted successfully');
       setScheduleGroupToDelete(null);
-    } catch (err: any) {
+    } catch {
       sonnerToast.error('Failed to delete some schedules in the group');
     }
   };
@@ -79,12 +97,12 @@ const Schedules: React.FC = () => {
 
   const schedules = schedulesData?.data || [];
 
-  // Group schedules by Batch, Session Label, and Type
   const groupedSchedules = schedules.reduce((acc: any, schedule: any) => {
     const key = `${schedule.batch?._id}-${schedule.sessionLabel}-${schedule.type}`;
     if (!acc[key]) {
       acc[key] = {
         _id: key,
+        program: schedule.program || schedule.batch?.program,
         batch: schedule.batch,
         sessionLabel: schedule.sessionLabel,
         type: schedule.type,
@@ -110,7 +128,9 @@ const Schedules: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Schedule Management</h1>
-          <p className="text-gray-500 text-sm mt-1">Plan lectures and discussion sessions for each batch.</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Schedules belong to a program. Pick the program, then a batch, then add session slots — learners enroll into those program schedules.
+          </p>
         </div>
         {canCreate && (
           <button 
@@ -123,22 +143,47 @@ const Schedules: React.FC = () => {
         )}
       </div>
 
-      {/* Filters */}
+      {/* Filters: Program → Batch */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
           <div className="flex-1 max-w-sm">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Filter by Batch</label>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+              Program
+            </label>
             <div className="relative">
                <BookOpen className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+               <select 
+                 value={selectedProgramId}
+                 onChange={(e) => {
+                   setSelectedProgramId(e.target.value);
+                   setSelectedBatchId('');
+                 }}
+                 className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none"
+               >
+                 <option value="">All Programs</option>
+                 {(programsData?.data || []).map((p: any) => (
+                   <option key={p._id} value={p._id}>{p.title}</option>
+                 ))}
+               </select>
+            </div>
+          </div>
+          <div className="flex-1 max-w-sm">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+              Batch
+            </label>
+            <div className="relative">
+               <Users className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                <select 
                  value={selectedBatchId}
                  onChange={(e) => setSelectedBatchId(e.target.value)}
                  className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none"
                >
-                 <option value="">All Batches</option>
-                 {batchesData?.data.map((b: any) => (
+                 <option value="">
+                   {selectedProgramId ? 'All batches in program' : 'All Batches'}
+                 </option>
+                 {batchesForFilter.map((b: any) => (
                    <option key={b._id} value={b._id}>
-                     {b.batchName} - {b.program?.title} ({b.phase?.title})
+                     {b.batchName}{!selectedProgramId && b.program?.title ? ` — ${b.program.title}` : ''}
                    </option>
                  ))}
                </select>
@@ -147,7 +192,6 @@ const Schedules: React.FC = () => {
         </div>
       </div>
 
-      {/* Schedule List */}
       <div className="grid grid-cols-1 gap-6">
         {isLoading || isFetching ? (
           <div className="bg-white p-12 rounded-xl text-center border border-gray-100">
@@ -222,8 +266,8 @@ const Schedules: React.FC = () => {
                             {group.batch?.batchName}
                          </div>
                          <div className="min-w-0">
-                            <p className="text-[10px] text-gray-400 font-bold uppercase truncate">{group.batch?.program?.title}</p>
-                            <p className="text-xs text-gray-700 font-bold truncate leading-none">{group.batch?.phase?.title}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase truncate">Program</p>
+                            <p className="text-xs text-gray-700 font-bold truncate leading-none">{programTitle(group)}</p>
                          </div>
                       </div>
                    </div>
@@ -234,7 +278,6 @@ const Schedules: React.FC = () => {
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
       {scheduleGroupToDelete && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-in zoom-in duration-200 my-10">
@@ -264,10 +307,10 @@ const Schedules: React.FC = () => {
         </div>
       )}
       
-      {/* Create/Edit Modal */}
       {isModalOpen && (
         <ScheduleModal 
-          group={selectedScheduleGroup} 
+          group={selectedScheduleGroup}
+          defaultProgramId={selectedProgramId}
           onClose={() => { setIsModalOpen(false); setSelectedScheduleGroup(null); }} 
         />
       )}
@@ -275,13 +318,24 @@ const Schedules: React.FC = () => {
   );
 };
 
-// --- Schedule Modal (Create/Edit) ---
-
-const ScheduleModal: React.FC<{ onClose: () => void, group?: any }> = ({ onClose, group }) => {
+const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgramId?: string }> = ({
+  onClose,
+  group,
+  defaultProgramId = '',
+}) => {
   const isEdit = !!group;
-  
-  const { register, control, handleSubmit, formState: { errors } } = useForm({
+
+  const initialProgramId =
+    group?.program?._id ||
+    group?.program ||
+    group?.batch?.program?._id ||
+    group?.batch?.program ||
+    defaultProgramId ||
+    '';
+
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
+      program: initialProgramId,
       batch: group?.batch?._id || '',
       sessionLabel: group?.sessionLabel || 'Lecture 1',
       type: group?.type || 'LECTURE',
@@ -292,11 +346,13 @@ const ScheduleModal: React.FC<{ onClose: () => void, group?: any }> = ({ onClose
     }
   });
 
+  const selectedProgram = watch('program');
   const { fields, append, remove } = useFieldArray({
     control,
     name: "slots"
   });
 
+  const { data: programsData } = useGetProgramsQuery({ page: 1, limit: 100 });
   const { data: batchesData } = useGetBatchesQuery({ page: 1, limit: 100 });
   const [createSchedule, { isLoading: isCreating }] = useCreateScheduleMutation();
   const [updateSchedule, { isLoading: isUpdating }] = useUpdateScheduleMutation();
@@ -304,20 +360,31 @@ const ScheduleModal: React.FC<{ onClose: () => void, group?: any }> = ({ onClose
 
   const isLoading = isCreating || isUpdating;
 
+  const batchesForProgram = useMemo(() => {
+    const all = batchesData?.data || [];
+    if (!selectedProgram) return [];
+    return all.filter((b: any) => (b.program?._id || b.program) === selectedProgram);
+  }, [batchesData, selectedProgram]);
+
+  useEffect(() => {
+    const batchId = watch('batch');
+    if (batchId && !batchesForProgram.some((b: any) => b._id === batchId)) {
+      setValue('batch', '');
+    }
+  }, [selectedProgram, batchesForProgram, setValue, watch]);
+
   const onSubmit = async (data: any) => {
     try {
       if (isEdit) {
-        // Handle Updates, Creations, and Deletions in the group
         const originalIds = group.originalSchedules.map((s: any) => s._id);
         const currentIds = data.slots.map((s: any) => s._id).filter(Boolean);
 
-        // 1. Delete removed slots
         const toDelete = originalIds.filter((id: string) => !currentIds.includes(id));
         const deletePromises = toDelete.map((id: string) => deleteSchedule(id).unwrap());
 
-        // 2. Update existing slots or create new ones
         const actionPromises = data.slots.map((slot: any) => {
           const payload = {
+            program: data.program,
             batch: data.batch,
             sessionLabel: data.sessionLabel,
             type: data.type,
@@ -329,22 +396,23 @@ const ScheduleModal: React.FC<{ onClose: () => void, group?: any }> = ({ onClose
 
           if (slot._id) {
             return updateSchedule({ id: slot._id, data: payload }).unwrap();
-          } else {
-            return createSchedule(payload).unwrap();
           }
+          return createSchedule(payload).unwrap();
         });
 
         await Promise.all([...deletePromises, ...actionPromises]);
         sonnerToast.success('Schedule group updated successfully');
       } else {
-        // Create new group
         const promises = data.slots.map((slot: any) => {
           const payload = {
+            program: data.program,
             batch: data.batch,
             sessionLabel: data.sessionLabel,
             type: data.type,
             capacity: data.capacity,
-            ...slot
+            dayOfWeek: slot.dayOfWeek,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
           };
           return createSchedule(payload).unwrap();
         });
@@ -369,19 +437,37 @@ const ScheduleModal: React.FC<{ onClose: () => void, group?: any }> = ({ onClose
         
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Target Batch</label>
+            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Program</label>
             <select 
-              {...register('batch', { required: 'Batch is required' })}
+              {...register('program', { required: 'Program is required' })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             >
-              <option value="">Select batch...</option>
-              {batchesData?.data.map((b: any) => (
-                <option key={b._id} value={b._id}>
-                  {b.batchName} - {b.program?.title} ({b.phase?.title})
-                </option>
+              <option value="">Select program...</option>
+              {(programsData?.data || []).map((p: any) => (
+                <option key={p._id} value={p._id}>{p.title}</option>
+              ))}
+            </select>
+            {errors.program && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase italic">Required</p>}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Batch</label>
+            <select 
+              {...register('batch', { required: 'Batch is required' })}
+              disabled={!selectedProgram}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:bg-gray-50 disabled:text-gray-400"
+            >
+              <option value="">
+                {selectedProgram ? 'Select batch...' : 'Select a program first'}
+              </option>
+              {batchesForProgram.map((b: any) => (
+                <option key={b._id} value={b._id}>{b.batchName}</option>
               ))}
             </select>
             {errors.batch && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase italic">Required</p>}
+            {selectedProgram && batchesForProgram.length === 0 && (
+              <p className="text-[10px] text-amber-600 font-bold mt-1">No batches for this program yet. Create a batch first.</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">

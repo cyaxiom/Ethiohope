@@ -5,6 +5,14 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+const toBoolean = ({ value }: { value: unknown }) => {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true' || value === '1' || value === 1) return true;
+  if (value === 'false' || value === '0' || value === 0) return false;
+  return value;
+};
 
 export class CreateProgramDTO {
   @IsString()
@@ -24,6 +32,12 @@ export class CreateProgramDTO {
   ageRange?: string;
 
   @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isForChildren?: boolean;
+
+  @IsOptional()
+  @Transform(toBoolean)
   @IsBoolean()
   isActive?: boolean;
 
@@ -51,6 +65,12 @@ export class UpdateProgramDTO {
   ageRange?: string;
 
   @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isForChildren?: boolean;
+
+  @IsOptional()
+  @Transform(toBoolean)
   @IsBoolean()
   isActive?: boolean;
 

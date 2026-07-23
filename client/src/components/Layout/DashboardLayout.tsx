@@ -2,33 +2,34 @@ import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { twMerge } from 'tailwind-merge';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  LayoutDashboard, Users, Shield, BookOpen, FileText, Home, GraduationCap,
+import {
+  LayoutDashboard, Users, Shield, BookOpen, FileText, GraduationCap,
   CreditCard, Activity, Library, Calendar, MessageCircle, Video, LogOut
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { logout } from '../../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../provider/ThemeProvider/ThemeProvider';
 
 export const DashboardLayout: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed for better mobile UX
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const { isDashboardDark } = useTheme();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // Desktop: expanded by default; only collapses on explicit click
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { roles, activeRole } = useSelector((state: any) => state.auth);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
-  };
+  const toggleMobileSidebar = () => setIsMobileOpen((prev) => !prev);
+  const closeMobile = () => setIsMobileOpen(false);
+  const toggleCollapse = () => setIsCollapsed((prev) => !prev);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
-  // Sync nav items with Sidebar items for the mobile horizontal bar
   const getNavItems = () => {
     const currentRole = activeRole || (roles.length > 0 ? roles[0] : null);
 
@@ -43,11 +44,11 @@ export const DashboardLayout: React.FC = () => {
         { path: '/admin/courses', icon: BookOpen, label: 'Courses' },
         { path: '/admin/chat', icon: MessageCircle, label: 'Chat' },
         { path: '/admin/sessions', icon: Video, label: 'Sessions' },
-        { path: '/admin/payments', icon: CreditCard, label: 'Payments' },
+        { path: '/admin/payments', icon: CreditCard, label: 'Applications' },
         { path: '/admin/tracks', icon: Activity, label: 'Analytics' },
       ];
     }
-    
+
     if (currentRole === 'teacher') {
       return [
         { path: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -86,32 +87,42 @@ export const DashboardLayout: React.FC = () => {
   };
 
   const navItems = getNavItems();
-  const isExpanded = isSidebarOpen || isSidebarHovered;
 
   return (
-    <div className="flex bg-gray-50 min-h-screen text-gray-800 font-sans">
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        toggleSidebar={toggleSidebar} 
-        isHovered={isSidebarHovered}
-        setIsHovered={setIsSidebarHovered}
+    <div
+      className={clsx(
+        'dashboard-shell flex min-h-screen font-sans transition-colors duration-300',
+        isDashboardDark ? 'dark bg-[#0B1121] text-slate-100' : 'bg-gray-50 text-gray-800'
+      )}
+    >
+      <Sidebar
+        isMobileOpen={isMobileOpen}
+        isCollapsed={isCollapsed}
+        toggleCollapse={toggleCollapse}
+        closeMobile={closeMobile}
       />
-      
-      <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full">
-        <Header toggleSidebar={toggleSidebar} isOpen={isSidebarOpen} />
-        
-        {/* Mobile Horizontal Navigation: Horizontally scrollable list of dashboard pages */}
-        <nav className="lg:hidden bg-white border-b border-gray-100 px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth sticky top-16 z-20 shadow-sm">
+
+      <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full min-w-0">
+        <Header toggleMobileSidebar={toggleMobileSidebar} />
+
+        <nav
+          className={clsx(
+            'lg:hidden border-b px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth sticky top-16 z-20',
+            isDashboardDark ? 'bg-[#0B1121] border-slate-800/80' : 'bg-white border-gray-100 shadow-sm'
+          )}
+        >
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path!}
               className={({ isActive }) =>
                 clsx(
-                  "flex items-center gap-2 px-4 py-1.5 rounded-full whitespace-nowrap text-xs font-bold transition-all",
-                  isActive 
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-100 scale-105" 
-                    : "bg-gray-50 text-gray-500 border border-gray-100 hover:bg-gray-100"
+                  'flex items-center gap-2 px-4 py-1.5 rounded-lg whitespace-nowrap text-xs font-semibold transition-all',
+                  isActive
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/30'
+                    : isDashboardDark
+                      ? 'bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                      : 'bg-gray-50 text-gray-500 border border-gray-100 hover:bg-gray-100'
                 )
               }
             >
@@ -119,29 +130,37 @@ export const DashboardLayout: React.FC = () => {
               <span>{item.label}</span>
             </NavLink>
           ))}
-          
+
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full whitespace-nowrap text-xs font-bold transition-all bg-red-50 text-red-500 border border-red-100 hover:bg-red-100"
+            className={clsx(
+              'flex items-center gap-2 px-4 py-1.5 rounded-lg whitespace-nowrap text-xs font-semibold transition-all',
+              isDashboardDark
+                ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                : 'bg-red-50 text-red-500 border border-red-100 hover:bg-red-100'
+            )}
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Logout</span>
           </button>
         </nav>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto w-full max-w-full">
-          {/* Main content area */}
+        <main
+          className={clsx(
+            'flex-1 p-4 lg:p-6 overflow-y-auto w-full max-w-full transition-colors duration-300',
+            isDashboardDark ? 'bg-[#0B1121]' : 'bg-gray-50'
+          )}
+        >
           <div className="max-w-[1600px] mx-auto">
             <Outlet />
           </div>
         </main>
       </div>
-      
-      {/* Mobile overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-[2px] transition-opacity animate-in fade-in duration-300" 
-          onClick={toggleSidebar}
+
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-[2px] transition-opacity"
+          onClick={closeMobile}
         />
       )}
     </div>

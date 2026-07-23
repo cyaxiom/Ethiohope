@@ -8,7 +8,7 @@ export interface IChild extends Document {
   plainPin?: string; 
   parent: Types.ObjectId; // Reference to User
   gender: 'male' | 'female';
-  birthdate: Date;
+  birthdate?: Date;
   grade: string;
   isUSA: boolean;
   country?: string;
@@ -27,7 +27,7 @@ const ChildSchema = new Schema<IChild>(
     plainPin: { type: String },
     parent: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     gender: { type: String, enum: ['male', 'female'], required: true },
-    birthdate: { type: Date, required: true },
+    birthdate: { type: Date, required: false },
     grade: { type: String },
     isUSA: { type: Boolean, default: false },
     country: { type: String },

@@ -2,11 +2,11 @@ import { api } from '../../app/api';
 
 export interface Schedule {
   _id: string;
+  program?: { _id: string; title: string; ageRange?: string } | string;
   batch: { 
     _id: string; 
     batchName: string;
-    program: { title: string };
-    phase: { title: string };
+    program: { _id?: string; title: string };
   };
   sessionLabel: string;
   type: 'LECTURE' | 'DISCUSSION';
@@ -19,6 +19,7 @@ export interface Schedule {
 }
 
 export interface CreateSchedulePayload {
+  program?: string;
   batch: string;
   sessionLabel: string;
   type: 'LECTURE' | 'DISCUSSION';
@@ -36,7 +37,7 @@ export interface GetSchedulesResponse {
 
 export const scheduleApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getSchedules: builder.query<GetSchedulesResponse, { batchId?: string }>({
+    getSchedules: builder.query<GetSchedulesResponse, { batchId?: string; programId?: string }>({
       query: (params) => ({
         url: '/admin/schedules',
         params,

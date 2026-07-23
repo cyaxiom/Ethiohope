@@ -2,6 +2,8 @@ import { Schema, model, Document, Types } from 'mongoose';
 
 export interface ISchedule {
   _id: Types.ObjectId;
+  /** Denormalized from batch.program — schedules belong to a program. */
+  program: Types.ObjectId;
   batch: Types.ObjectId;
   sessionLabel: string; // e.g. "Lecture 1", "Lecture 2", "Discussion"
   type: 'LECTURE' | 'DISCUSSION';
@@ -15,6 +17,12 @@ export interface ISchedule {
 
 const ScheduleSchema = new Schema<ISchedule>(
   {
+    program: {
+      type: Schema.Types.ObjectId,
+      ref: 'Program',
+      required: true,
+      index: true,
+    },
     batch: {
       type: Schema.Types.ObjectId,
       ref: 'Batch',
@@ -64,5 +72,6 @@ const ScheduleSchema = new Schema<ISchedule>(
 
 // Compound index: Prevent duplicate slots for the same batch on the same day/time with the same label
 ScheduleSchema.index({ batch: 1, sessionLabel: 1, dayOfWeek: 1, startTime: 1 }, { unique: true });
+ScheduleSchema.index({ program: 1, batch: 1 });
 
 export const ScheduleModel = model<ISchedule>('Schedule', ScheduleSchema);

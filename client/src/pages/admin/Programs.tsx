@@ -177,9 +177,16 @@ const Programs: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                        {program.ageRange || 'All ages'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 w-fit">
+                          {program.ageRange?.trim() || '—'}
+                        </span>
+                        {program.isForChildren && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-100 w-fit">
+                            Kids
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-500 max-w-xs truncate" title={program.description}>
@@ -338,7 +345,8 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
       title: program?.title || '',
       description: program?.description || '',
       image: program?.image || '',
-      ageRange: program?.ageRange || 'All ages',
+      ageRange: program?.ageRange || '',
+      isForChildren: program?.isForChildren ?? false,
       isActive: program?.isActive ?? true,
       orderIndex: program?.orderIndex || 0
     }
@@ -381,7 +389,9 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
       const programData = { 
         ...data, 
         image: finalImageUrl,
-        orderIndex: Number(data.orderIndex)
+        orderIndex: Number(data.orderIndex),
+        isForChildren: Boolean(data.isForChildren),
+        isActive: Boolean(data.isActive),
       };
 
       if (isEdit) {
@@ -495,11 +505,13 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Age Range <span className="text-gray-400 font-normal">(optional, kids programs)</span>
+              </label>
               <input 
                 {...register('ageRange')} 
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="e.g., 15-20 or All ages"
+                placeholder="e.g. 9-12 — leave blank if open to everyone"
               />
             </div>
             <div>
@@ -513,6 +525,20 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
                 placeholder="e.g., 1"
               />
               {errors.orderIndex && <p className="text-xs text-red-500 mt-1">{errors.orderIndex.message as string}</p>}
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+              <input 
+                type="checkbox" 
+                id="isForChildren"
+                {...register('isForChildren')}
+                className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+              />
+              <label htmlFor="isForChildren" className="text-sm font-medium text-gray-700 cursor-pointer">
+                <span className="font-bold">For children</span>
+                <span className="block text-xs text-gray-500 font-normal mt-0.5">
+                  Enrollment will only offer the child registration flow (no adult self-apply).
+                </span>
+              </label>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <input 

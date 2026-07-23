@@ -127,11 +127,10 @@ export class ChatService {
   }
 
   /**
-   * Adds a specific student child to the existing batch group chat
+   * Adds a child student to batch discussion groups (age-bucketed JUNIOR/SENIOR when DOB known).
    */
   public async addStudentToBatchGroup(batchId: string, childId: string): Promise<void> {
      try {
-       // Find the student's enrollment to get their selected schedules
        const enrollment = await EnrollmentModel.findOne({
          batch: new Types.ObjectId(batchId),
          child: new Types.ObjectId(childId),
@@ -145,22 +144,21 @@ export class ChatService {
 
        const child = enrollment.child as any;
        const age = child.age;
-       const targetAgeGroup: 'JUNIOR' | 'SENIOR' | null = 
-         (age >= 9 && age <= 12) ? 'JUNIOR' : 
+       let targetAgeGroup: 'JUNIOR' | 'SENIOR' | null =
+         (age >= 9 && age <= 12) ? 'JUNIOR' :
          (age >= 13 && age <= 18) ? 'SENIOR' : null;
 
-       if (!targetAgeGroup) {
-         logger.warn(`Child ${childId} age ${age} does not fall into JUNIOR or SENIOR categories.`);
-         return;
-       }
-
-       // Find all Group conversations in this batch that match the student's selected discussion schedules AND their age group
-       const matchingGroups = await ConversationModel.find({
+       // No DOB/age: still add to all discussion groups for selected schedules
+       const groupQuery: any = {
          type: 'GROUP',
          batchId: new Types.ObjectId(batchId),
          scheduleId: { $in: enrollment.selectedSchedules },
-         ageGroup: targetAgeGroup
-       });
+       };
+       if (targetAgeGroup) {
+         groupQuery.ageGroup = targetAgeGroup;
+       }
+
+       const matchingGroups = await ConversationModel.find(groupQuery);
 
        if (matchingGroups.length > 0) {
          const operations = matchingGroups.map(group => ({
@@ -171,14 +169,51 @@ export class ChatService {
            }
          }));
          await ConversationMemberModel.bulkWrite(operations, { ordered: false });
-         logger.info(`Student ${childId} added to ${matchingGroups.length} [${targetAgeGroup}] groups in batch ${batchId}`);
+         logger.info(`Student ${childId} added to ${matchingGroups.length} groups in batch ${batchId}`);
        } else {
-         // Fallback: If no groups exist yet, ensure the whole batch state
          await this.ensureBatchGroupExists(batchId);
        }
      } catch (err) {
          logger.error(`Failed to add student ${childId} to discussion groups for batch ${batchId}:`, err);
      }
+  }
+
+  /** Adds an adult (self-enrolled User) to batch discussion groups via userId membership. */
+  public async addAdultStudentToBatchGroup(batchId: string, userId: string): Promise<void> {
+    try {
+      const enrollment = await EnrollmentModel.findOne({
+        batch: new Types.ObjectId(batchId),
+        user: new Types.ObjectId(userId),
+        status: 'ACTIVE',
+      });
+
+      if (!enrollment) {
+        logger.warn(`No active self-enrollment found for user ${userId} in batch ${batchId}`);
+        return;
+      }
+
+      const matchingGroups = await ConversationModel.find({
+        type: 'GROUP',
+        batchId: new Types.ObjectId(batchId),
+        scheduleId: { $in: enrollment.selectedSchedules },
+      });
+
+      if (matchingGroups.length > 0) {
+        const operations = matchingGroups.map(group => ({
+          updateOne: {
+            filter: { conversationId: group._id, userId: new Types.ObjectId(userId) },
+            update: { $set: { role: 'STUDENT' } },
+            upsert: true,
+          },
+        }));
+        await ConversationMemberModel.bulkWrite(operations, { ordered: false });
+        logger.info(`Adult student ${userId} added to ${matchingGroups.length} groups in batch ${batchId}`);
+      } else {
+        await this.ensureBatchGroupExists(batchId);
+      }
+    } catch (err) {
+      logger.error(`Failed to add adult student ${userId} to discussion groups for batch ${batchId}:`, err);
+    }
   }
 
   /**
@@ -231,7 +266,7 @@ export class ChatService {
       const activeEnrollments = await EnrollmentModel.find({
         program: new Types.ObjectId(programId),
         status: 'ACTIVE'
-      }).select('child');
+      }).select('child user enrolleeType');
 
       const operations: any[] = [];
 
@@ -257,15 +292,25 @@ export class ChatService {
         });
       }
 
-      // Upsert Students
+      // Upsert Students (child or self-enrolled adult)
       for (const enrollment of activeEnrollments) {
-        operations.push({
-          updateOne: {
-            filter: { conversationId, childId: enrollment.child },
-            update: { $set: { role: 'STUDENT' } },
-            upsert: true
-          }
-        });
+        if (enrollment.user) {
+          operations.push({
+            updateOne: {
+              filter: { conversationId, userId: enrollment.user },
+              update: { $set: { role: 'STUDENT' } },
+              upsert: true
+            }
+          });
+        } else if (enrollment.child) {
+          operations.push({
+            updateOne: {
+              filter: { conversationId, childId: enrollment.child },
+              update: { $set: { role: 'STUDENT' } },
+              upsert: true
+            }
+          });
+        }
       }
 
       if (operations.length > 0) {

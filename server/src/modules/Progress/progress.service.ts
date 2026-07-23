@@ -23,13 +23,16 @@ export class ProgressService {
     if (!enrollment) throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Enrollment not found');
     if (enrollment.status !== 'ACTIVE') throw new HttpException(HttpStatusCodes.FORBIDDEN, 'Enrollment is not active');
 
-    // 2. RBAC check: only the student assigned to the enrollment or their parent can mark it complete
-    if (userType === 'child' && enrollment.child.toString() !== userId) {
+    // 2. RBAC: child enrollee, self enrollee, or parent of child enrollment
+    const isChildEnrollee = enrollment.child && enrollment.child.toString() === userId;
+    const isSelfEnrollee = enrollment.user && enrollment.user.toString() === userId;
+    const isParent = enrollment.parent?.toString() === userId;
+
+    if (userType === 'child' && !isChildEnrollee) {
       throw new HttpException(HttpStatusCodes.FORBIDDEN, 'You can only update your own progress');
     }
-    if (userType === 'adult' && enrollment.parent.toString() !== userId) {
-      // Parents can update progress for their children, but admins/superadmins usually bypass this via middleware
-      // We'll leave stricter checks to the controller if needed.
+    if (userType === 'adult' && !isSelfEnrollee && !isParent) {
+      // Parents can update progress for their children; self-enrolled adults update their own
     }
 
     // 3. Mark lecture as completed
@@ -37,8 +40,9 @@ export class ProgressService {
     if (!progress) throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to update progress');
 
     // 4. Initialize progress metadata if it's the first time
-    if (!progress.child) {
-      progress.child = enrollment.child;
+    if (!progress.child && !progress.user) {
+      if (enrollment.child) progress.child = enrollment.child;
+      if (enrollment.user) progress.user = enrollment.user;
       progress.program = enrollment.program;
       progress.phase = enrollment.phase;
     }
@@ -59,6 +63,7 @@ export class ProgressService {
        return {
          enrollment: enrollment._id,
          child: enrollment.child,
+         user: enrollment.user,
          program: enrollment.program,
          phase: enrollment.phase,
          completedLessons: [],

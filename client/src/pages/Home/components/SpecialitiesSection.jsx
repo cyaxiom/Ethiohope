@@ -33,7 +33,7 @@ const differentiators = [
 function SpecialitiesSection() { 
   
   // Standard background for the section - using a gradient that works well in both modes
-  const sectionBgClass = 'bg-muted/30 dark:bg-muted/60';
+  const sectionBgClass = 'bg-[#0b1224]';
   
   // LEFT Card: Modified for a light greenish gradient in light mode
   const leftCardBgClass = 'bg-gradient-to-br from-green-50 via-teal-50 to-white dark:bg-blue-950/70 border border-border';

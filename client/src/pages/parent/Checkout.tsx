@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useGetMyPendingEnrollmentsQuery } from '../../features/enrollments/enrollmentApi';
-import { useCreateCheckoutSessionMutation } from '../../features/payments/paymentApi';
+import {
+  useCreateCheckoutSessionMutation,
+  useReportZellePaymentMutation,
+} from '../../features/payments/paymentApi';
 import { CreditCard, AlertCircle, Loader2, CheckCircle, ShieldCheck, Phone, MessageCircle, Wallet, ArrowLeft } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Checkout = () => {
   const location = useLocation();
@@ -10,6 +14,7 @@ const Checkout = () => {
   const initialIds = React.useMemo(() => location.state?.enrollmentIds || [], [location.state?.enrollmentIds]);
   const { data: enrollmentsData, isLoading, error } = useGetMyPendingEnrollmentsQuery();
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
+  const [reportZellePayment, { isLoading: isReportingZelle }] = useReportZellePaymentMutation();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'zelle'>('stripe');
@@ -17,7 +22,6 @@ const Checkout = () => {
 
   const enrollments = enrollmentsData?.data || [];
 
-  // Initialize selection
   useEffect(() => {
     if (enrollments.length > 0 && selectedIds.length === 0) {
       if (initialIds.length > 0) {
@@ -27,24 +31,25 @@ const Checkout = () => {
   }, [enrollments, initialIds, selectedIds.length]);
 
   const toggleSelection = (id: string) => {
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   const selectedEnrollments = enrollments.filter((e: any) => selectedIds.includes(e._id));
   const totalPrice = selectedEnrollments.reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
-  
+
+  const formatMoney = (n: number) =>
+    n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const handleCheckout = async () => {
     if (selectedIds.length === 0) {
       setErrorMsg('Please select at least one enrollment to pay');
       return;
     }
-    
+
     try {
       setErrorMsg('');
       const res = await createCheckoutSession({ enrollmentIds: selectedIds }).unwrap();
-      
+
       if (res.url) {
         window.location.href = res.url;
       } else {
@@ -56,99 +61,125 @@ const Checkout = () => {
     }
   };
 
+  const handleZelleSubmitted = async () => {
+    if (selectedIds.length === 0) {
+      setErrorMsg('Please select at least one enrollment to pay');
+      return;
+    }
+
+    try {
+      setErrorMsg('');
+      const res = await reportZellePayment({ enrollmentIds: selectedIds }).unwrap();
+      setShowZelleConfirmation(true);
+      toast.success(res.message || 'Admins have been notified about your Zelle transfer.');
+    } catch (err: any) {
+      console.error(err);
+      const message = err?.data?.message || 'Failed to notify admins. Please try again or contact support.';
+      setErrorMsg(message);
+      toast.error(message);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      <div className="flex justify-center items-center min-h-screen bg-[#070b16]">
+        <Loader2 className="w-10 h-10 text-blue-400 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <button 
+    <div className="min-h-screen bg-[#070b16] text-slate-100 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-xl mx-auto">
+        <button
+          type="button"
           onClick={() => {
             navigate('/');
             window.scrollTo(0, 0);
           }}
-          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full font-bold mb-10 transition-all hover:scale-105 shadow-lg shadow-blue-100 group self-start"
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors mb-8"
         >
-          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          Back to Home
+          <ArrowLeft className="w-4 h-4" />
+          Back to home
         </button>
 
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Checkout Details</h1>
-          <p className="text-lg text-gray-600">Review your enrollments and proceed to secure payment.</p>
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight">Checkout</h1>
+          <p className="text-slate-400 text-sm mt-1.5">Review enrollments and complete payment.</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          <div className="p-6 sm:p-10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <CheckCircle className="w-6 h-6 text-green-500 mr-2" />
-              Enrollment Summary
+        <div className="rounded-2xl border border-white/10 bg-[#0b1224] overflow-hidden">
+          <div className="p-4 sm:p-6">
+            <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
+              Enrollment summary
             </h2>
 
             {enrollments.length === 0 ? (
-              <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                <AlertCircle className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 font-medium text-lg">No pending enrollments found.</p>
-                <p className="text-gray-500 mt-1">Please register your child first.</p>
+              <div className="text-center py-12 rounded-2xl border border-dashed border-white/15 bg-white/[0.02]">
+                <AlertCircle className="w-9 h-9 text-slate-500 mx-auto mb-3" />
+                <p className="text-slate-300 font-medium">No pending enrollments found.</p>
+                <p className="text-slate-500 text-sm mt-1">Enroll in a program first to continue.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {enrollments.map((enrollment: any) => {
                   const isSelected = selectedIds.includes(enrollment._id);
+                  const name =
+                    enrollment.enrolleeType === 'SELF' || enrollment.user
+                      ? `${enrollment.user?.firstname || ''} ${enrollment.user?.lastname || ''}`.trim() || 'You'
+                      : `${enrollment.child?.firstname || enrollment.child?.firstName || 'Student'} ${enrollment.child?.lastname || enrollment.child?.lastName || ''}`.trim();
+
                   return (
-                    <div 
-                      key={enrollment._id} 
+                    <button
+                      key={enrollment._id}
+                      type="button"
                       onClick={() => toggleSelection(enrollment._id)}
-                      className={`flex flex-col sm:flex-row items-center gap-4 p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                        isSelected ? 'border-blue-500 bg-blue-50/30' : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                      className={`w-full text-left flex items-start gap-3.5 p-4 rounded-2xl border transition-all ${
+                        isSelected
+                          ? 'border-blue-500/50 bg-blue-500/10'
+                          : 'border-white/10 bg-[#070b16] hover:border-white/20'
                       }`}
                     >
-                      <div className="flex-shrink-0">
-                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
-                        }`}>
-                          {isSelected && <span className="text-white text-sm font-bold">✓</span>}
-                        </div>
+                      <div
+                        className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-colors ${
+                          isSelected ? 'bg-blue-600 border-blue-600' : 'border-white/20 bg-transparent'
+                        }`}
+                      >
+                        {isSelected && <span className="text-white text-[10px] font-bold">✓</span>}
                       </div>
 
-                      <div className="flex-1 text-center sm:text-left">
-                        <h3 className="font-bold text-lg text-gray-900">
-                          {enrollment.child?.firstname || enrollment.child?.firstName || 'Student'} {enrollment.child?.lastname || enrollment.child?.lastName || ''}
-                        </h3>
-                        <p className="text-blue-600 font-medium text-sm mt-1">{enrollment.program?.title}</p>
-                        <p className="text-gray-500 text-sm mt-1 flex items-center justify-center sm:justify-start">
-                          <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold mr-2">Phase</span>
-                          {enrollment.phase?.title}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-white text-[15px] truncate">{name}</h3>
+                        <p className="text-blue-300 text-sm mt-0.5 truncate">{enrollment.program?.title}</p>
+                        <p className="text-slate-500 text-xs mt-1.5 flex items-center gap-2 flex-wrap">
+                          <span className="bg-white/5 text-slate-400 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
+                            Phase
+                          </span>
+                          <span className="truncate">{enrollment.phase?.title}</span>
                         </p>
                       </div>
-                      
-                      <div className="flex items-center">
-                        <span className={`text-2xl font-black ${isSelected ? 'text-blue-700' : 'text-gray-400'}`}>
-                          ${enrollment.amount}
-                        </span>
-                      </div>
-                    </div>
+
+                      <span className={`text-lg font-semibold flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-500'}`}>
+                        ${enrollment.amount}
+                      </span>
+                    </button>
                   );
                 })}
 
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100 space-y-3">
-                    <div className="flex justify-between items-center text-sm font-bold text-blue-600 uppercase">
-                      <span>Course Price</span>
-                      <span>${(totalPrice * 0.85).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <div className="mt-5 pt-5 border-t border-white/10">
+                  <div className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
+                    <div className="flex justify-between items-center text-xs font-semibold uppercase tracking-wider text-blue-300">
+                      <span>Course price</span>
+                      <span>${formatMoney(totalPrice * 0.85)}</span>
                     </div>
-                    <div className="flex justify-between items-center text-sm font-bold text-gray-500 uppercase">
-                      <span>VAT (15% Inclusive)</span>
-                      <span>${(totalPrice * 0.15).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="flex justify-between items-center text-xs font-medium uppercase tracking-wider text-slate-500">
+                      <span>VAT (15% inclusive)</span>
+                      <span>${formatMoney(totalPrice * 0.15)}</span>
                     </div>
-                    <div className="pt-3 border-t border-blue-100 flex justify-between items-center">
-                      <p className="text-xl font-black text-gray-800">Total Amount</p>
-                      <span className="text-3xl font-black text-blue-700">${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="pt-3 border-t border-white/10 flex justify-between items-center gap-3">
+                      <p className="text-sm font-medium text-slate-300">Total amount</p>
+                      <span className="text-2xl font-semibold text-white">${formatMoney(totalPrice)}</span>
                     </div>
                   </div>
                 </div>
@@ -156,156 +187,204 @@ const Checkout = () => {
             )}
 
             {errorMsg && (
-              <div className="mt-6 p-4 bg-red-50 rounded-xl border border-red-200 flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700 font-medium">{errorMsg}</p>
+              <div className="mt-5 p-3.5 rounded-xl border border-red-500/30 bg-red-950/40 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-red-300 text-sm">{errorMsg}</p>
+              </div>
+            )}
+
+            {error && !errorMsg && (
+              <div className="mt-5 p-3.5 rounded-xl border border-red-500/30 bg-red-950/40 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-red-300 text-sm">Could not load enrollments. Please refresh and try again.</p>
               </div>
             )}
 
             {enrollments.length > 0 && (
-              <div className="mt-10 pt-8 border-t border-gray-100">
-                <h3 className="text-xl font-bold text-gray-800 mb-6">Choose Payment Method</h3>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                  <div 
-                    onClick={() => { setPaymentMethod('stripe'); setShowZelleConfirmation(false); }}
-                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      paymentMethod === 'stripe' ? 'border-blue-600 bg-blue-50/50' : 'border-gray-100 bg-white hover:border-gray-200'
-                    }`}
-                  >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      paymentMethod === 'stripe' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      <CreditCard className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">Credit/Debit Card</p>
-                      <p className="text-xs text-gray-500 font-medium">Secure payment via Stripe</p>
-                    </div>
-                    {paymentMethod === 'stripe' && (
-                      <div className="ml-auto w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">✓</span>
-                      </div>
-                    )}
-                  </div>
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <h3 className="text-base font-semibold text-white mb-4">Choose payment method</h3>
 
-                  <div 
-                    onClick={() => { setPaymentMethod('zelle'); setShowZelleConfirmation(false); }}
-                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      paymentMethod === 'zelle' ? 'border-purple-600 bg-purple-50/50' : 'border-gray-100 bg-white hover:border-gray-200'
+                <div className="grid grid-cols-1 gap-2.5 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod('stripe');
+                      setShowZelleConfirmation(false);
+                    }}
+                    className={`flex items-center gap-3.5 p-4 rounded-2xl border text-left transition-all ${
+                      paymentMethod === 'stripe'
+                        ? 'border-blue-500/50 bg-blue-500/10'
+                        : 'border-white/10 bg-[#070b16] hover:border-white/20'
                     }`}
                   >
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      paymentMethod === 'zelle' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      <Wallet className="w-6 h-6" />
+                    <div
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        paymentMethod === 'stripe' ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400'
+                      }`}
+                    >
+                      <CreditCard className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900">Zelle Transfer</p>
-                      <p className="text-xs text-gray-500 font-medium">Pay directly via Zelle</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-white text-[15px]">Credit / debit card</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Secure payment via Stripe</p>
                     </div>
-                    {paymentMethod === 'zelle' && (
-                      <div className="ml-auto w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">✓</span>
-                      </div>
-                    )}
-                  </div>
+                    {paymentMethod === 'stripe' && <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod('zelle');
+                      setShowZelleConfirmation(false);
+                    }}
+                    className={`flex items-center gap-3.5 p-4 rounded-2xl border text-left transition-all ${
+                      paymentMethod === 'zelle'
+                        ? 'border-blue-500/50 bg-blue-500/10'
+                        : 'border-white/10 bg-[#070b16] hover:border-white/20'
+                    }`}
+                  >
+                    <div
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        paymentMethod === 'zelle' ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400'
+                      }`}
+                    >
+                      <Wallet className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-white text-[15px]">Zelle transfer</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Pay directly via Zelle</p>
+                    </div>
+                    {paymentMethod === 'zelle' && <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />}
+                  </button>
                 </div>
 
                 {paymentMethod === 'stripe' ? (
-                  <div className="flex flex-col items-center">
+                  <div>
                     <button
+                      type="button"
                       onClick={handleCheckout}
                       disabled={isCreatingSession || selectedIds.length === 0}
-                      className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-lg shadow-blue-100 text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                      className="w-full flex justify-center items-center py-3.5 px-6 rounded-xl text-white font-semibold bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
                     >
                       {isCreatingSession ? (
                         <>
-                          <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                          Processing...
+                          <Loader2 className="w-5 h-5 mr-2.5 animate-spin" />
+                          Processing…
                         </>
                       ) : (
                         <>
-                          <CreditCard className="w-6 h-6 mr-3" />
+                          <CreditCard className="w-5 h-5 mr-2.5" />
                           Pay with Stripe
                         </>
                       )}
                     </button>
-                    <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
-                      <ShieldCheck className="w-4 h-4 mr-1 text-green-500" />
+                    {selectedIds.length === 0 && (
+                      <p className="text-center text-xs text-slate-500 mt-2">Select at least one enrollment to continue.</p>
+                    )}
+                    <div className="mt-3.5 flex items-center justify-center text-xs text-slate-500 gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                       Payments are securely processed by Stripe
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-purple-50 rounded-2xl border border-purple-100 p-6 sm:p-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center">
-                      <Wallet className="w-5 h-5 mr-2" />
-                      Zelle Payment Instructions
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+                    <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-blue-400" />
+                      Zelle payment instructions
                     </h4>
-                    
+
                     {!showZelleConfirmation ? (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-purple-100 shadow-sm">
-                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
-                              <Wallet className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-0.5">Zelle Account</p>
-                              <p className="text-base font-bold text-gray-900">ethiohope50@gmail.com</p>
-                              <p className="text-xs text-gray-500">Recipient: Ethio Hope Academy</p>
-                            </div>
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3.5 p-3.5 rounded-xl border border-white/10 bg-[#070b16]">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/15 text-blue-300 flex items-center justify-center flex-shrink-0">
+                            <Wallet className="w-4 h-4" />
                           </div>
-
-                          <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-purple-100 shadow-sm">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                              <Phone className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-0.5">Call Us</p>
-                              <p className="text-base font-bold text-gray-900">+1 (945) 385-0556</p>
-                              <p className="text-xs text-gray-500">Available Mon-Fri, 9AM-5PM</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-4 p-4 bg-white rounded-xl border border-purple-100 shadow-sm">
-                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
-                              <MessageCircle className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-green-600 uppercase tracking-wider mb-0.5">WhatsApp Receipt</p>
-                              <p className="text-base font-bold text-gray-900">+1 (945) 385-0556</p>
-                              <p className="text-xs text-gray-500">Send us a screenshot of your transfer</p>
-                            </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold text-blue-300 uppercase tracking-[0.14em] mb-0.5">
+                              Zelle account
+                            </p>
+                            <p className="text-sm font-medium text-white break-all">ethiohope50@gmail.com</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Recipient: Ethio Hope Academy</p>
                           </div>
                         </div>
 
-                        <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-yellow-800">
-                          <p className="font-bold flex items-center mb-1">
-                            <AlertCircle className="w-4 h-4 mr-2" />
-                            Important Note
+                        <div className="flex items-start gap-3.5 p-3.5 rounded-xl border border-white/10 bg-[#070b16]">
+                          <div className="w-10 h-10 rounded-full bg-white/5 text-slate-300 flex items-center justify-center flex-shrink-0">
+                            <Phone className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.14em] mb-0.5">
+                              Call us
+                            </p>
+                            <p className="text-sm font-medium text-white">+1 (945) 385-0556</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Mon–Fri, 9AM–5PM</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3.5 p-3.5 rounded-xl border border-white/10 bg-[#070b16]">
+                          <div className="w-10 h-10 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                            <MessageCircle className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-semibold text-emerald-400/90 uppercase tracking-[0.14em] mb-0.5">
+                              WhatsApp receipt
+                            </p>
+                            <p className="text-sm font-medium text-white">+1 (945) 385-0556</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Send a screenshot of your transfer</p>
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 rounded-xl border border-amber-500/25 bg-amber-950/30 text-sm text-amber-100/90">
+                          <p className="font-medium flex items-center gap-2 mb-1 text-amber-200">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                            Important
                           </p>
-                          <p>Please include your child's full name in the Zelle memo field. Once you've sent the payment, send the receipt via WhatsApp so we can manually approve your enrollment.</p>
+                          <p className="text-xs leading-relaxed text-amber-100/70">
+                            Include the student&apos;s full name in the Zelle memo. After sending, share the receipt on
+                            WhatsApp so we can approve the enrollment.
+                          </p>
                         </div>
 
                         <button
-                          onClick={() => setShowZelleConfirmation(true)}
-                          className="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-lg shadow-purple-100 text-lg font-bold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none transition-all active:scale-[0.98]"
+                          type="button"
+                          onClick={handleZelleSubmitted}
+                          disabled={isReportingZelle || selectedIds.length === 0}
+                          className="w-full flex justify-center items-center py-3.5 px-6 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
                         >
-                          <CheckCircle className="w-6 h-6 mr-3" />
-                          I've Sent the Payment
+                          {isReportingZelle ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2.5 animate-spin" />
+                              Notifying admins…
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-5 h-5 mr-2.5" />
+                              I&apos;ve sent the payment
+                            </>
+                          )}
                         </button>
+                        {selectedIds.length === 0 && (
+                          <p className="text-center text-xs text-slate-500 mt-2">
+                            Select at least one enrollment above first.
+                          </p>
+                        )}
                       </div>
                     ) : (
-                      <div className="text-center py-6 animate-in zoom-in duration-300">
-                        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-50">
-                          <CheckCircle className="w-10 h-10" />
+                      <div className="text-center py-6">
+                        <div className="w-14 h-14 bg-emerald-500/15 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-400/20">
+                          <CheckCircle className="w-7 h-7" />
                         </div>
-                        <h5 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h5>
-                        <p className="text-gray-600 mb-6">We've received your notice. Please make sure to send the screenshot to our WhatsApp <span className="font-bold text-purple-700">+1 (945) 385-0556</span> if you haven't already.</p>
+                        <h5 className="text-lg font-semibold text-white mb-2">Thank you</h5>
+                        <p className="text-slate-400 text-sm mb-5 leading-relaxed max-w-sm mx-auto">
+                          Admins have been notified. Your enrollment stays pending until they verify the Zelle
+                          receipt. Please also send the screenshot to WhatsApp{' '}
+                          <span className="text-blue-300 font-medium">+1 (945) 385-0556</span> if you haven&apos;t
+                          already.
+                        </p>
                         <button
+                          type="button"
                           onClick={() => setShowZelleConfirmation(false)}
-                          className="text-sm font-bold text-purple-600 hover:text-purple-700 underline"
+                          className="text-sm font-medium text-blue-300 hover:text-blue-200 transition-colors"
                         >
                           View instructions again
                         </button>

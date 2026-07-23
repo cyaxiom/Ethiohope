@@ -6,6 +6,7 @@ export interface Program {
   description?: string;
   image?: string;
   ageRange?: string;
+  isForChildren?: boolean;
   isActive: boolean;
   orderIndex: number;
   createdAt: string;
@@ -17,6 +18,7 @@ export interface CreateProgramPayload {
   description?: string;
   image?: string;
   ageRange?: string;
+  isForChildren?: boolean;
   isActive?: boolean;
   orderIndex?: number;
 }

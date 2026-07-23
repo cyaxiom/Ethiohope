@@ -5,7 +5,10 @@ export interface IProgram {
   title: string;
   description?: string;
   image?: string;
-  ageRange: string;
+  /** Optional; primarily for kids programs. Empty/undefined = not age-gated. */
+  ageRange?: string;
+  /** When true, enrollment is child-only (no adult self-apply chooser). */
+  isForChildren: boolean;
   isActive: boolean;
   orderIndex: number;
   createdAt: Date;
@@ -30,8 +33,14 @@ const ProgramSchema = new Schema<IProgram>(
     },
     ageRange: {
       type: String,
-      default: 'All ages',
+      required: false,
       trim: true,
+      default: '',
+    },
+    isForChildren: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
     isActive: {
       type: Boolean,

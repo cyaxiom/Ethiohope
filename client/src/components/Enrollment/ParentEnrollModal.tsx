@@ -9,6 +9,13 @@ import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
+interface ParentEnrollModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  program: any;
+  initialPhaseId?: string;
+}
+
 const formatTime12h = (time: string) => {
   if (!time) return '';
   const parts = time.split(':');
@@ -29,9 +36,13 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   const [selectedSchedules, setSelectedSchedules] = useState<Record<string, string>>({});
   const [createdEnrollmentIds, setCreatedEnrollmentIds] = useState<string[]>([]);
   
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<{
+    childIds: string[];
+    phaseId: string;
+    batchId: string;
+  }>({
     defaultValues: {
-      childIds: [] as string[],
+      childIds: [],
       phaseId: initialPhaseId || '',
       batchId: ''
     }
@@ -115,6 +126,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   const onSubmit = async (data: any) => {
     try {
       const payload = {
+        enrolleeType: 'CHILD' as const,
         childIds: data.childIds,
         programId: program._id,
         phaseId: data.phaseId,

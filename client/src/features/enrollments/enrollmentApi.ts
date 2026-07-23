@@ -1,6 +1,9 @@
 import { api } from '../../app/api';
 
 export interface EnrollmentPayload {
+  enrolleeType?: 'SELF' | 'CHILD';
+  /** Required when enrolleeType is SELF */
+  phone?: string;
   childIds?: string[];
   firstName?: string;
   lastName?: string;
@@ -30,16 +33,25 @@ export const enrollmentApi = api.injectEndpoints({
   endpoints: (builder) => ({
     prepareEnrollment: builder.mutation<EnrollmentResponse, EnrollmentPayload>({
       query: (data) => ({
-        url: '/parent/enrollments',
+        url: '/enrollments',
         method: 'POST',
         body: data,
       }),
+      invalidatesTags: ['Enrollments'],
     }),
     getMyPendingEnrollments: builder.query<{ success: boolean; data: any[] }, void>({
       query: () => ({
-        url: '/parent/enrollments/pending',
+        url: '/enrollments/pending',
         method: 'GET',
       }),
+      providesTags: ['Enrollments'],
+    }),
+    getMyEnrollmentsForProgram: builder.query<{ success: boolean; data: any[] }, string>({
+      query: (programId) => ({
+        url: '/enrollments/mine',
+        params: { programId },
+      }),
+      providesTags: ['Enrollments'],
     }),
     updateEnrollmentSchedule: builder.mutation<any, { enrollmentId: string; selectedSchedules: string[] }>({
       query: ({ enrollmentId, selectedSchedules }) => ({
@@ -47,7 +59,7 @@ export const enrollmentApi = api.injectEndpoints({
         method: 'PATCH',
         body: { selectedSchedules },
       }),
-      invalidatesTags: ['Users'],
+      invalidatesTags: ['Users', 'Enrollments'],
     }),
   }),
 });
@@ -55,6 +67,6 @@ export const enrollmentApi = api.injectEndpoints({
 export const {
   usePrepareEnrollmentMutation,
   useGetMyPendingEnrollmentsQuery,
+  useGetMyEnrollmentsForProgramQuery,
   useUpdateEnrollmentScheduleMutation,
 } = enrollmentApi;
-

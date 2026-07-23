@@ -98,7 +98,7 @@ const ParentCourses: React.FC = () => {
                     
                     <div className="mt-auto mb-5">
                       <span className="inline-block bg-gradient-to-r from-orange-400 to-pink-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase shadow-md">
-                        Age: {program.ageRange || 'All ages'}
+                        {program.ageRange?.trim() ? `Age: ${program.ageRange}` : 'Open to everyone'}
                       </span>
                     </div>
 
@@ -196,7 +196,7 @@ const ProgramDetailView: React.FC<{ programId: string; onBack: () => void; onEnr
               <Star className="text-orange-500 w-5 h-5 fill-orange-500" />
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Age Group</p>
-                <p className="text-sm font-black text-blue-900">{program.ageRange || 'All Ages'}</p>
+                <p className="text-sm font-black text-blue-900">{program.ageRange?.trim() || 'Open to everyone'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 px-5 py-3 bg-purple-50 rounded-2xl border border-purple-100">

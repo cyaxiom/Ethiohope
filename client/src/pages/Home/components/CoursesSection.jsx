@@ -42,14 +42,14 @@ const CoursesSection = () => {
   }
 
   return (
-    <section id="popular-programs" className="py-16 px-4 bg-background">
+    <section id="popular-programs" className="py-16 px-4 bg-[#070b16]">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
             Our Popular Programs
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-slate-400">
             Discover amazing coding adventures designed just for you
           </p>
         </div>
@@ -91,19 +91,19 @@ const CoursesSection = () => {
                       navigate(`/academy/kids-programming/course/${program._id}#program-phases`);
                     }
                   }}
-                  className={`bg-card rounded-lg shadow-lg border border-border overflow-hidden transition-all duration-300 group h-full flex flex-col relative ${isActive ? 'hover:shadow-xl hover:scale-105 cursor-pointer' : 'cursor-default'}`}
+                  className={`bg-[#0b1224] rounded-2xl shadow-lg border border-white/10 overflow-hidden transition-all duration-300 group h-full flex flex-col relative ${isActive ? 'hover:shadow-xl hover:border-blue-400/30 hover:scale-[1.02] cursor-pointer' : 'cursor-default'}`}
                 >
                   {/* Coming Soon Overlay */}
                   {!isActive && (
                     <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <div className="bg-white/95 px-6 py-2 rounded-full shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 border border-blue-100">
-                        <span className="text-blue-900 font-black tracking-[0.2em] text-[10px] uppercase">Coming Soon</span>
+                      <div className="bg-[#0b1224]/95 px-6 py-2 rounded-full shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 border border-blue-400/30">
+                        <span className="text-blue-200 font-black tracking-[0.2em] text-[10px] uppercase">Coming Soon</span>
                       </div>
                     </div>
                   )}
 
                   {/* Image Section */}
-                  <div className={`relative h-48 bg-muted/20 overflow-hidden ${!isActive ? 'grayscale-[0.5]' : ''}`}>
+                  <div className={`relative h-48 bg-white/5 overflow-hidden ${!isActive ? 'grayscale-[0.5]' : ''}`}>
                     {program.image ? (
                       <img
                         src={getImageUrl(program.image)}
@@ -111,7 +111,7 @@ const CoursesSection = () => {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-blue-600 to-emerald-500 flex items-center justify-center">
                          <span className="text-white text-4xl font-black">{program.title.charAt(0)}</span>
                       </div>
                     )}
@@ -119,21 +119,23 @@ const CoursesSection = () => {
 
                   {/* Card Content */}
                   <div className={`p-6 flex-1 flex flex-col ${!isActive ? 'opacity-70' : ''}`}>
-                    <h3 className="text-xl font-bold text-card-foreground mb-3 line-clamp-2">
+                    <h3 className="text-xl font-bold text-white mb-3 line-clamp-2">
                       {program.title}
                     </h3>
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
+                    <p className="text-slate-400 text-sm mb-4 line-clamp-3">
                       {program.description || 'Join our expert-led program to master new skills through hands-on projects and interactive learning.'}
                     </p>
                     
                     <div className="mt-auto mb-5">
-                      <span className="inline-block bg-gradient-to-r from-orange-400 to-pink-500 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-wide shadow-md transform hover:-translate-y-0.5 transition-all">
-                        Age: {program.ageRange || 'All ages'}
-                      </span>
+                      {program.ageRange?.trim() ? (
+                        <span className="inline-block bg-gradient-to-r from-orange-400 to-pink-500 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-wide shadow-md transform hover:-translate-y-0.5 transition-all">
+                          Age: {program.ageRange}
+                        </span>
+                      ) : null}
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between group-hover:text-blue-600 transition-colors">
-                      <span className="text-primary font-bold text-sm">
+                    <div className="pt-4 border-t border-white/10 flex items-center justify-between group-hover:text-blue-400 transition-colors">
+                      <span className="text-blue-400 font-bold text-sm">
                         {isActive ? 'See Details' : 'Coming Soon'}
                       </span>
                       {isActive && <span className="text-primary font-bold transition-transform group-hover:translate-x-1">→</span>}

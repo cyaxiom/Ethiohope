@@ -13,6 +13,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast } from 'sonner';
+import { Button } from '../../components/ui/Button';
 
 type CourseVideoItem = string | {
   url?: string;

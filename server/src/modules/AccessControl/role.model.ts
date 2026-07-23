@@ -67,5 +67,20 @@ export const ROLES = [
       'chat.react', 
       'chat.reply'
     ],
-  }
+  },
+  {
+    name: 'STUDENT',
+    code: 'student',
+    permissions: [
+      'dashboard.student',
+      'course.read',
+      'progress.read',
+      'progress.update',
+      'chat.write',
+      'chat.direct.start',
+      'chat.edit.own',
+      'chat.react',
+      'chat.reply',
+    ],
+  },
 ];

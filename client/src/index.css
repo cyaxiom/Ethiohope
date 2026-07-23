@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     /* Light theme colors */
@@ -395,6 +397,206 @@
     0% { transform: scale(1); }
     100% { transform: scale(1.05); }
   }
+}
+
+/* ===============================
+   DASHBOARD SIDEBAR SCROLLBAR
+   =============================== */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+/* Soft dark remaps for dashboard content pages */
+.dashboard-shell.dark main .bg-white {
+  background-color: rgb(17 24 39 / 0.92) !important;
+}
+
+.dashboard-shell.dark main .bg-gray-50 {
+  background-color: rgb(30 41 59 / 0.55) !important;
+}
+
+.dashboard-shell.dark main .text-gray-800,
+.dashboard-shell.dark main .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+.dashboard-shell.dark main .text-gray-500,
+.dashboard-shell.dark main .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+.dashboard-shell.dark main .text-gray-400 {
+  color: #64748b !important;
+}
+
+.dashboard-shell.dark main .border-gray-50,
+.dashboard-shell.dark main .border-gray-100,
+.dashboard-shell.dark main .border-gray-200 {
+  border-color: rgb(51 65 85 / 0.85) !important;
+}
+
+.dashboard-shell.dark main .shadow-sm,
+.dashboard-shell.dark main .shadow-md {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35) !important;
+}
+
+/* ===============================
+   PUBLIC CLIENT SITE — NAVY THEME
+   Matches CourseDetail learning-path palette
+   =============================== */
+.public-shell {
+  --background: #070b16;
+  --foreground: #f1f5f9;
+  --card: #0b1224;
+  --card-foreground: #f1f5f9;
+  --muted: #111827;
+  --muted-foreground: #94a3b8;
+  --border: rgb(51 65 85 / 0.7);
+  --input: #1e293b;
+  --secondary: #111827;
+  --secondary-foreground: #f1f5f9;
+  --popover: #0b1224;
+  --popover-foreground: #f1f5f9;
+  background-color: #070b16;
+  color: #f1f5f9;
+}
+
+body:has(.public-shell) {
+  background-color: #070b16 !important;
+  background-image: none !important;
+  animation: none !important;
+  color: #f1f5f9;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+/* Thin page scrollbar on public client pages */
+html:has(.public-shell)::-webkit-scrollbar,
+body:has(.public-shell)::-webkit-scrollbar,
+.public-shell::-webkit-scrollbar,
+.public-shell *::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+html:has(.public-shell)::-webkit-scrollbar-track,
+body:has(.public-shell)::-webkit-scrollbar-track,
+.public-shell::-webkit-scrollbar-track,
+.public-shell *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html:has(.public-shell)::-webkit-scrollbar-thumb,
+body:has(.public-shell)::-webkit-scrollbar-thumb,
+.public-shell::-webkit-scrollbar-thumb,
+.public-shell *::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+html:has(.public-shell)::-webkit-scrollbar-thumb:hover,
+body:has(.public-shell)::-webkit-scrollbar-thumb:hover,
+.public-shell::-webkit-scrollbar-thumb:hover,
+.public-shell *::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.public-shell,
+.public-shell * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.public-shell .bg-background,
+.public-shell .bg-white,
+.public-shell .bg-card {
+  background-color: #0b1224 !important;
+}
+
+.public-shell .bg-muted,
+.public-shell .bg-muted\/30,
+.public-shell .bg-gray-50,
+.public-shell .bg-slate-50 {
+  background-color: rgb(17 24 39 / 0.85) !important;
+}
+
+.public-shell .text-foreground,
+.public-shell .text-gray-800,
+.public-shell .text-gray-900,
+.public-shell .text-slate-900,
+.public-shell .text-black {
+  color: #f1f5f9 !important;
+}
+
+.public-shell .text-muted-foreground,
+.public-shell .text-gray-500,
+.public-shell .text-gray-600,
+.public-shell .text-slate-500,
+.public-shell .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.public-shell .text-gray-400,
+.public-shell .text-slate-400 {
+  color: #64748b !important;
+}
+
+.public-shell .border-border,
+.public-shell .border-gray-100,
+.public-shell .border-gray-200,
+.public-shell .border-slate-200,
+.public-shell .border-blue-50\/50,
+.public-shell .border-blue-100 {
+  border-color: rgb(51 65 85 / 0.75) !important;
+}
+
+.public-shell .bg-blue-50,
+.public-shell .bg-blue-50\/50,
+.public-shell .bg-green-50,
+.public-shell .bg-green-50\/50 {
+  background-color: rgb(37 99 235 / 0.12) !important;
+}
+
+.public-shell .from-blue-50,
+.public-shell .via-green-50,
+.public-shell .to-white {
+  --tw-gradient-from: #0b1224 !important;
+  --tw-gradient-via: #0f172a !important;
+  --tw-gradient-to: #070b16 !important;
+}
+
+/* Soft dark remaps for child enroll modal form fields */
+.enroll-child-dark {
+  color-scheme: dark;
+}
+
+.enroll-child-dark input,
+.enroll-child-dark select,
+.enroll-child-dark option {
+  color: #f1f5f9 !important;
+  background-color: #070b16 !important;
+}
+
+.enroll-child-dark input::placeholder {
+  color: #64748b !important;
 }
 
 /* ===============================

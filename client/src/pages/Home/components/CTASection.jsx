@@ -63,7 +63,7 @@ const CTASection = () => {
             onClick={() => document.getElementById('popular-programs')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white px-10 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
           >
-            Register Your Child
+            Explore Courses
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}

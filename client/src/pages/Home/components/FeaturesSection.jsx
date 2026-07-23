@@ -37,8 +37,8 @@ const FeaturesSection = () => {
         viewport={{ once: true, amount: 0.2 }}
         variants={containerVariants}
         className="w-full mx-auto rounded-2xl p-8 md:p-12 
-                   bg-background shadow-2xl transition-colors duration-300 
-                   border border-border"
+                   bg-[#0b1224] shadow-2xl transition-colors duration-300 
+                   border border-white/10"
       >
         <div className="flex flex-col lg:flex-row items-center gap-12 max-w-6xl mx-auto">
           {/* Left Side */}

@@ -38,7 +38,7 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background animate-fadeIn relative">
+    <div className="public-shell min-h-screen flex items-center justify-center p-4 bg-[#070b16] animate-fadeIn relative text-slate-100">
       <Link 
         to="/" 
         className="absolute top-4 left-4 flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-green-500 dark:from-[#3C12D4] dark:to-[#3C12D4] text-white rounded-full font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 z-50"

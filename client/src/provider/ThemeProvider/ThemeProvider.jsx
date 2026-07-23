@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 const ThemeContext = createContext();
 
@@ -10,17 +10,36 @@ export const useTheme = () => {
   return context;
 };
 
+const DASHBOARD_THEME_KEY = 'ethiohope-dashboard-theme';
+
 export const ThemeProvider = ({ children }) => {
+  const [dashboardTheme, setDashboardTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'light';
+    return localStorage.getItem(DASHBOARD_THEME_KEY) || 'light';
+  });
+
   useEffect(() => {
-    // Ensure we are always in light mode. Remove any existing dark mode applied over time.
+    // Keep the public site on light; dashboard theme is scoped to DashboardLayout.
     document.documentElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(DASHBOARD_THEME_KEY, dashboardTheme);
+  }, [dashboardTheme]);
+
+  const toggleDashboardTheme = useCallback(() => {
+    setDashboardTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   }, []);
 
   const value = {
+    // Public / legacy (forum, contact) — stay light
     theme: 'light',
-    toggleTheme: () => {}, // empty op
     isDark: false,
+    toggleTheme: toggleDashboardTheme,
+    // Dashboard-only dark/light
+    dashboardTheme,
+    isDashboardDark: dashboardTheme === 'dark',
+    toggleDashboardTheme,
   };
 
   return (

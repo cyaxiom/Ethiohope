@@ -43,6 +43,10 @@ export interface Course {
   phase: { _id: string; title: string };
   weeks: Week[];
   isActive: boolean;
+  enrollmentId?: string;
+  paymentStatus?: 'UNPAID' | 'PAID';
+  enrollmentStatus?: string;
+  isLocked?: boolean;
   createdAt: string;
   updatedAt: string;
 }

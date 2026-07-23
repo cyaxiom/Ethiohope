@@ -14,10 +14,16 @@ export class ScheduleService {
   private scheduleDao = new ScheduleDao();
 
   /**
-   * Get all schedules
+   * Get all schedules (optionally by program and/or batch)
    */
-  public async getSchedules(batchId?: string): Promise<ISchedule[]> {
-    return await this.scheduleDao.findSchedules({ batchId });
+  public async getSchedules(batchId?: string, programId?: string): Promise<ISchedule[]> {
+    // Backfill program on legacy schedules that only had batch
+    if (programId || batchId) {
+      await this.backfillMissingProgram(batchId, programId);
+    } else {
+      await this.backfillMissingProgram();
+    }
+    return await this.scheduleDao.findSchedules({ batchId, programId });
   }
 
   /**
@@ -27,9 +33,16 @@ export class ScheduleService {
     try {
       if (isEmpty(scheduleData)) throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Schedule data is empty");
 
-      // Check if batch exists
       const batch = await BatchModel.findById(scheduleData.batch);
       if (!batch) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Batch not found");
+
+      const programId = batch.program.toString();
+      if (scheduleData.program && scheduleData.program !== programId) {
+        throw new HttpException(
+          HttpStatusCodes.BAD_REQUEST,
+          "Selected batch does not belong to the selected program"
+        );
+      }
 
       // Validate time: startTime must be before endTime
       if (scheduleData.startTime >= scheduleData.endTime) {
@@ -37,8 +50,14 @@ export class ScheduleService {
       }
 
       const createdSchedule = await this.scheduleDao.create({
-        ...scheduleData,
-        batch: new Types.ObjectId(scheduleData.batch)
+        sessionLabel: scheduleData.sessionLabel,
+        type: scheduleData.type,
+        dayOfWeek: scheduleData.dayOfWeek,
+        startTime: scheduleData.startTime,
+        endTime: scheduleData.endTime,
+        capacity: scheduleData.capacity,
+        program: new Types.ObjectId(programId),
+        batch: new Types.ObjectId(scheduleData.batch),
       } as any);
 
       if (createdSchedule && createdSchedule.type === 'DISCUSSION') {
@@ -65,13 +84,30 @@ export class ScheduleService {
     const existingSchedule = await this.scheduleDao.findById(id);
     if (!existingSchedule) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Schedule not found");
 
+    const updatePayload: any = { ...scheduleData };
+
     if (scheduleData.batch) {
         const batch = await BatchModel.findById(scheduleData.batch);
         if (!batch) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Batch not found");
-    }
 
-    const updatePayload: any = { ...scheduleData };
-    if (scheduleData.batch) updatePayload.batch = new Types.ObjectId(scheduleData.batch);
+        const programId = batch.program.toString();
+        if (scheduleData.program && scheduleData.program !== programId) {
+          throw new HttpException(
+            HttpStatusCodes.BAD_REQUEST,
+            "Selected batch does not belong to the selected program"
+          );
+        }
+
+        updatePayload.batch = new Types.ObjectId(scheduleData.batch);
+        updatePayload.program = new Types.ObjectId(programId);
+    } else if (scheduleData.program) {
+      // Keep program in sync if only program sent
+      updatePayload.program = new Types.ObjectId(scheduleData.program);
+    } else if (!(existingSchedule as any).program && (existingSchedule as any).batch) {
+      const batchId = (existingSchedule as any).batch?._id || (existingSchedule as any).batch;
+      const batch = await BatchModel.findById(batchId);
+      if (batch) updatePayload.program = batch.program;
+    }
 
     // Validate time if updated
     const startTime = scheduleData.startTime || existingSchedule.startTime;
@@ -103,6 +139,26 @@ export class ScheduleService {
     }
 
     return updatedSchedule;
+  }
+
+  /** Fill program from batch for legacy schedule documents. */
+  private async backfillMissingProgram(batchId?: string, programId?: string): Promise<void> {
+    try {
+      const { ScheduleModel } = await import("./schedule.model");
+      const missing = await ScheduleModel.find({
+        $or: [{ program: { $exists: false } }, { program: null }],
+        ...(batchId ? { batch: batchId } : {}),
+      }).select('_id batch').lean();
+
+      for (const row of missing) {
+        const batch = await BatchModel.findById(row.batch).select('program').lean();
+        if (!batch?.program) continue;
+        if (programId && batch.program.toString() !== programId) continue;
+        await ScheduleModel.updateOne({ _id: row._id }, { $set: { program: batch.program } });
+      }
+    } catch (err) {
+      logger.error(`Failed to backfill schedule.program: ${err}`);
+    }
   }
 
   /**

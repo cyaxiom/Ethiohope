@@ -16,7 +16,7 @@ import { BatchRoute } from '@modules/Batches/batch.route';
 import { ScheduleRoute } from '@modules/Schedule/schedule.route';
 import { UploadRoute } from '@modules/Uploads/upload.route';
 import { PublicProgramRoute } from '@modules/Programs/public-program.route';
-import { EnrollmentRoute } from '@modules/Enrollments/enrollment.route';
+import { EnrollmentRoute, ParentEnrollmentRoute } from '@modules/Enrollments/enrollment.route';
 import { PaymentRoute } from '@modules/Payments/payment.route';
 import { CourseRoute } from '@modules/Courses/course.route';
 import { StudentCourseRoute } from '@modules/Courses/student-course.route';
@@ -47,6 +47,7 @@ try {
     new ScheduleRoute(),
     new UploadRoute(),
     new EnrollmentRoute(),
+    new ParentEnrollmentRoute(),
     new PaymentRoute(),
     new CourseRoute(),
     new StudentCourseRoute(),
@@ -61,6 +62,15 @@ try {
   (async function connectToDatabase() {
     try {
       await connect(dbConnection.url, dbConnection.options);
+
+      // Drop obsolete indexes that no longer match schemas (e.g. legacy batch phase/groupType)
+      const { BatchModel } = await import('@modules/Batches/batch.model');
+      try {
+        await BatchModel.syncIndexes();
+        logger.info('Batch indexes synchronized');
+      } catch (err) {
+        logger.error(`Failed to sync Batch indexes: ${err}`);
+      }
       
       // Execute default seeds on init (for sprint 1 permissions and roles)
       const { runSeed } = await import('@modules/AccessControl/access.seeder');
