@@ -61,6 +61,11 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
     };
   }, [isOpen, onClose]);
 
+  // Reset nested switcher when the menu closes
+  useEffect(() => {
+    if (!isOpen) setIsSwitchingProfile(false);
+  }, [isOpen]);
+
   const handleLogout = () => {
     dispatch(logout());
     onClose();
@@ -157,6 +162,8 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             ref={dropdownRef}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             className="absolute right-0 mt-3 w-72 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-[1001]"
           >
             {/* User Info Header */}
@@ -243,7 +250,11 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ isOpen, onClo
               {canSwitchProfile && (
                 <div className="w-full">
                   <button
-                    onClick={() => setIsSwitchingProfile(!isSwitchingProfile)}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSwitchingProfile((prev) => !prev);
+                    }}
                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
                   >
                     <div className="flex items-center gap-3">

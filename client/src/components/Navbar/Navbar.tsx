@@ -121,11 +121,17 @@ export default function Navbar() {
 
           <div className="flex items-center space-x-4">
             {isLoggedIn ? (
-              <div className="relative cursor-pointer" onClick={handleProfileClick}>
-                <div className="flex items-center justify-center w-10 h-10 transition-all duration-200">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={handleProfileClick}
+                  aria-label="Open profile menu"
+                  aria-expanded={isProfileDropdownOpen}
+                  className="flex items-center justify-center w-10 h-10 transition-all duration-200 cursor-pointer"
+                >
                   <img src={profile_bg} alt="" className="transition-transform duration-200 group-hover:scale-105" />
                   <User className="w-5 h-5 absolute text-white" />
-                </div>
+                </button>
                 <UserProfileDropdown isOpen={isProfileDropdownOpen} onClose={handleProfileDropdownClose} />
               </div>
             ) : (

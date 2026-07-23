@@ -94,12 +94,15 @@ export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
         </button>
 
         <div className="relative">
-          <div
+          <button
+            type="button"
             onClick={handleProfileClick}
+            aria-label="Open profile menu"
+            aria-expanded={isProfileDropdownOpen}
             className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-900/30 cursor-pointer hover:shadow-md transition-all"
           >
             <User className="w-5 h-5" />
-          </div>
+          </button>
 
           <UserProfileDropdown
             isOpen={isProfileDropdownOpen}
