@@ -1,14 +1,19 @@
 import { LOG_DIR } from '@config/env';
 import { existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { isAbsolute, resolve } from 'path';
 import winston from 'winston';
 import winstonDaily from 'winston-daily-rotate-file';
 
-// logs dir
-const logDir: string = join(__dirname, LOG_DIR as string);
+/**
+ * Resolve log directory from project cwd (where you run `npm start` / pm2),
+ * so LOG_DIR=./logs always means <server>/logs — not a path relative to this file.
+ */
+const logDir: string = isAbsolute(LOG_DIR as string)
+  ? (LOG_DIR as string)
+  : resolve(process.cwd(), LOG_DIR as string || './logs');
 
 if (!existsSync(logDir)) {
-  mkdirSync(logDir);
+  mkdirSync(logDir, { recursive: true });
 }
 
 // Define log format

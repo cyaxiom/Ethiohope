@@ -115,7 +115,7 @@ Now when choosing available system, the nodes will be available on any request b
     # Server configuration
     # ===============================
     PORT=2707
-    LOG_DIR=../logs
+    LOG_DIR=./logs
     LOG_FORMAT=dev
 
 
