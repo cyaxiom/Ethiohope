@@ -9,6 +9,11 @@ export interface IProgram {
   ageRange?: string;
   /** When true, enrollment is child-only (no adult self-apply chooser). */
   isForChildren: boolean;
+  /**
+   * STANDARD = phases + batches (coding/courses).
+   * ACADEMIC_TUTORIAL = monthly packages + 1:1 subject tutoring.
+   */
+  programType: 'STANDARD' | 'ACADEMIC_TUTORIAL';
   isActive: boolean;
   orderIndex: number;
   createdAt: Date;
@@ -40,6 +45,12 @@ const ProgramSchema = new Schema<IProgram>(
     isForChildren: {
       type: Boolean,
       default: false,
+      index: true,
+    },
+    programType: {
+      type: String,
+      enum: ['STANDARD', 'ACADEMIC_TUTORIAL'],
+      default: 'STANDARD',
       index: true,
     },
     isActive: {

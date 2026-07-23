@@ -11,7 +11,6 @@ import { RoleModel } from '@modules/AccessControl/role.model';
 
 export class PaymentService {
   public async createCheckoutSession(enrollmentIds: string[], userId: string): Promise<{ url: string | null }> {
-    // 1. Fetch enrollments with relations
     const enrollments = await EnrollmentModel.find({
       _id: { $in: enrollmentIds },
     })
@@ -19,25 +18,32 @@ export class PaymentService {
       .populate('user', 'firstname lastname email')
       .populate('program')
       .populate('phase')
+      .populate('package')
       .lean();
 
     if (enrollments.length === 0) {
       throw new HttpException(404, 'No enrollments found');
     }
 
-    // 2. Validate
-    const lineItems = enrollments.map(enrollment => {
+    const hasMonthly = enrollments.some((e: any) => e.billingType === 'MONTHLY' || e.package);
+    const hasOneTime = enrollments.some((e: any) => e.billingType !== 'MONTHLY' && !e.package);
+    if (hasMonthly && hasOneTime) {
+      throw new HttpException(
+        400,
+        'Please checkout tutoring packages separately from one-time course enrollments'
+      );
+    }
+
+    const lineItems = enrollments.map((enrollment) => {
       const e = enrollment as any;
-      
-      // Basic validation
+
       if (e.status !== 'PENDING') {
-        throw new HttpException(400, `Enrollment for ${e.program.title} is not PENDING`);
+        throw new HttpException(400, `Enrollment for ${e.program?.title || 'program'} is not PENDING`);
       }
       if (e.parent.toString() !== userId) {
         throw new HttpException(403, 'Unauthorized access to enrollment');
       }
 
-      // 3. Build Stripe line items
       let fullName = 'Student';
       if (e.enrolleeType === 'SELF' || e.user) {
         const u = e.user;
@@ -48,28 +54,39 @@ export class PaymentService {
         fullName = `${childName} ${childLast}`.trim();
       }
 
-      return {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `${fullName} - ${e.program?.title} - ${e.phase?.title}`,
-          },
-          unit_amount: Math.round((e.phase.price || 0) * 100), // Total is the phase price (tax inclusive)
+      const packageLabel = e.package
+        ? `${e.package.name || `${e.package.daysPerWeek}x / week`} (monthly)`
+        : e.phase?.title || 'Enrollment';
+      const amount = e.amount ?? e.package?.price ?? e.phase?.price ?? 0;
+
+      const priceData: any = {
+        currency: 'usd',
+        product_data: {
+          name: `${fullName} - ${e.program?.title} - ${packageLabel}`,
         },
+        unit_amount: Math.round(amount * 100),
+      };
+
+      if (hasMonthly) {
+        priceData.recurring = { interval: 'month' };
+      }
+
+      return {
+        price_data: priceData,
         quantity: 1,
       };
     });
 
-    // 4. Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      mode: 'payment',
+      mode: hasMonthly ? 'subscription' : 'payment',
       line_items: lineItems,
       success_url: `${CLIENT_URL}payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${CLIENT_URL}payment/cancel`,
       metadata: {
         enrollmentIds: JSON.stringify(enrollmentIds),
         userId: userId,
+        billingType: hasMonthly ? 'MONTHLY' : 'ONE_TIME',
       },
     });
 
@@ -222,15 +239,20 @@ export class PaymentService {
         enrollment.status = 'ACTIVE';
         enrollment.paymentStatus = 'PAID';
         if (transactionId) enrollment.transactionId = transactionId;
+        if (metadata.stripeSubscriptionId) {
+          enrollment.stripeSubscriptionId = metadata.stripeSubscriptionId;
+        }
         await enrollment.save();
 
-        // Add to chat groups
+        // Add to chat groups (batch-based programs only)
         try {
           const chatService = new (await import('@modules/Chat/chat.service')).ChatService();
-          if (enrollment.enrolleeType === 'SELF' && enrollment.user) {
-            await chatService.addAdultStudentToBatchGroup(enrollment.batch.toString(), enrollment.user.toString());
-          } else if (enrollment.child) {
-            await chatService.addStudentToBatchGroup(enrollment.batch.toString(), enrollment.child.toString());
+          if (enrollment.batch) {
+            if (enrollment.enrolleeType === 'SELF' && enrollment.user) {
+              await chatService.addAdultStudentToBatchGroup(enrollment.batch.toString(), enrollment.user.toString());
+            } else if (enrollment.child) {
+              await chatService.addStudentToBatchGroup(enrollment.batch.toString(), enrollment.child.toString());
+            }
           }
 
           const programGroup = await chatService.ensureProgramGroupExists(enrollment.program.toString());
@@ -241,13 +263,17 @@ export class PaymentService {
           logger.error(`[PaymentService] Failed to sync chat groups for enrollment ${enrollment._id}: ${err}`);
         }
 
-        // Cancel duplicate pending enrollments for same learner + phase
+        // Cancel duplicate pending enrollments for same learner + phase/package
         const duplicateFilter: any = {
           _id: { $ne: enrollment._id },
-          phase: enrollment.phase,
           status: 'PENDING',
           paymentStatus: 'UNPAID',
         };
+        if (enrollment.package) {
+          duplicateFilter.package = enrollment.package;
+        } else if (enrollment.phase) {
+          duplicateFilter.phase = enrollment.phase;
+        }
         if (enrollment.enrolleeType === 'SELF' && enrollment.user) {
           duplicateFilter.user = enrollment.user;
         } else if (enrollment.child) {
@@ -382,8 +408,9 @@ export class PaymentService {
       .populate('parent', 'firstname lastname email phone')
       .populate('child', 'firstname lastname username')
       .populate('user', 'firstname lastname email phone')
-      .populate('program', 'title description image isForChildren')
+      .populate('program', 'title description image isForChildren programType')
       .populate('phase', 'title orderIndex price')
+      .populate('package', 'name price daysPerWeek')
       .populate('batch', 'batchName')
       .sort({ createdAt: -1 })
       .lean();

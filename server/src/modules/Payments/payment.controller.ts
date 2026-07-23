@@ -60,11 +60,17 @@ export class PaymentController {
 
           console.log("Payment successful", session.id);
 
-          // Extract session data and update DB
           await this.paymentService.updatePaymentStatus(session.id, "SUCCESS");
 
           if (session.metadata) {
-            await this.paymentService.activateEnrollments(session.metadata, session.id);
+            const meta = { ...session.metadata };
+            if (session.subscription) {
+              meta.stripeSubscriptionId =
+                typeof session.subscription === 'string'
+                  ? session.subscription
+                  : session.subscription.id;
+            }
+            await this.paymentService.activateEnrollments(meta, session.id);
           }
 
           await this.paymentService.assignBatchToStudent();

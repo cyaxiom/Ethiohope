@@ -346,7 +346,9 @@ export class ChatService {
         }
 
         // 2. Ensure Batch Group Membership
-        await this.addStudentToBatchGroup(enrollment.batch.toString(), childId);
+        if (enrollment.batch) {
+          await this.addStudentToBatchGroup(enrollment.batch.toString(), childId);
+        }
       }
       
       logger.info(`Lazy sync completed for child: ${childId}`);

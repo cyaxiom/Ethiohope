@@ -8,15 +8,45 @@ import {
   IsArray,
   IsIn,
   Matches,
+  ValidateNested,
+  ArrayMinSize,
+  ValidateIf,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ACADEMIC_SUBJECTS, DAYS_OF_WEEK, SUBJECT_PRIORITIES } from '@modules/Package/academicSubjects';
+
+export class EnrollmentSubjectDTO {
+  @IsString()
+  @IsIn([...ACADEMIC_SUBJECTS])
+  name!: string;
+
+  @IsIn([...SUBJECT_PRIORITIES])
+  priority!: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
+export class EnrollmentTimeBlockDTO {
+  @IsString()
+  @IsIn([...DAYS_OF_WEEK])
+  dayOfWeek!: string;
+
+  @IsString()
+  @Matches(/^\d{2}:\d{2}$/, { message: 'startTime must be HH:mm' })
+  startTime!: string;
+
+  @IsString()
+  @Matches(/^\d{2}:\d{2}$/, { message: 'endTime must be HH:mm' })
+  endTime!: string;
+
+  @IsString()
+  @IsIn([...ACADEMIC_SUBJECTS])
+  subject!: string;
+}
 
 export class CreateEnrollmentDTO {
-  /** SELF = adult applies for themselves; CHILD = parent enrolls a child (default). */
   @IsOptional()
   @IsIn(['SELF', 'CHILD'])
   enrolleeType?: 'SELF' | 'CHILD';
 
-  /** Optional on SELF — server uses profile phone if already saved. */
   @IsOptional()
   @IsString()
   @Matches(/^\+?[\d\s\-\(\)]{10,20}$/, { message: 'Please enter a valid phone number' })
@@ -27,7 +57,6 @@ export class CreateEnrollmentDTO {
   @IsMongoId({ each: true })
   childIds?: string[];
 
-  // Child Info (used when creating a new child; DOB/age optional)
   @IsOptional()
   @IsString()
   firstName?: string;
@@ -56,20 +85,46 @@ export class CreateEnrollmentDTO {
   @IsString()
   region?: string;
 
-  // Enrollment Info
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
   @IsMongoId()
   @IsNotEmpty()
   programId!: string;
 
+  /** Standard program path */
+  @ValidateIf((o) => !o.packageId)
   @IsMongoId()
   @IsNotEmpty()
-  phaseId!: string;
+  phaseId?: string;
 
+  @ValidateIf((o) => !o.packageId)
   @IsMongoId()
   @IsNotEmpty()
-  batchId!: string;
+  batchId?: string;
 
   @IsOptional()
   @IsMongoId({ each: true })
   selectedSchedules?: string[];
+
+  /** Academic tutorial path */
+  @ValidateIf((o) => !o.phaseId)
+  @IsMongoId()
+  @IsNotEmpty()
+  packageId?: string;
+
+  @ValidateIf((o) => !!o.packageId)
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => EnrollmentSubjectDTO)
+  subjects?: EnrollmentSubjectDTO[];
+
+  @ValidateIf((o) => !!o.packageId)
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => EnrollmentTimeBlockDTO)
+  timeBlocks?: EnrollmentTimeBlockDTO[];
 }

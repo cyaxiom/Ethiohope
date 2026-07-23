@@ -59,6 +59,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Roles', 'Permissions', 'Users', 'DashboardStats', 'DashboardParents', 'DashboardTeachers', 'Programs', 'Phases', 'Batches', 'Schedules', 'Courses', 'Progress', 'Sessions', 'Enrollments'],
+  tagTypes: ['Roles', 'Permissions', 'Users', 'DashboardStats', 'DashboardParents', 'DashboardTeachers', 'Programs', 'Phases', 'Packages', 'Batches', 'Schedules', 'Courses', 'Progress', 'Sessions', 'Enrollments'],
   endpoints: () => ({}), // Initialize with an empty endpoints object; features will inject theirs later
 });

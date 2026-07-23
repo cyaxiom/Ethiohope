@@ -5,12 +5,14 @@ import validationMiddleware from "@common/middlewares/validation.middleware";
 import { CreateProgramDTO, UpdateProgramDTO } from "./program.dto";
 import { authMiddleware, requirePermission } from "@common/middlewares/auth.middleware";
 import { PhaseController } from "@modules/Phases/phase.controller";
+import { PackageController } from "@modules/Package/package.controller";
 
 export class ProgramRoute implements Routes {
   public path = "/admin/programs";
   public router = Router();
   public programController = new ProgramController();
   public phaseController = new PhaseController();
+  public packageController = new PackageController();
 
   constructor() {
     this.initializeRoutes();
@@ -31,6 +33,14 @@ export class ProgramRoute implements Routes {
       authMiddleware as any,
       requirePermission("phase.read") as any,
       this.phaseController.getPhasesByProgram as any
+    );
+
+    // Get packages of a program (Academic Tutorial)
+    this.router.get(
+      `/:programId/packages`,
+      authMiddleware as any,
+      requirePermission("program.read") as any,
+      this.packageController.getPackagesByProgram as any
     );
 
     // Create a new program

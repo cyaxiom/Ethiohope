@@ -3,7 +3,7 @@ import {
   Library, Search, Plus, Edit2, 
   ShieldAlert, Activity, CheckCircle2,
   ChevronLeft, ChevronRight, X, Layers, Trash2, AlertTriangle,
-  Upload, Link as LinkIcon
+  Upload, Link as LinkIcon, Package
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -18,6 +18,13 @@ import {
   useUpdatePhaseMutation,
   useDeletePhaseMutation
 } from '../../features/programs/phaseApi';
+import {
+  useGetPackagesByProgramQuery,
+  useCreatePackageMutation,
+  useUpdatePackageMutation,
+  useDeletePackageMutation,
+} from '../../features/programs/packageApi';
+import { PACKAGE_DAYS_LABELS } from '../../common/academicSubjects';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
@@ -35,6 +42,7 @@ const Programs: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPhasesModalOpen, setIsPhasesModalOpen] = useState(false);
+  const [isPackagesModalOpen, setIsPackagesModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [programToDelete, setProgramToDelete] = useState<any>(null);
   
@@ -186,6 +194,11 @@ const Programs: React.FC = () => {
                             Kids
                           </span>
                         )}
+                        {program.programType === 'ACADEMIC_TUTORIAL' && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-violet-50 text-violet-700 border border-violet-100 w-fit">
+                            Academic Tutorial
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -205,14 +218,26 @@ const Programs: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {canReadPhase && (
-                          <button 
-                            onClick={() => { setSelectedProgram(program); setIsPhasesModalOpen(true); }}
-                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
-                            title="Manage Phases"
-                          >
-                            <Layers className="w-4 h-4" />
-                          </button>
+                        {program.programType === 'ACADEMIC_TUTORIAL' ? (
+                          canUpdate && (
+                            <button 
+                              onClick={() => { setSelectedProgram(program); setIsPackagesModalOpen(true); }}
+                              className="p-1.5 text-violet-600 hover:bg-violet-50 rounded-md transition-colors"
+                              title="Manage Packages"
+                            >
+                              <Package className="w-4 h-4" />
+                            </button>
+                          )
+                        ) : (
+                          canReadPhase && (
+                            <button 
+                              onClick={() => { setSelectedProgram(program); setIsPhasesModalOpen(true); }}
+                              className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                              title="Manage Phases"
+                            >
+                              <Layers className="w-4 h-4" />
+                            </button>
+                          )
                         )}
                         {canUpdate && (
                           <>
@@ -297,6 +322,13 @@ const Programs: React.FC = () => {
         />
       )}
 
+      {isPackagesModalOpen && selectedProgram && (
+        <PackageManagementModal
+          program={selectedProgram}
+          onClose={() => { setIsPackagesModalOpen(false); setSelectedProgram(null); }}
+        />
+      )}
+
       {/* Delete Program Confirmation Modal */}
       {programToDelete && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -347,6 +379,7 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
       image: program?.image || '',
       ageRange: program?.ageRange || '',
       isForChildren: program?.isForChildren ?? false,
+      programType: program?.programType || 'STANDARD',
       isActive: program?.isActive ?? true,
       orderIndex: program?.orderIndex || 0
     }
@@ -391,6 +424,7 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
         image: finalImageUrl,
         orderIndex: Number(data.orderIndex),
         isForChildren: Boolean(data.isForChildren),
+        programType: data.programType || 'STANDARD',
         isActive: Boolean(data.isActive),
       };
 
@@ -540,6 +574,21 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
                 </span>
               </label>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Program type</label>
+              <select
+                {...register('programType')}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+              >
+                <option value="STANDARD">Standard (phases + batches)</option>
+                <option value="ACADEMIC_TUTORIAL">Academic Tutorial (monthly packages)</option>
+              </select>
+              <p className="text-[11px] text-gray-400 mt-1">
+                Academic Tutorial uses weekly packages with recurring monthly billing — no phases.
+              </p>
+            </div>
+
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <input 
                 type="checkbox" 
@@ -861,6 +910,292 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
           </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+// --- Package Management Modal (Academic Tutorial) ---
+
+const PackageManagementModal: React.FC<{ program: any; onClose: () => void }> = ({ program, onClose }) => {
+  const { data: packagesData, isLoading } = useGetPackagesByProgramQuery(program._id);
+  const [createPackage, { isLoading: isCreating }] = useCreatePackageMutation();
+  const [updatePackage, { isLoading: isUpdating }] = useUpdatePackageMutation();
+  const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
+
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<any>(null);
+  const [packageToDelete, setPackageToDelete] = useState<any>(null);
+
+  const { register, handleSubmit, reset, setValue } = useForm({
+    defaultValues: {
+      name: '',
+      price: 100,
+      daysPerWeek: 3,
+      description: '',
+      isPopular: true,
+      isActive: true,
+      orderIndex: 3,
+    },
+  });
+
+  useEffect(() => {
+    if (editingPackage) {
+      setValue('name', editingPackage.name);
+      setValue('price', editingPackage.price);
+      setValue('daysPerWeek', editingPackage.daysPerWeek);
+      setValue('description', editingPackage.description || '');
+      setValue('isPopular', editingPackage.isPopular ?? false);
+      setValue('isActive', editingPackage.isActive ?? true);
+      setValue('orderIndex', editingPackage.orderIndex ?? editingPackage.daysPerWeek);
+      setIsAddFormOpen(true);
+    } else {
+      reset();
+    }
+  }, [editingPackage, setValue, reset]);
+
+  const onSubmit = async (data: any) => {
+    try {
+      const payload = {
+        name: data.name || PACKAGE_DAYS_LABELS[Number(data.daysPerWeek)],
+        price: Number(data.price),
+        daysPerWeek: Number(data.daysPerWeek),
+        description: data.description,
+        isPopular: Boolean(data.isPopular),
+        isActive: data.isActive === undefined ? true : Boolean(data.isActive),
+        orderIndex: Number(data.orderIndex || data.daysPerWeek),
+      };
+
+      if (editingPackage) {
+        await updatePackage({
+          id: editingPackage._id,
+          programId: program._id,
+          data: payload,
+        }).unwrap();
+        sonnerToast.success('Package updated');
+      } else {
+        await createPackage({ program: program._id, ...payload }).unwrap();
+        sonnerToast.success('Package created');
+      }
+      setIsAddFormOpen(false);
+      setEditingPackage(null);
+      reset();
+    } catch (err: any) {
+      sonnerToast.error(err?.data?.message || 'Failed to save package');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!packageToDelete) return;
+    try {
+      await deletePackage({ id: packageToDelete._id, programId: program._id }).unwrap();
+      sonnerToast.success('Package deleted');
+      setPackageToDelete(null);
+    } catch (err: any) {
+      sonnerToast.error(err?.data?.message || 'Failed to delete package');
+    }
+  };
+
+  const packages = packagesData?.data || [];
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">Tutoring Packages</h3>
+            <p className="text-sm text-gray-500">{program.title} · monthly prices</p>
+          </div>
+          <button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-500">
+              Each package is billed monthly. Parents pick frequency, subjects, and availability blocks.
+            </p>
+            {!isAddFormOpen && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingPackage(null);
+                  reset({
+                    name: '',
+                    price: 100,
+                    daysPerWeek: 3,
+                    description: '',
+                    isPopular: true,
+                    isActive: true,
+                    orderIndex: 3,
+                  });
+                  setIsAddFormOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700"
+              >
+                <Plus className="w-4 h-4" /> Add package
+              </button>
+            )}
+          </div>
+
+          {isAddFormOpen && !editingPackage && (
+            <form onSubmit={handleSubmit(onSubmit)} className="bg-violet-50/60 border border-violet-100 rounded-xl p-5 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Days per week</label>
+                  <select {...register('daysPerWeek', { required: true })} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none">
+                    {[1, 2, 3, 4, 5].map((d) => (
+                      <option key={d} value={d}>{PACKAGE_DAYS_LABELS[d]}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Monthly price ($)</label>
+                  <input type="number" step="0.01" {...register('price', { required: true })} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Display name</label>
+                  <input {...register('name')} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none" placeholder="Auto from days if empty" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Description</label>
+                  <textarea {...register('description')} rows={2} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                  <input type="checkbox" {...register('isActive')} className="rounded" /> Active
+                </label>
+                <label className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                  <input type="checkbox" {...register('isPopular')} className="rounded" /> Popular (shown center with badge)
+                </label>
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" disabled={isCreating} className="flex-1 py-2.5 bg-violet-600 text-white font-bold rounded-lg disabled:opacity-50">
+                  {isCreating ? 'Saving…' : 'Create package'}
+                </button>
+                <button type="button" onClick={() => setIsAddFormOpen(false)} className="px-4 py-2.5 text-gray-600 font-medium">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+
+          {isLoading ? (
+            <div className="py-10 text-center text-gray-400">Loading packages…</div>
+          ) : packages.length === 0 ? (
+            <div className="py-10 text-center text-gray-400 border border-dashed border-gray-200 rounded-xl">
+              No packages yet. Add once / twice / 3x / 4x / 5x weekly options with monthly prices.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {packages.map((pkg: any) => (
+                <div key={pkg._id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-violet-200">
+                  <div>
+                    <p className="font-bold text-gray-900 flex items-center gap-2">
+                      {pkg.name}
+                      {pkg.isPopular && (
+                        <span className="text-[10px] uppercase tracking-wide font-black px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">
+                          Popular
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {PACKAGE_DAYS_LABELS[pkg.daysPerWeek] || `${pkg.daysPerWeek}x / week`} · ${pkg.price}/mo
+                      {!pkg.isActive && ' · Inactive'}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setEditingPackage(pkg)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPackageToDelete(pkg)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {editingPackage && (
+            <form onSubmit={handleSubmit(onSubmit)} className="bg-violet-50/60 border border-violet-100 rounded-xl p-5 space-y-3">
+              <div className="flex justify-between items-center">
+                <h5 className="font-bold text-violet-900">Edit: {editingPackage.name}</h5>
+                <button type="button" onClick={() => setEditingPackage(null)} className="text-xs text-gray-500">
+                  Cancel
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Days per week</label>
+                  <select {...register('daysPerWeek', { required: true })} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none">
+                    {[1, 2, 3, 4, 5].map((d) => (
+                      <option key={d} value={d}>{PACKAGE_DAYS_LABELS[d]}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Monthly price ($)</label>
+                  <input type="number" step="0.01" {...register('price', { required: true })} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Display name</label>
+                  <input {...register('name', { required: true })} className="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                  <input type="checkbox" {...register('isActive')} className="rounded" /> Active
+                </label>
+                <label className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                  <input type="checkbox" {...register('isPopular')} className="rounded" /> Popular (shown center with badge)
+                </label>
+              </div>
+              <button type="submit" disabled={isUpdating} className="w-full py-2.5 bg-violet-600 text-white font-bold rounded-lg disabled:opacity-50">
+                {isUpdating ? 'Saving…' : 'Save changes'}
+              </button>
+            </form>
+          )}
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button type="button" onClick={onClose} className="px-6 py-2 bg-gray-800 text-white rounded-lg font-bold text-sm">
+            Done
+          </button>
+        </div>
+      </div>
+
+      {packageToDelete && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full text-center">
+            <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+            <p className="font-bold text-gray-900 mb-1">Delete package?</p>
+            <p className="text-sm text-gray-500 mb-4">{packageToDelete.name}</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setPackageToDelete(null)} className="flex-1 py-2 border rounded-lg">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold disabled:opacity-50"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

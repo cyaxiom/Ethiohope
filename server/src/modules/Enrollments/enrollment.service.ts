@@ -5,6 +5,9 @@ import { ChildModel } from "@modules/Child/child.model";
 import { PhaseModel } from "@modules/Phases/phase.model";
 import { BatchModel } from "@modules/Batches/batch.model";
 import { ScheduleModel } from "@modules/Schedule/schedule.model";
+import { PackageModel } from "@modules/Package/package.model";
+import { ProgramModel } from "@modules/Programs/program.model";
+import { ACADEMIC_SUBJECTS } from "@modules/Package/academicSubjects";
 import { User } from "@modules/User/user.schema";
 import { RoleModel } from "@modules/AccessControl/role.model";
 import { HttpException } from "@common/errors/HttpException";
@@ -43,7 +46,7 @@ export class EnrollmentService {
       await user.save();
     }
 
-    const { phase } = await this.validateProgramBatchSchedules(data);
+    const { amount } = await this.validateProgramBatchSchedules(data);
 
     await this.assertNotAlreadyApplied({
       userId,
@@ -57,12 +60,13 @@ export class EnrollmentService {
       user: new Types.ObjectId(userId) as any,
       parent: new Types.ObjectId(userId) as any,
       program: new Types.ObjectId(data.programId) as any,
-      phase: new Types.ObjectId(data.phaseId) as any,
-      batch: new Types.ObjectId(data.batchId) as any,
+      phase: new Types.ObjectId(data.phaseId!) as any,
+      batch: new Types.ObjectId(data.batchId!) as any,
       selectedSchedules: (data.selectedSchedules || []).map(id => new Types.ObjectId(id)),
+      billingType: 'ONE_TIME',
       status: 'PENDING',
       paymentStatus: 'UNPAID',
-      amount: phase.price || 0,
+      amount,
       isExistingChild: false,
     });
 
@@ -81,7 +85,13 @@ export class EnrollmentService {
         throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Please complete your parent profile before enrolling a child");
       }
 
-      const { phase } = await this.validateProgramBatchSchedules(data);
+      const program = await ProgramModel.findById(data.programId).lean();
+      if (!program) throw new HttpException(HttpStatusCodes.NOT_FOUND, "Program not found");
+
+      const isTutorial = program.programType === 'ACADEMIC_TUTORIAL' || !!data.packageId;
+      const pricing = isTutorial
+        ? await this.validateTutorialEnrollment(data, program)
+        : await this.validateProgramBatchSchedules(data);
 
       let childrenToEnroll: any[] = [];
 
@@ -133,25 +143,50 @@ export class EnrollmentService {
       const isExistingChild = !!(data.childIds && data.childIds.length > 0);
 
       for (const child of childrenToEnroll) {
-        await this.assertNotAlreadyApplied({
-          childId: child._id.toString(),
-          phaseId: data.phaseId,
-        });
+        if (isTutorial) {
+          await this.assertNotAlreadyApplied({
+            childId: child._id.toString(),
+            packageId: data.packageId!,
+          });
 
-        const enrollment = await this.enrollmentDao.create({
-          enrolleeType: 'CHILD',
-          child: child._id as any,
-          parent: new Types.ObjectId(parentId) as any,
-          program: new Types.ObjectId(data.programId) as any,
-          phase: new Types.ObjectId(data.phaseId) as any,
-          batch: new Types.ObjectId(data.batchId) as any,
-          selectedSchedules: (data.selectedSchedules || []).map(id => new Types.ObjectId(id)),
-          status: 'PENDING',
-          paymentStatus: 'UNPAID',
-          amount: phase.price || 0,
-          isExistingChild,
-        });
-        enrollments.push(enrollment);
+          const enrollment = await this.enrollmentDao.create({
+            enrolleeType: 'CHILD',
+            child: child._id as any,
+            parent: new Types.ObjectId(parentId) as any,
+            program: new Types.ObjectId(data.programId) as any,
+            package: new Types.ObjectId(data.packageId!) as any,
+            subjects: data.subjects || [],
+            timeBlocks: data.timeBlocks || [],
+            notes: data.notes,
+            billingType: 'MONTHLY',
+            status: 'PENDING',
+            paymentStatus: 'UNPAID',
+            amount: pricing.amount,
+            isExistingChild,
+          });
+          enrollments.push(enrollment);
+        } else {
+          await this.assertNotAlreadyApplied({
+            childId: child._id.toString(),
+            phaseId: data.phaseId!,
+          });
+
+          const enrollment = await this.enrollmentDao.create({
+            enrolleeType: 'CHILD',
+            child: child._id as any,
+            parent: new Types.ObjectId(parentId) as any,
+            program: new Types.ObjectId(data.programId) as any,
+            phase: new Types.ObjectId(data.phaseId!) as any,
+            batch: new Types.ObjectId(data.batchId!) as any,
+            selectedSchedules: (data.selectedSchedules || []).map(id => new Types.ObjectId(id)),
+            billingType: 'ONE_TIME',
+            status: 'PENDING',
+            paymentStatus: 'UNPAID',
+            amount: pricing.amount,
+            isExistingChild,
+          });
+          enrollments.push(enrollment);
+        }
       }
 
       logger.info(`EnrollmentService: ${enrollments.length} CHILD enrollments prepared successfully.`);
@@ -162,19 +197,90 @@ export class EnrollmentService {
     }
   }
 
+  private async validateTutorialEnrollment(data: CreateEnrollmentDTO, program: any) {
+    if (program.programType !== 'ACADEMIC_TUTORIAL') {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'This program does not support tutoring packages');
+    }
+    if (!data.packageId) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'Please select a tutoring package');
+    }
+
+    const pkg = await PackageModel.findById(data.packageId).lean();
+    if (!pkg) throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Selected package not found');
+    if (!pkg.isActive) throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'This package is currently unavailable');
+    if (pkg.program.toString() !== data.programId) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'Package does not belong to this program');
+    }
+
+    const subjects = data.subjects || [];
+    if (subjects.length === 0) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'Select at least one subject');
+    }
+    const subjectNames = new Set<string>();
+    for (const s of subjects) {
+      if (!(ACADEMIC_SUBJECTS as readonly string[]).includes(s.name)) {
+        throw new HttpException(HttpStatusCodes.BAD_REQUEST, `Invalid subject: ${s.name}`);
+      }
+      if (subjectNames.has(s.name)) {
+        throw new HttpException(HttpStatusCodes.BAD_REQUEST, `Duplicate subject: ${s.name}`);
+      }
+      subjectNames.add(s.name);
+    }
+
+    const timeBlocks = data.timeBlocks || [];
+    if (timeBlocks.length !== pkg.daysPerWeek) {
+      throw new HttpException(
+        HttpStatusCodes.BAD_REQUEST,
+        `This package requires exactly ${pkg.daysPerWeek} time block(s)`
+      );
+    }
+
+    for (const block of timeBlocks) {
+      if (!subjectNames.has(block.subject)) {
+        throw new HttpException(
+          HttpStatusCodes.BAD_REQUEST,
+          `Time block subject "${block.subject}" must be one of the selected subjects`
+        );
+      }
+      if (block.startTime >= block.endTime) {
+        throw new HttpException(HttpStatusCodes.BAD_REQUEST, 'Each time block end time must be after start time');
+      }
+    }
+
+    // No overlapping blocks on the same day
+    for (let i = 0; i < timeBlocks.length; i++) {
+      for (let j = i + 1; j < timeBlocks.length; j++) {
+        const a = timeBlocks[i];
+        const b = timeBlocks[j];
+        if (a.dayOfWeek === b.dayOfWeek) {
+          if (
+            (a.startTime >= b.startTime && a.startTime < b.endTime) ||
+            (b.startTime >= a.startTime && b.startTime < a.endTime)
+          ) {
+            throw new HttpException(HttpStatusCodes.BAD_REQUEST, `Time conflict on ${a.dayOfWeek}`);
+          }
+        }
+      }
+    }
+
+    return { amount: pkg.price, package: pkg };
+  }
+
   /**
-   * Block duplicate applications for the same learner + phase
-   * (PENDING, ACTIVE, or COMPLETED — cancelled does not count).
+   * Block duplicate applications for the same learner + phase/package
    */
   private async assertNotAlreadyApplied(opts: {
     userId?: string;
     childId?: string;
-    phaseId: string;
+    phaseId?: string;
+    packageId?: string;
   }): Promise<void> {
     const filter: any = {
-      phase: new Types.ObjectId(opts.phaseId),
       status: { $in: ['PENDING', 'ACTIVE', 'COMPLETED'] },
     };
+
+    if (opts.phaseId) filter.phase = new Types.ObjectId(opts.phaseId);
+    if (opts.packageId) filter.package = new Types.ObjectId(opts.packageId);
 
     if (opts.userId) {
       filter.user = new Types.ObjectId(opts.userId);
@@ -188,7 +294,9 @@ export class EnrollmentService {
     if (existing) {
       throw new HttpException(
         HttpStatusCodes.CONFLICT,
-        'You already applied for that phase'
+        opts.packageId
+          ? 'You already applied for that tutoring package'
+          : 'You already applied for that phase'
       );
     }
   }
@@ -202,6 +310,7 @@ export class EnrollmentService {
       .populate('user', 'firstname lastname email')
       .populate('program')
       .populate('phase')
+      .populate('package')
       .populate('batch')
       .sort({ createdAt: -1 });
   }
@@ -226,6 +335,7 @@ export class EnrollmentService {
       .populate('child', 'firstname lastname')
       .populate('user', 'firstname lastname email')
       .populate('phase', 'title price orderIndex')
+      .populate('package', 'name price daysPerWeek')
       .populate('batch', 'batchName')
       .sort({ createdAt: -1 })
       .lean() as any;
@@ -241,6 +351,10 @@ export class EnrollmentService {
 
     if (!enrollment) {
       throw new HttpException(HttpStatusCodes.NOT_FOUND, "Enrollment not found or access denied");
+    }
+
+    if (!enrollment.batch) {
+      throw new HttpException(HttpStatusCodes.BAD_REQUEST, "This enrollment does not use batch schedules");
     }
 
     await this.validateSelectedSchedules(enrollment.batch.toString(), selectedScheduleIds, enrollmentId);
@@ -277,8 +391,8 @@ export class EnrollmentService {
       }
     }
 
-    await this.validateSelectedSchedules(data.batchId, data.selectedSchedules);
-    return { phase, batch };
+    await this.validateSelectedSchedules(data.batchId!, data.selectedSchedules);
+    return { amount: phase.price || 0, phase, batch };
   }
 
   private async ensureStudentRole(user: any): Promise<void> {

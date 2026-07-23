@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -37,6 +38,10 @@ export class CreateProgramDTO {
   isForChildren?: boolean;
 
   @IsOptional()
+  @IsIn(['STANDARD', 'ACADEMIC_TUTORIAL'])
+  programType?: 'STANDARD' | 'ACADEMIC_TUTORIAL';
+
+  @IsOptional()
   @Transform(toBoolean)
   @IsBoolean()
   isActive?: boolean;
@@ -68,6 +73,10 @@ export class UpdateProgramDTO {
   @Transform(toBoolean)
   @IsBoolean()
   isForChildren?: boolean;
+
+  @IsOptional()
+  @IsIn(['STANDARD', 'ACADEMIC_TUTORIAL'])
+  programType?: 'STANDARD' | 'ACADEMIC_TUTORIAL';
 
   @IsOptional()
   @Transform(toBoolean)

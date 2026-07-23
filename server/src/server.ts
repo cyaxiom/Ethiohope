@@ -12,6 +12,7 @@ import { ParentRoute } from '@modules/Parent/parent.route';
 import { DashboardRoute, InstructorDashboardRoute } from '@modules/Dashboard/dashboard.routes';
 import { ProgramRoute } from '@modules/Programs/program.route';
 import { PhaseRoute } from '@modules/Phases/phase.route';
+import { PackageRoute } from '@modules/Package/package.route';
 import { BatchRoute } from '@modules/Batches/batch.route';
 import { ScheduleRoute } from '@modules/Schedule/schedule.route';
 import { UploadRoute } from '@modules/Uploads/upload.route';
@@ -43,6 +44,7 @@ try {
     new ProgramRoute(),
     new PublicProgramRoute(),
     new PhaseRoute(),
+    new PackageRoute(),
     new BatchRoute(),
     new ScheduleRoute(),
     new UploadRoute(),

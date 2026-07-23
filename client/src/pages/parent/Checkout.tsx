@@ -153,10 +153,23 @@ const Checkout = () => {
                         <h3 className="font-semibold text-white text-[15px] truncate">{name}</h3>
                         <p className="text-blue-300 text-sm mt-0.5 truncate">{enrollment.program?.title}</p>
                         <p className="text-slate-500 text-xs mt-1.5 flex items-center gap-2 flex-wrap">
-                          <span className="bg-white/5 text-slate-400 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
-                            Phase
-                          </span>
-                          <span className="truncate">{enrollment.phase?.title}</span>
+                          {enrollment.package ? (
+                            <>
+                              <span className="bg-violet-500/15 text-violet-300 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
+                                Package
+                              </span>
+                              <span className="truncate">
+                                {enrollment.package?.name || 'Tutoring'} · ${enrollment.amount}/mo
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="bg-white/5 text-slate-400 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">
+                                Phase
+                              </span>
+                              <span className="truncate">{enrollment.phase?.title}</span>
+                            </>
+                          )}
                         </p>
                       </div>
 
@@ -178,9 +191,18 @@ const Checkout = () => {
                       <span>${formatMoney(totalPrice * 0.15)}</span>
                     </div>
                     <div className="pt-3 border-t border-white/10 flex justify-between items-center gap-3">
-                      <p className="text-sm font-medium text-slate-300">Total amount</p>
+                      <p className="text-sm font-medium text-slate-300">
+                        {selectedEnrollments.some((e: any) => e.billingType === 'MONTHLY' || e.package)
+                          ? 'Monthly total'
+                          : 'Total amount'}
+                      </p>
                       <span className="text-2xl font-semibold text-white">${formatMoney(totalPrice)}</span>
                     </div>
+                    {selectedEnrollments.some((e: any) => e.billingType === 'MONTHLY' || e.package) && (
+                      <p className="text-[11px] text-slate-500">
+                        Tutoring packages are billed monthly via Stripe subscription.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

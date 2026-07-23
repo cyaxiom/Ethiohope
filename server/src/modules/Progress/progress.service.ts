@@ -44,7 +44,7 @@ export class ProgressService {
       if (enrollment.child) progress.child = enrollment.child;
       if (enrollment.user) progress.user = enrollment.user;
       progress.program = enrollment.program;
-      progress.phase = enrollment.phase;
+      if (enrollment.phase) progress.phase = enrollment.phase;
     }
 
     // 5. Recalculate percentage

@@ -12,10 +12,21 @@ export interface EnrollmentPayload {
   isUSA?: boolean;
   country?: string;
   region?: string;
+  notes?: string;
   programId: string;
-  phaseId: string;
-  batchId: string;
+  /** Standard programs */
+  phaseId?: string;
+  batchId?: string;
   selectedSchedules?: string[];
+  /** Academic tutorial */
+  packageId?: string;
+  subjects?: Array<{ name: string; priority: 'HIGH' | 'MEDIUM' | 'LOW' }>;
+  timeBlocks?: Array<{
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    subject: string;
+  }>;
 }
 
 export interface EnrollmentResponse {

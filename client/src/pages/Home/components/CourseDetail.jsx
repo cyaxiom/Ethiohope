@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, ArrowLeft, ArrowRight, Activity, Clock, Tag, Lock, X, CheckCircle2, CreditCard, Layers } from "lucide-react";
+import { Star, ArrowLeft, ArrowRight, Activity, Clock, Tag, Lock, X, CheckCircle2, CreditCard, Layers, Package } from "lucide-react";
 import { useGetPublicProgramByIdQuery, useGetPublicProgramsQuery } from "../../../features/programs/programApi";
 import { useGetPublicPhasesByProgramQuery } from "../../../features/programs/phaseApi";
+import { useGetPublicPackagesByProgramQuery } from "../../../features/programs/packageApi";
+import { PACKAGE_DAYS_LABELS, sortPackagesWithPopularCentered } from "../../../common/academicSubjects";
 import { getImageUrl } from "../../../lib/utils";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -12,6 +14,7 @@ import { updateUser, logout } from "../../../features/auth/authSlice";
 import { toast } from "sonner";
 import EnrollChildModal from "../../../components/Enrollment/EnrollChildModal";
 import EnrollSelfModal from "../../../components/Enrollment/EnrollSelfModal";
+import EnrollAcademicTutorialModal from "../../../components/Enrollment/EnrollAcademicTutorialModal";
 import { useGetMyEnrollmentsForProgramQuery } from "../../../features/enrollments/enrollmentApi";
 import { useCreateCheckoutSessionMutation } from "../../../features/payments/paymentApi";
 
@@ -39,11 +42,20 @@ const CourseDetail = () => {
 
   const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false);
   const [isSelfEnrollModalOpen, setIsSelfEnrollModalOpen] = useState(false);
+  const [isTutorialEnrollOpen, setIsTutorialEnrollOpen] = useState(false);
   const [selectedPhaseForEnrollment, setSelectedPhaseForEnrollment] = useState(null);
   const [payingPhaseId, setPayingPhaseId] = useState(null);
 
   const { data: programData, isLoading: isLoadingProgram, error } = useGetPublicProgramByIdQuery(id);
-  const { data: phasesData, isLoading: isLoadingPhases } = useGetPublicPhasesByProgramQuery(id);
+  const program = programData?.data;
+  const isAcademicTutorial = program?.programType === 'ACADEMIC_TUTORIAL';
+
+  const { data: phasesData, isLoading: isLoadingPhases } = useGetPublicPhasesByProgramQuery(id, {
+    skip: !id || isAcademicTutorial,
+  });
+  const { data: packagesData, isLoading: isLoadingPackages } = useGetPublicPackagesByProgramQuery(id, {
+    skip: !id || !isAcademicTutorial,
+  });
   const { data: allProgramsData } = useGetPublicProgramsQuery({ limit: 10 });
   const { data: myEnrollmentsData } = useGetMyEnrollmentsForProgramQuery(id, {
     skip: !isAuthenticated || !id,
@@ -137,6 +149,32 @@ const CourseDetail = () => {
     phasesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const openChildEnrollmentGate = async (onReady) => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
+      return;
+    }
+    try {
+      const response = await checkProfileInit().unwrap();
+      if (!response.profileCompleted) {
+        setIsProfileModalOpen(true);
+      } else {
+        onReady();
+      }
+    } catch (err) {
+      if (err.status === 401) {
+        navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
+      } else {
+        toast.error("Please complete your profile first.");
+        setIsProfileModalOpen(true);
+      }
+    }
+  };
+
+  const handleTutorialEnrollClick = async () => {
+    await openChildEnrollmentGate(() => setIsTutorialEnrollOpen(true));
+  };
+
   const handleEnrollClick = async (phase) => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
@@ -144,23 +182,8 @@ const CourseDetail = () => {
     }
     setSelectedPhaseForEnrollment(phase);
 
-    // Kids programs → child enroll only; otherwise adult self-enroll (no chooser)
     if (program?.isForChildren) {
-      try {
-        const response = await checkProfileInit().unwrap();
-        if (!response.profileCompleted) {
-          setIsProfileModalOpen(true);
-        } else {
-          setIsEnrollModalOpen(true);
-        }
-      } catch (err) {
-        if (err.status === 401) {
-          navigate('/login', { state: { from: window.location.pathname + '#program-phases' } });
-        } else {
-          toast.error("Please complete your profile first.");
-          setIsProfileModalOpen(true);
-        }
-      }
+      await openChildEnrollmentGate(() => setIsEnrollModalOpen(true));
     } else {
       setIsSelfEnrollModalOpen(true);
     }
@@ -207,13 +230,13 @@ const CourseDetail = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
-  const program = programData?.data;
   const phases = phasesData?.data || [];
+  const packages = sortPackagesWithPopularCentered(packagesData?.data || []);
   
   // Exclude current program from related
   const relatedPrograms = (allProgramsData?.data || []).filter(p => p._id !== id && p.isActive);
 
-  if (isLoadingProgram || isLoadingPhases) {
+  if (isLoadingProgram || (isAcademicTutorial ? isLoadingPackages : isLoadingPhases)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-[#070b16]">
         <Activity className="w-10 h-10 text-blue-400 animate-spin mb-4" />
@@ -335,6 +358,11 @@ const CourseDetail = () => {
                       Kids program
                     </span>
                   )}
+                  {isAcademicTutorial && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/20 border border-violet-400/30 text-[11px] font-bold uppercase tracking-wider text-violet-200">
+                      Academic Tutorial
+                    </span>
+                  )}
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight max-w-3xl mb-5 drop-shadow-lg">
@@ -347,21 +375,30 @@ const CourseDetail = () => {
 
                 <div className="flex flex-wrap items-center gap-4">
                   <motion.button
-                    onClick={handleRegisterClick}
+                    onClick={isAcademicTutorial ? handleTutorialEnrollClick : handleRegisterClick}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-emerald-500 text-white font-bold text-base rounded-2xl shadow-[0_12px_40px_rgba(37,99,235,0.35)] overflow-hidden"
                   >
                     <span className="relative z-10 flex items-center gap-2">
-                      {program.isForChildren ? 'Enroll your child' : 'View phases & enroll'}
+                      {isAcademicTutorial
+                        ? 'Enroll for tutoring'
+                        : program.isForChildren
+                          ? 'Enroll your child'
+                          : 'View phases & enroll'}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </motion.button>
-                  {phases.length > 0 && (
+                  {!isAcademicTutorial && phases.length > 0 && (
                     <p className="text-sm text-slate-400">
                       {phases.filter((p) => p.isActive !== false).length} open phase
                       {phases.filter((p) => p.isActive !== false).length === 1 ? '' : 's'} ready to join
+                    </p>
+                  )}
+                  {isAcademicTutorial && packages.length > 0 && (
+                    <p className="text-sm text-slate-400">
+                      {packages.length} monthly package{packages.length === 1 ? '' : 's'} available
                     </p>
                   )}
                 </div>
@@ -461,8 +498,101 @@ const CourseDetail = () => {
           </div>
         </div>
 
+        {/* ---------------- PACKAGES (Academic Tutorial) ---------------- */}
+        {isAcademicTutorial && (
+          <div
+            id="program-phases"
+            ref={phasesRef}
+            className="scroll-mt-24 bg-[#0b1224] py-20 px-6 lg:px-10"
+          >
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center max-w-2xl mx-auto mb-14">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-300 mb-3">
+                  Monthly packages
+                </p>
+                <h2 className="text-3xl md:text-4xl font-black text-white mb-3">
+                  Choose how often your child learns
+                </h2>
+                <p className="text-slate-400">
+                  1:1 tutoring billed monthly. Pick a weekly frequency, subjects, and availability when you enroll.
+                </p>
+              </div>
+
+              {packages.length === 0 ? (
+                <p className="text-center text-slate-500">Packages coming soon.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 items-stretch">
+                  {packages.map((pkg, index) => {
+                    const popular = Boolean(pkg.isPopular);
+                    return (
+                      <motion.div
+                        key={pkg._id}
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
+                        className={`relative rounded-3xl p-6 flex flex-col transition-all duration-300 ${
+                          popular
+                            ? 'bg-gradient-to-b from-blue-600/25 to-violet-600/15 border-2 border-blue-400/50 shadow-[0_20px_50px_rgba(37,99,235,0.25)] lg:scale-[1.04] z-10'
+                            : 'bg-white/[0.04] border border-white/10 hover:border-white/20 hover:-translate-y-0.5'
+                        }`}
+                      >
+                        {popular && (
+                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-500 text-white text-[10px] font-black uppercase tracking-[0.14em] shadow-lg shadow-blue-900/40">
+                            Popular
+                          </span>
+                        )}
+                        <div
+                          className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${
+                            popular ? 'bg-blue-500 text-white' : 'bg-violet-500/20 text-violet-300'
+                          }`}
+                        >
+                          <Package className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-1 leading-snug">{pkg.name}</h3>
+                        <p className="text-xs text-slate-400 mb-5">
+                          {PACKAGE_DAYS_LABELS[pkg.daysPerWeek] || `${pkg.daysPerWeek}x / week`}
+                        </p>
+                        <div className="mb-6">
+                          <p className="text-3xl font-black text-white tracking-tight">${pkg.price}</p>
+                          <p className="text-xs text-slate-500 mt-1">per month · billed monthly</p>
+                        </div>
+                        <ul className="space-y-2 mb-6 text-xs text-slate-400 flex-1">
+                          <li className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${popular ? 'bg-blue-400' : 'bg-slate-500'}`} />
+                            {pkg.daysPerWeek} live 1:1 session{pkg.daysPerWeek === 1 ? '' : 's'}/week
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${popular ? 'bg-blue-400' : 'bg-slate-500'}`} />
+                            Flexible time based on availability
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${popular ? 'bg-blue-400' : 'bg-slate-500'}`} />
+                            Subject priorities included
+                          </li>
+                        </ul>
+                        <button
+                          type="button"
+                          onClick={handleTutorialEnrollClick}
+                          className={`mt-auto w-full py-3 rounded-xl font-bold transition-colors ${
+                            popular
+                              ? 'bg-blue-500 hover:bg-blue-400 text-white shadow-lg shadow-blue-900/30'
+                              : 'bg-white/10 hover:bg-white/15 text-white'
+                          }`}
+                        >
+                          {popular ? 'Choose popular plan' : 'Start enrollment'}
+                        </button>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ---------------- PHASES ---------------- */}
-        {phases.length > 0 && (
+        {!isAcademicTutorial && phases.length > 0 && (
           <div
             id="program-phases"
             ref={phasesRef}
@@ -830,6 +960,12 @@ const CourseDetail = () => {
             />
           </>
         )}
+
+        <EnrollAcademicTutorialModal
+          isOpen={isTutorialEnrollOpen}
+          onClose={() => setIsTutorialEnrollOpen(false)}
+          program={program}
+        />
       </motion.section>
     </AnimatePresence>
   );
