@@ -12,7 +12,7 @@ export class CreateChildDTO {
   public username!: string;
 
   @IsString()
-  @Length(4, 4, { message: 'PIN must be exactly 4 digits' })
+  @Length(6, 6, { message: 'PIN must be exactly 6 digits' })
   public pin!: string;
 
   @IsEnum(['male', 'female'])
@@ -25,6 +25,6 @@ export class CreateChildDTO {
 export class UpdateChildDTO {
   @IsOptional() @IsString() public firstname?: string;
   @IsOptional() @IsString() public lastname?: string;
-  @IsOptional() @IsString() @Length(4, 4) public pin?: string;
+  @IsOptional() @IsString() @Length(6, 6, { message: 'PIN must be exactly 6 digits' }) public pin?: string;
   @IsOptional() @IsEnum(['active', 'suspended']) public status?: 'active' | 'suspended';
 }

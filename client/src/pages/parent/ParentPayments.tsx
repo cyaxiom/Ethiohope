@@ -15,22 +15,33 @@ import {
   AlertCircle,
   FileText,
   ShieldCheck,
-  Building2
+  Ban,
+  RefreshCw,
 } from 'lucide-react';
-import { useGetParentPaymentsQuery } from '../../features/payments/paymentApi';
+import {
+  useGetParentPaymentsQuery,
+  useCreateCheckoutSessionMutation,
+  useCancelSubscriptionMutation,
+  useResumeSubscriptionMutation,
+} from '../../features/payments/paymentApi';
 import Loading from '../../ui/Loading';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getImageUrl } from '../../lib/utils';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
-import { useCreateCheckoutSessionMutation } from '../../features/payments/paymentApi';
 import { toast } from 'sonner';
+import BillingConfirmModal, { BillingAction } from '../../components/payments/BillingConfirmModal';
 
 export const ParentPayments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [billingModal, setBillingModal] = useState<{
+    enrollmentId: string;
+    action: BillingAction;
+    subtitle?: string;
+  } | null>(null);
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Debounce search
@@ -47,7 +58,9 @@ export const ParentPayments: React.FC = () => {
   });
 
   const [createCheckoutSession, { isLoading: isCreatingSession }] = useCreateCheckoutSessionMutation();
-  
+  const [cancelSubscription, { isLoading: isCancelling }] = useCancelSubscriptionMutation();
+  const [resumeSubscription, { isLoading: isResuming }] = useResumeSubscriptionMutation();
+  const [billingActionId, setBillingActionId] = useState<string | null>(null);
   const paymentsData = response?.data?.payments || [];
   const totalSpent = response?.data?.totalSpent || 0;
   
@@ -297,6 +310,55 @@ export const ParentPayments: React.FC = () => {
     }
   };
 
+  const isMonthlyActive = (payment: any) => {
+    if (payment.isGroup) return false;
+    const monthly = payment.billingType === 'MONTHLY' || !!payment.package;
+    return monthly && payment.status === 'ACTIVE' && payment.paymentStatus === 'PAID';
+  };
+
+  const canCancelSubscription = (payment: any) =>
+    isMonthlyActive(payment) && !payment.subscriptionCancelAtPeriodEnd;
+
+  const canResumeSubscription = (payment: any) =>
+    isMonthlyActive(payment) && !!payment.subscriptionCancelAtPeriodEnd;
+
+  const openBillingModal = (payment: any, action: BillingAction) => {
+    const childName = [payment.child?.firstname || payment.child?.firstName, payment.child?.lastname || payment.child?.lastName]
+      .filter(Boolean)
+      .join(' ');
+    const packageName = payment.package?.name || payment.program?.title || 'Monthly tutoring';
+    setBillingModal({
+      enrollmentId: payment._id,
+      action,
+      subtitle: [packageName, childName].filter(Boolean).join(' · '),
+    });
+  };
+
+  const handleConfirmBillingAction = async () => {
+    if (!billingModal) return;
+    const { enrollmentId, action } = billingModal;
+
+    try {
+      setBillingActionId(enrollmentId);
+      if (action === 'cancel') {
+        const res = await cancelSubscription({ enrollmentId }).unwrap();
+        toast.success(res.message || 'Subscription cancellation scheduled');
+      } else {
+        const res = await resumeSubscription({ enrollmentId }).unwrap();
+        toast.success(res.message || 'Monthly billing resumed');
+      }
+      setBillingModal(null);
+      refetch();
+    } catch (err: any) {
+      toast.error(
+        err?.data?.message ||
+          (action === 'cancel' ? 'Failed to cancel subscription' : 'Failed to resume subscription')
+      );
+    } finally {
+      setBillingActionId(null);
+    }
+  };
+
   if (isLoading && !debouncedSearch && !statusFilter) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px]">
@@ -436,10 +498,37 @@ export const ParentPayments: React.FC = () => {
                         <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
                           {isGroup ? (payment.items[0]?.program?.title || 'Course') : (payment.program?.title || 'Course')}
                         </span>
-                        <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                          {isGroup ? (payment.items[0]?.phase?.title || `Phase ${payment.items[0]?.phase?.orderIndex || 1}`) : (payment.phase?.title || `Phase ${payment.phase?.orderIndex || 1}`)}
-                        </span>
+                        {(isGroup ? payment.items[0]?.phase?.title : payment.phase?.title) && (
+                          <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                            {isGroup ? (payment.items[0]?.phase?.title || `Phase ${payment.items[0]?.phase?.orderIndex || 1}`) : (payment.phase?.title || `Phase ${payment.phase?.orderIndex || 1}`)}
+                          </span>
+                        )}
+                        {!isGroup && (payment.billingType === 'MONTHLY' || payment.package) && (
+                          <span className="px-3 py-1 bg-violet-50 text-violet-700 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                            {payment.package?.name || 'Monthly tutoring'}
+                          </span>
+                        )}
+                        {!isGroup && payment.subscriptionCancelAtPeriodEnd && payment.status === 'ACTIVE' && (
+                          <span className="px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                            Ends after this period
+                          </span>
+                        )}
                       </div>
+
+                      {!isGroup &&
+                        payment.subscriptionCancelAtPeriodEnd &&
+                        payment.status === 'ACTIVE' &&
+                        payment.subscriptionCurrentPeriodEnd && (
+                          <p className="text-xs font-semibold text-amber-700 mb-1">
+                            Billing stops after{' '}
+                            {new Date(payment.subscriptionCurrentPeriodEnd).toLocaleDateString(undefined, {
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                            . Access continues until then.
+                          </p>
+                        )}
                       
                       {isGroup ? (
                         <h3 className="text-lg sm:text-xl font-black text-gray-800 tracking-tight">
@@ -489,7 +578,7 @@ export const ParentPayments: React.FC = () => {
                       <span className="text-2xl font-black text-gray-800 font-sans">${payment.amount.toLocaleString()}</span>
                     </div>
 
-                    <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="flex flex-col gap-2 w-full sm:w-auto">
                       {payment.paymentStatus === 'PAID' ? (
                         <button 
                           onClick={() => handleDownloadInvoice(payment)}
@@ -513,6 +602,42 @@ export const ParentPayments: React.FC = () => {
                           )}
                         </button>
                       ) : null}
+
+                      {canCancelSubscription(payment) && (
+                        <button
+                          type="button"
+                          onClick={() => openBillingModal(payment, 'cancel')}
+                          disabled={billingActionId === payment._id || isCancelling || isResuming}
+                          className="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-100 rounded-[1.5rem] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto"
+                        >
+                          {billingActionId === payment._id ? (
+                            <div className="w-4 h-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <Ban className="w-3.5 h-3.5" />
+                              Stop monthly billing
+                            </>
+                          )}
+                        </button>
+                      )}
+
+                      {canResumeSubscription(payment) && (
+                        <button
+                          type="button"
+                          onClick={() => openBillingModal(payment, 'resume')}
+                          disabled={billingActionId === payment._id || isCancelling || isResuming}
+                          className="px-4 py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 rounded-[1.5rem] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto"
+                        >
+                          {billingActionId === payment._id ? (
+                            <div className="w-4 h-4 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5" />
+                              Resume monthly billing
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -521,6 +646,17 @@ export const ParentPayments: React.FC = () => {
           })}
         </div>
       )}
+
+      <BillingConfirmModal
+        isOpen={!!billingModal}
+        action={billingModal?.action || 'cancel'}
+        subtitle={billingModal?.subtitle}
+        isLoading={!!billingActionId}
+        onConfirm={handleConfirmBillingAction}
+        onClose={() => {
+          if (!billingActionId) setBillingModal(null);
+        }}
+      />
     </div>
   );
 };

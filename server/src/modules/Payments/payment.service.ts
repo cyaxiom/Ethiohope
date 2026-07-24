@@ -283,37 +283,10 @@ export class PaymentService {
         const otherPending = await EnrollmentModel.updateMany(duplicateFilter, { status: 'CANCELLED' });
         logger.info(`[PaymentService] Cancelled ${otherPending.modifiedCount} duplicate pending enrollments`);
 
-        // Child credentials only for CHILD enrollments
-        if (enrollment.enrolleeType !== 'SELF' && enrollment.child) {
-          const ChildModel = (await import('@modules/Child/child.model')).ChildModel;
-          const child = await ChildModel.findById(enrollment.child);
-
-          if (child && parent && parent.email) {
-            if (!enrollment.isExistingChild) {
-              const rawPin = Math.floor(100000 + Math.random() * 900000).toString();
-              const bcrypt = await import('bcryptjs');
-              const hashedPin = await bcrypt.hash(rawPin, 10);
-
-              child.pin = hashedPin;
-              await child.save();
-
-              const emailService = (await import('@infra/mail/email.service')).emailService;
-              emailService.sendChildCredentialsEmail(
-                parent.email,
-                child.firstname || 'Student',
-                child.username,
-                rawPin
-              ).catch(err => {
-                logger.error(`[PaymentService] Failed to send credentials email to ${parent.email}: ${err}`);
-              });
-            } else {
-              logger.info(`[PaymentService] Skipping credentials for existing child ${child.username}`);
-            }
-          }
-        }
+        // Child credentials are issued at registration — do not regenerate on payment
       }
 
-      logger.info(`[PaymentService] ${enrollments.length} Enrollments activated and credentials processed.`);
+      logger.info(`[PaymentService] ${enrollments.length} Enrollments activated.`);
     } catch (error) {
        logger.error(`[PaymentService] Failed to activate enrollments: ${error}`);
     }
@@ -350,10 +323,13 @@ export class PaymentService {
     let enrollments = await EnrollmentModel.find(query)
       .populate('child', 'firstname lastname username')
       .populate('user', 'firstname lastname email')
-      .populate('program', 'title description image')
+      .populate('program', 'title description image programType')
       .populate('phase', 'title orderIndex price')
+      .populate('package', 'name price daysPerWeek')
       .sort({ createdAt: -1 })
       .lean();
+
+    enrollments = await this.backfillSubscriptionPeriodEnds(enrollments);
 
     if (search) {
       const searchLower = search.toLowerCase();
@@ -364,7 +340,8 @@ export class PaymentService {
         e.user?.lastname?.toLowerCase().includes(searchLower) ||
         e.user?.email?.toLowerCase().includes(searchLower) ||
         e.program?.title?.toLowerCase().includes(searchLower) ||
-        e.phase?.title?.toLowerCase().includes(searchLower)
+        e.phase?.title?.toLowerCase().includes(searchLower) ||
+        e.package?.name?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -415,6 +392,8 @@ export class PaymentService {
       .sort({ createdAt: -1 })
       .lean();
 
+    enrollments = await this.backfillSubscriptionPeriodEnds(enrollments);
+
     if (search) {
       const searchLower = search.toLowerCase();
       enrollments = enrollments.filter((e: any) =>
@@ -453,6 +432,44 @@ export class PaymentService {
     return { applications: enrollments, summary };
   }
 
+  /**
+   * For cancel-at-period-end enrollments missing a stored end date,
+   * fetch once from Stripe and persist so the UI can show it on the card.
+   */
+  private async backfillSubscriptionPeriodEnds(enrollments: any[]): Promise<any[]> {
+    const needsBackfill = enrollments.filter(
+      (e) =>
+        e.subscriptionCancelAtPeriodEnd &&
+        e.status === 'ACTIVE' &&
+        e.stripeSubscriptionId &&
+        !e.subscriptionCurrentPeriodEnd
+    );
+
+    if (needsBackfill.length === 0) return enrollments;
+
+    await Promise.all(
+      needsBackfill.map(async (e) => {
+        try {
+          const sub = await stripe.subscriptions.retrieve(e.stripeSubscriptionId);
+          const endTs = (sub as any).current_period_end as number | undefined;
+          if (!endTs) return;
+          const periodEnd = new Date(endTs * 1000);
+          e.subscriptionCurrentPeriodEnd = periodEnd;
+          await EnrollmentModel.updateOne(
+            { _id: e._id },
+            { $set: { subscriptionCurrentPeriodEnd: periodEnd } }
+          );
+        } catch (err: any) {
+          logger.warn(
+            `[PaymentService] Could not backfill period end for ${e._id}: ${err?.message || err}`
+          );
+        }
+      })
+    );
+
+    return enrollments;
+  }
+
   public async confirmPaymentSession(sessionId: string): Promise<any> {
     logger.info(`[PaymentService] Manually confirming session ${sessionId}`);
     
@@ -471,5 +488,179 @@ export class PaymentService {
     }
     
     return { success: true, status: session.payment_status };
+  }
+
+  /**
+   * Cancel a monthly tutoring Stripe subscription.
+   * Stops future charges at period end (student keeps access until then).
+   */
+  public async cancelSubscription(
+    enrollmentId: string,
+    actorUserId: string,
+    canceledBy: 'PARENT' | 'ADMIN'
+  ): Promise<{ success: boolean; message: string; enrollment: any }> {
+    const enrollment = await EnrollmentModel.findById(enrollmentId)
+      .populate('program', 'title programType')
+      .populate('package', 'name price daysPerWeek')
+      .populate('child', 'firstname lastname')
+      .populate('user', 'firstname lastname email');
+
+    if (!enrollment) {
+      throw new HttpException(404, 'Enrollment not found');
+    }
+
+    if (canceledBy === 'PARENT' && enrollment.parent.toString() !== actorUserId) {
+      throw new HttpException(403, 'You can only manage your own subscriptions');
+    }
+
+    const isMonthly = enrollment.billingType === 'MONTHLY' || !!enrollment.package;
+    if (!isMonthly) {
+      throw new HttpException(400, 'This enrollment is not a monthly subscription');
+    }
+
+    if (enrollment.status === 'CANCELLED') {
+      throw new HttpException(400, 'This enrollment is already cancelled');
+    }
+
+    if (enrollment.subscriptionCancelAtPeriodEnd) {
+      throw new HttpException(400, 'Subscription cancellation is already scheduled');
+    }
+
+    if (enrollment.status !== 'ACTIVE' || enrollment.paymentStatus !== 'PAID') {
+      throw new HttpException(400, 'Only active paid tutoring subscriptions can be cancelled');
+    }
+
+    let periodEnd: Date | null = null;
+
+    if (enrollment.stripeSubscriptionId) {
+      try {
+        const sub = await stripe.subscriptions.update(enrollment.stripeSubscriptionId, {
+          cancel_at_period_end: true,
+        });
+        const endTs = (sub as any).current_period_end as number | undefined;
+        periodEnd = endTs ? new Date(endTs * 1000) : null;
+        logger.info(
+          `[PaymentService] Stripe subscription ${enrollment.stripeSubscriptionId} set to cancel at period end`
+        );
+      } catch (err: any) {
+        logger.error(`[PaymentService] Stripe cancel failed: ${err.message}`);
+        // If already canceled on Stripe, continue local update
+        if (err?.code !== 'resource_missing' && err?.statusCode !== 404) {
+          throw new HttpException(400, err?.message || 'Failed to cancel Stripe subscription');
+        }
+      }
+    } else {
+      // No Stripe subscription (e.g. Zelle) — stop access immediately
+      enrollment.status = 'CANCELLED';
+    }
+
+    enrollment.subscriptionCancelAtPeriodEnd = true;
+    enrollment.subscriptionCanceledAt = new Date();
+    enrollment.subscriptionCanceledBy = canceledBy;
+    if (periodEnd) {
+      enrollment.subscriptionCurrentPeriodEnd = periodEnd;
+    }
+    await enrollment.save();
+
+    const when = enrollment.stripeSubscriptionId
+      ? periodEnd
+        ? ` Billing stops after ${periodEnd.toLocaleDateString()}. Access continues until then.`
+        : ' No further monthly charges after the current billing period.'
+      : ' Enrollment has been cancelled and will not renew.';
+
+    return {
+      success: true,
+      message: enrollment.stripeSubscriptionId
+        ? `Monthly subscription will end at the close of the current billing period.${when}`
+        : `Tutoring enrollment cancelled.${when}`,
+      enrollment,
+    };
+  }
+
+  /**
+   * Resume a monthly tutoring subscription that was set to cancel at period end.
+   */
+  public async resumeSubscription(
+    enrollmentId: string,
+    actorUserId: string,
+    resumedBy: 'PARENT' | 'ADMIN'
+  ): Promise<{ success: boolean; message: string; enrollment: any }> {
+    const enrollment = await EnrollmentModel.findById(enrollmentId)
+      .populate('program', 'title programType')
+      .populate('package', 'name price daysPerWeek');
+
+    if (!enrollment) {
+      throw new HttpException(404, 'Enrollment not found');
+    }
+
+    if (resumedBy === 'PARENT' && enrollment.parent.toString() !== actorUserId) {
+      throw new HttpException(403, 'You can only manage your own subscriptions');
+    }
+
+    const isMonthly = enrollment.billingType === 'MONTHLY' || !!enrollment.package;
+    if (!isMonthly) {
+      throw new HttpException(400, 'This enrollment is not a monthly subscription');
+    }
+
+    if (enrollment.status === 'CANCELLED') {
+      throw new HttpException(
+        400,
+        'This subscription has already ended. Start a new enrollment to bill again.'
+      );
+    }
+
+    if (!enrollment.subscriptionCancelAtPeriodEnd) {
+      throw new HttpException(400, 'This subscription is already set to renew');
+    }
+
+    if (!enrollment.stripeSubscriptionId) {
+      throw new HttpException(
+        400,
+        'This enrollment has no Stripe subscription to resume. Contact support if you need help.'
+      );
+    }
+
+    try {
+      await stripe.subscriptions.update(enrollment.stripeSubscriptionId, {
+        cancel_at_period_end: false,
+      });
+      logger.info(
+        `[PaymentService] Stripe subscription ${enrollment.stripeSubscriptionId} resumed by ${resumedBy}`
+      );
+    } catch (err: any) {
+      logger.error(`[PaymentService] Stripe resume failed: ${err.message}`);
+      throw new HttpException(400, err?.message || 'Failed to resume Stripe subscription');
+    }
+
+    enrollment.subscriptionCancelAtPeriodEnd = false;
+    enrollment.subscriptionCanceledAt = undefined;
+    enrollment.subscriptionCanceledBy = undefined;
+    enrollment.subscriptionCurrentPeriodEnd = undefined;
+    await enrollment.save();
+
+    return {
+      success: true,
+      message: 'Monthly billing has been resumed. Charges will continue as usual.',
+      enrollment,
+    };
+  }
+
+  /** Finalize enrollment when Stripe subscription actually ends */
+  public async handleSubscriptionEnded(subscriptionId: string): Promise<void> {
+    const enrollment = await EnrollmentModel.findOne({ stripeSubscriptionId: subscriptionId });
+    if (!enrollment) {
+      logger.info(`[PaymentService] No enrollment for ended subscription ${subscriptionId}`);
+      return;
+    }
+
+    if (enrollment.status === 'CANCELLED') return;
+
+    enrollment.status = 'CANCELLED';
+    enrollment.subscriptionCancelAtPeriodEnd = false;
+    if (!enrollment.subscriptionCanceledAt) {
+      enrollment.subscriptionCanceledAt = new Date();
+    }
+    await enrollment.save();
+    logger.info(`[PaymentService] Enrollment ${enrollment._id} cancelled after subscription ended`);
   }
 }

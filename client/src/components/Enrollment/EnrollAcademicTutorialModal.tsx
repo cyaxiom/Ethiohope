@@ -314,7 +314,7 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
   const formStep = Math.min(step, 4);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
       <div
         className="bg-[#0b1224] text-slate-100 w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl shadow-2xl border border-white/10 overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh]"
         role="dialog"

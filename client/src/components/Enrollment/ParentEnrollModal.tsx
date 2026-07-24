@@ -146,7 +146,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-t-2xl sm:rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] animate-in zoom-in-95 duration-300 border border-gray-100">
         
         {/* Header */}

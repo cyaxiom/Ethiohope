@@ -62,21 +62,62 @@ export class EmailService {
   }
 
   /**
-   * Send Child Credentials Email
+   * Send child registration credentials to the parent.
+   * Sent when the child account is created (before or without payment).
    */
-  public async sendChildCredentialsEmail(to: string, childName: string, username: string, pin: string): Promise<void> {
+  public async sendChildRegistrationEmail(
+    to: string,
+    childName: string,
+    username: string,
+    pin: string
+  ): Promise<void> {
     const loginUrl = `${CLIENT_URL}login`;
     const html = `
-      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-        <h2>Your Child's Login Credentials - EthioHope</h2>
+      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0056b3;">Congratulations! ${childName} is registered</h2>
         <p>Dear Parent,</p>
-        <p>Your payment was successful and ${childName}'s enrollment in EthioHope is now active!</p>
-        <p>Below are your child's unified login credentials:</p>
-        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin: 20px 0;">
+        <p>Your child <strong>${childName}</strong> has been successfully registered on EthioHope.</p>
+        <p>Please proceed to complete payment so their courses unlock. Until payment is completed, they can still log in to the student dashboard — enrolled courses will appear <strong>locked</strong>.</p>
+        <p>Here are their login credentials:</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin: 20px 0; border: 1px solid #eee;">
           <p style="margin: 5px 0;">Username: <span style="color: #0056b3;">${username}</span></p>
           <p style="margin: 5px 0;">PIN: <span style="color: #0056b3;">${pin}</span></p>
         </div>
-        <p>Please keep this PIN secure. Your child can use these details to login here:</p>
+        <p>Your child can log in here:</p>
+        <p><a href="${loginUrl}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Login to Dashboard</a></p>
+        <p style="font-size: 13px; color: #666; margin-top: 24px;">You can also view or generate a new PIN anytime from your parent dashboard under Children.</p>
+        <br/>
+        <p>Best regards,<br/>The EthioHope Team</p>
+      </div>
+    `;
+
+    await this.provider.sendEmail({
+      to,
+      subject: `Congratulations — ${childName} is registered on EthioHope`,
+      html,
+    });
+  }
+
+  /**
+   * Notify parent that a child's PIN was regenerated from the dashboard.
+   */
+  public async sendChildPinResetEmail(
+    to: string,
+    childName: string,
+    username: string,
+    pin: string
+  ): Promise<void> {
+    const loginUrl = `${CLIENT_URL}login`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0056b3;">New PIN for ${childName}</h2>
+        <p>Dear Parent,</p>
+        <p>A new login PIN was generated for <strong>${childName}</strong> from your EthioHope parent dashboard.</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; margin: 20px 0; border: 1px solid #eee;">
+          <p style="margin: 5px 0;">Username: <span style="color: #0056b3;">${username}</span></p>
+          <p style="margin: 5px 0;">New PIN: <span style="color: #0056b3;">${pin}</span></p>
+        </div>
+        <p>The previous PIN no longer works. Your child can log in here:</p>
         <p><a href="${loginUrl}" style="background-color: #0056b3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Login to Dashboard</a></p>
         <br/>
         <p>Best regards,<br/>The EthioHope Team</p>
@@ -85,9 +126,16 @@ export class EmailService {
 
     await this.provider.sendEmail({
       to,
-      subject: 'Your Child Login Credentials - EthioHope',
+      subject: `New PIN for ${childName} - EthioHope`,
       html,
     });
+  }
+
+  /**
+   * @deprecated Use sendChildRegistrationEmail — kept for compatibility.
+   */
+  public async sendChildCredentialsEmail(to: string, childName: string, username: string, pin: string): Promise<void> {
+    return this.sendChildRegistrationEmail(to, childName, username, pin);
   }
 
   /**

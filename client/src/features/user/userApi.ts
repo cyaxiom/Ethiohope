@@ -112,6 +112,16 @@ export const userApi = api.injectEndpoints({
       query: (id) => `/parent/children/${id}`,
       providesTags: (result, error, id) => [{ type: 'Users', id }],
     }),
+    regenerateChildPin: builder.mutation<
+      { success: boolean; message: string; data: { _id: string; username: string; plainPin: string } },
+      string
+    >({
+      query: (childId) => ({
+        url: `/parent/children/${childId}/regenerate-pin`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, childId) => ['Users', { type: 'Users', id: childId }],
+    }),
     getChildMe: builder.query<{ success: boolean; data: any }, void>({
       query: () => '/child/me',
       providesTags: ['Users'],
@@ -140,6 +150,7 @@ export const {
   useGetParentChildrenQuery,
   useRegisterChildMutation,
   useGetChildDetailsQuery,
+  useRegenerateChildPinMutation,
   useGetChildMeQuery,
   useGetParentDashboardStatsQuery,
   useDeleteUserMutation,

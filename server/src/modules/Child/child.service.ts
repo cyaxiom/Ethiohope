@@ -18,7 +18,7 @@ export class ChildService {
       throw new HttpException(HttpStatusCodes.BAD_REQUEST, `Username [${data.username}] is already taken.`);
     }
 
-    // Hash the 4-digit PIN
+    // Hash the 6-digit PIN
     const hashedPin = await bcrypt.hash(data.pin, 10);
 
     const child = await ChildModel.create({

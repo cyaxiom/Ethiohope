@@ -17,19 +17,31 @@ import {
   Clock,
   Ban,
   Wallet,
+  RefreshCw,
 } from 'lucide-react';
-import { useGetAllPaymentsQuery, useUpdatePaymentStatusMutation } from '../../features/payments/paymentApi';
+import {
+  useGetAllPaymentsQuery,
+  useUpdatePaymentStatusMutation,
+  useAdminCancelSubscriptionMutation,
+  useAdminResumeSubscriptionMutation,
+} from '../../features/payments/paymentApi';
 import { useGetProgramsQuery } from '../../features/programs/programApi';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast as sonnerToast } from 'sonner';
+import BillingConfirmModal, { BillingAction } from '../../components/payments/BillingConfirmModal';
 
 const AdminPayments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [programFilter, setProgramFilter] = useState('');
   const [enrolleeFilter, setEnrolleeFilter] = useState('');
+  const [billingModal, setBillingModal] = useState<{
+    enrollmentId: string;
+    action: BillingAction;
+    subtitle?: string;
+  } | null>(null);
 
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'payment.read');
@@ -49,6 +61,9 @@ const AdminPayments: React.FC = () => {
   );
 
   const [updateStatus, { isLoading: isUpdating }] = useUpdatePaymentStatusMutation();
+  const [adminCancelSubscription, { isLoading: isCancellingSub }] = useAdminCancelSubscriptionMutation();
+  const [adminResumeSubscription, { isLoading: isResumingSub }] = useAdminResumeSubscriptionMutation();
+  const [billingActionId, setBillingActionId] = useState<string | null>(null);
 
   const applications = paymentsData?.data || [];
   const summary = paymentsData?.summary;
@@ -61,6 +76,40 @@ const AdminPayments: React.FC = () => {
       );
     } catch (err: any) {
       sonnerToast.error(err?.data?.message || 'Failed to update application');
+    }
+  };
+
+  const openBillingModal = (app: any, action: BillingAction) => {
+    const applicant = getApplicant(app);
+    const packageName = app.package?.name || app.program?.title || 'Monthly tutoring';
+    setBillingModal({
+      enrollmentId: app._id,
+      action,
+      subtitle: [packageName, applicant.name].filter(Boolean).join(' · '),
+    });
+  };
+
+  const handleConfirmBillingAction = async () => {
+    if (!billingModal) return;
+    const { enrollmentId, action } = billingModal;
+
+    try {
+      setBillingActionId(enrollmentId);
+      if (action === 'cancel') {
+        const res = await adminCancelSubscription({ enrollmentId }).unwrap();
+        sonnerToast.success(res.message || 'Subscription cancellation scheduled');
+      } else {
+        const res = await adminResumeSubscription({ enrollmentId }).unwrap();
+        sonnerToast.success(res.message || 'Monthly billing resumed');
+      }
+      setBillingModal(null);
+    } catch (err: any) {
+      sonnerToast.error(
+        err?.data?.message ||
+          (action === 'cancel' ? 'Failed to cancel subscription' : 'Failed to resume subscription')
+      );
+    } finally {
+      setBillingActionId(null);
     }
   };
 
@@ -294,6 +343,11 @@ const AdminPayments: React.FC = () => {
                             <Calendar className="w-3.5 h-3.5" /> {app.phase.title}
                           </span>
                         )}
+                        {app.package && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-semibold">
+                            {app.package.name || `${app.package.daysPerWeek}×/week`} · monthly
+                          </span>
+                        )}
                         {app.batch?.batchName && <span>Batch: {app.batch.batchName}</span>}
                       </div>
                       <p className="text-[11px] text-gray-400">
@@ -318,7 +372,29 @@ const AdminPayments: React.FC = () => {
                               Zelle submitted
                             </span>
                           )}
+                          {(app.billingType === 'MONTHLY' || app.package) && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border bg-indigo-50 text-indigo-700 border-indigo-200">
+                              Monthly
+                            </span>
+                          )}
+                          {app.subscriptionCancelAtPeriodEnd && app.status === 'ACTIVE' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-700 border-amber-200">
+                              Ending soon
+                            </span>
+                          )}
                         </div>
+                        {app.subscriptionCancelAtPeriodEnd &&
+                          app.status === 'ACTIVE' &&
+                          app.subscriptionCurrentPeriodEnd && (
+                            <p className="text-[11px] text-amber-700 mt-1 xl:text-right">
+                              Billing stops after{' '}
+                              {new Date(app.subscriptionCurrentPeriodEnd).toLocaleDateString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </p>
+                          )}
                         {app.paymentMethod === 'ZELLE' && app.zelleSubmittedAt && app.paymentStatus !== 'PAID' && (
                           <p className="text-[11px] text-violet-600 mt-1">
                             Reported {new Date(app.zelleSubmittedAt).toLocaleString()}
@@ -356,6 +432,36 @@ const AdminPayments: React.FC = () => {
                           <CheckCircle className="w-3.5 h-3.5" /> Mark paid
                         </button>
                       )}
+                      {canUpdate &&
+                        app.status === 'ACTIVE' &&
+                        app.paymentStatus === 'PAID' &&
+                        (app.billingType === 'MONTHLY' || app.package) &&
+                        !app.subscriptionCancelAtPeriodEnd && (
+                          <button
+                            type="button"
+                            onClick={() => openBillingModal(app, 'cancel')}
+                            disabled={isCancellingSub || isResumingSub || billingActionId === app._id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg disabled:opacity-50"
+                          >
+                            <Ban className="w-3.5 h-3.5" />
+                            {billingActionId === app._id ? 'Stopping…' : 'Stop monthly billing'}
+                          </button>
+                        )}
+                      {canUpdate &&
+                        app.status === 'ACTIVE' &&
+                        app.paymentStatus === 'PAID' &&
+                        (app.billingType === 'MONTHLY' || app.package) &&
+                        app.subscriptionCancelAtPeriodEnd && (
+                          <button
+                            type="button"
+                            onClick={() => openBillingModal(app, 'resume')}
+                            disabled={isCancellingSub || isResumingSub || billingActionId === app._id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg disabled:opacity-50"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            {billingActionId === app._id ? 'Resuming…' : 'Resume monthly billing'}
+                          </button>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -364,6 +470,17 @@ const AdminPayments: React.FC = () => {
           })
         )}
       </div>
+
+      <BillingConfirmModal
+        isOpen={!!billingModal}
+        action={billingModal?.action || 'cancel'}
+        subtitle={billingModal?.subtitle}
+        isLoading={!!billingActionId}
+        onConfirm={handleConfirmBillingAction}
+        onClose={() => {
+          if (!billingActionId) setBillingModal(null);
+        }}
+      />
     </div>
   );
 };

@@ -32,6 +32,36 @@ export class PaymentRoute implements Routes {
     // User reports Zelle transfer sent (notifies admins)
     this.router.post('/zelle-submitted', authMiddleware as any, this.paymentController.reportZellePayment as any);
 
+    // Cancel monthly tutoring subscription (parent)
+    this.router.post(
+      '/cancel-subscription',
+      authMiddleware as any,
+      this.paymentController.cancelSubscriptionAsParent as any
+    );
+
+    // Cancel monthly tutoring subscription (admin)
+    this.router.post(
+      '/admin/cancel-subscription',
+      authMiddleware as any,
+      requirePermission('payment.update') as any,
+      this.paymentController.cancelSubscriptionAsAdmin as any
+    );
+
+    // Resume monthly tutoring subscription (parent)
+    this.router.post(
+      '/resume-subscription',
+      authMiddleware as any,
+      this.paymentController.resumeSubscriptionAsParent as any
+    );
+
+    // Resume monthly tutoring subscription (admin)
+    this.router.post(
+      '/admin/resume-subscription',
+      authMiddleware as any,
+      requirePermission('payment.update') as any,
+      this.paymentController.resumeSubscriptionAsAdmin as any
+    );
+
     // Webhook route - needs raw body for Stripe signature verification
     this.router.post('/webhook', webhookRawMiddleware, this.paymentController.handleWebhook as any);
   }

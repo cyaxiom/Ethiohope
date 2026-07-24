@@ -90,6 +90,50 @@ export const paymentApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Users', 'Enrollments'],
     }),
+    cancelSubscription: builder.mutation<
+      { success: boolean; message: string; enrollment: any },
+      { enrollmentId: string }
+    >({
+      query: (data) => ({
+        url: '/payments/cancel-subscription',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Users', 'Enrollments'],
+    }),
+    adminCancelSubscription: builder.mutation<
+      { success: boolean; message: string; enrollment: any },
+      { enrollmentId: string }
+    >({
+      query: (data) => ({
+        url: '/payments/admin/cancel-subscription',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Users', 'Enrollments'],
+    }),
+    resumeSubscription: builder.mutation<
+      { success: boolean; message: string; enrollment: any },
+      { enrollmentId: string }
+    >({
+      query: (data) => ({
+        url: '/payments/resume-subscription',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Users', 'Enrollments'],
+    }),
+    adminResumeSubscription: builder.mutation<
+      { success: boolean; message: string; enrollment: any },
+      { enrollmentId: string }
+    >({
+      query: (data) => ({
+        url: '/payments/admin/resume-subscription',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Users', 'Enrollments'],
+    }),
   }),
 });
 
@@ -100,4 +144,8 @@ export const {
   useUpdatePaymentStatusMutation,
   useConfirmPaymentSessionMutation,
   useReportZellePaymentMutation,
+  useCancelSubscriptionMutation,
+  useAdminCancelSubscriptionMutation,
+  useResumeSubscriptionMutation,
+  useAdminResumeSubscriptionMutation,
 } = paymentApi;

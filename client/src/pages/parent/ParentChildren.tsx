@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import SectionCard from '../../components/dashboard/SectionCard';
-import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus, MapPin, ChevronDown, CheckCircle2, KeyRound } from 'lucide-react';
+import { User, BookOpen, Clock, Activity, Calendar, Award, Search, Filter, ChevronRight, X, Plus, MapPin, ChevronDown, CheckCircle2 } from 'lucide-react';
 import Loading from '../../ui/Loading';
 import ChildDetailModal from '../../components/Enrollment/ChildDetailModal';
+import ChildCredentialsCard from '../../components/Enrollment/ChildCredentialsCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useRegisterChildMutation } from '../../features/user/userApi';
@@ -225,15 +226,18 @@ export const ParentChildren: React.FC = () => {
                          <User className="w-3 h-3" />
                          @{child.username}
                        </span>
-                       {child.plainPin && (
-                         <span className="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-amber-100 flex items-center gap-1">
-                           <KeyRound className="w-3 h-3" />
-                           PIN: {child.plainPin}
-                         </span>
-                       )}
                        <span className="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-purple-100">Grade {child.grade}</span>
                     </div>
                   </div>
+                </div>
+
+                <div className="mb-6 relative z-10">
+                  <ChildCredentialsCard
+                    childId={child._id}
+                    username={child.username}
+                    plainPin={child.plainPin}
+                    stopPropagation
+                  />
                 </div>
 
                 {/* Overall Stats Section */}
@@ -446,7 +450,7 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+      <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
         <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col items-center justify-center p-10 text-center animate-in zoom-in-95 duration-500">
           <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-green-50">
              <CheckCircle2 className="w-12 h-12" />
@@ -479,7 +483,7 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-t-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] animate-in zoom-in-95 duration-300">
         <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-start gap-3 bg-gray-50/50 flex-shrink-0">
           <div className="min-w-0">

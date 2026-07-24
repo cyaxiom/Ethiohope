@@ -31,6 +31,13 @@ export class ParentRoute implements Routes {
     // Get specific child details
     this.router.get(`/children/:id`, authMiddleware as any, this.parentController.getChildDetails as any);
 
+    // Regenerate child PIN
+    this.router.post(
+      `/children/:id/regenerate-pin`,
+      authMiddleware as any,
+      this.parentController.regenerateChildPin as any
+    );
+
     // Dashboard stats
     this.router.get(
       `/dashboard/stats`, 

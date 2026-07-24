@@ -78,6 +78,15 @@ export class PaymentController {
 
           break;
 
+        case 'customer.subscription.deleted': {
+          const endedSub = event.data.object as any;
+          const subId = typeof endedSub?.id === 'string' ? endedSub.id : null;
+          if (subId) {
+            await this.paymentService.handleSubscriptionEnded(subId);
+          }
+          break;
+        }
+
         default:
           logger.info(`Unhandled event type ${event.type}`);
       }
@@ -207,6 +216,110 @@ export class PaymentController {
       }
 
       const result = await this.paymentService.reportZellePayment(enrollmentIds, userId.toString());
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public cancelSubscriptionAsParent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { enrollmentId } = req.body;
+      const userPayload = (req as RequestWithTokenPayload).tokenPayload;
+      const userId = userPayload?._id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'User not authenticated' });
+        return;
+      }
+      if (!enrollmentId) {
+        res.status(400).json({ success: false, message: 'enrollmentId is required' });
+        return;
+      }
+
+      const result = await this.paymentService.cancelSubscription(
+        enrollmentId,
+        userId.toString(),
+        'PARENT'
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public cancelSubscriptionAsAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { enrollmentId } = req.body;
+      const userPayload = (req as RequestWithTokenPayload).tokenPayload;
+      const userId = userPayload?._id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'User not authenticated' });
+        return;
+      }
+      if (!enrollmentId) {
+        res.status(400).json({ success: false, message: 'enrollmentId is required' });
+        return;
+      }
+
+      const result = await this.paymentService.cancelSubscription(
+        enrollmentId,
+        userId.toString(),
+        'ADMIN'
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public resumeSubscriptionAsParent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { enrollmentId } = req.body;
+      const userPayload = (req as RequestWithTokenPayload).tokenPayload;
+      const userId = userPayload?._id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'User not authenticated' });
+        return;
+      }
+      if (!enrollmentId) {
+        res.status(400).json({ success: false, message: 'enrollmentId is required' });
+        return;
+      }
+
+      const result = await this.paymentService.resumeSubscription(
+        enrollmentId,
+        userId.toString(),
+        'PARENT'
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public resumeSubscriptionAsAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { enrollmentId } = req.body;
+      const userPayload = (req as RequestWithTokenPayload).tokenPayload;
+      const userId = userPayload?._id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'User not authenticated' });
+        return;
+      }
+      if (!enrollmentId) {
+        res.status(400).json({ success: false, message: 'enrollmentId is required' });
+        return;
+      }
+
+      const result = await this.paymentService.resumeSubscription(
+        enrollmentId,
+        userId.toString(),
+        'ADMIN'
+      );
       res.status(200).json(result);
     } catch (error) {
       next(error);

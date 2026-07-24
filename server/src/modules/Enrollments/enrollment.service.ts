@@ -14,7 +14,8 @@ import { HttpException } from "@common/errors/HttpException";
 import HttpStatusCodes from "@common/utils/HttpStatusCodes";
 import { logger } from "@utils/logger";
 import { Types } from "mongoose";
-import bcrypt from 'bcryptjs';
+import { generateSixDigitPin, hashChildPin } from "@modules/Child/child-pin.util";
+import { emailService } from "@infra/mail/email.service";
 
 export class EnrollmentService {
   private enrollmentDao = new EnrollmentDao();
@@ -115,8 +116,8 @@ export class EnrollmentService {
         }
 
         const generatedUsername = `${data.firstName.toLowerCase()}${Math.floor(100 + Math.random() * 900)}`;
-        const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
-        const hashedPin = await bcrypt.hash(randomPin, 10);
+        const randomPin = generateSixDigitPin();
+        const hashedPin = await hashChildPin(randomPin);
 
         const childPayload: any = {
           firstname: data.firstName,
@@ -137,6 +138,16 @@ export class EnrollmentService {
         const newChild = await ChildModel.create(childPayload);
         childrenToEnroll = [newChild];
         logger.info(`EnrollmentService: Created new child ${newChild._id}`);
+
+        if (parent.email) {
+          emailService
+            .sendChildRegistrationEmail(parent.email, data.firstName, generatedUsername, randomPin)
+            .catch((err) => {
+              logger.error(
+                `[EnrollmentService] Failed to send registration email to ${parent.email}: ${err}`
+              );
+            });
+        }
       }
 
       const enrollments: IEnrollment[] = [];

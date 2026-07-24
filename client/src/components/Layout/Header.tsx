@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
   return (
     <header
       className={clsx(
-        'h-14 sm:h-16 flex-shrink-0 border-b flex items-center justify-between gap-2 px-3 sm:px-6 z-[100] w-full transition-colors duration-300',
+        'h-14 sm:h-16 flex-shrink-0 relative z-30 border-b flex items-center justify-between gap-2 px-3 sm:px-6 w-full transition-colors duration-300',
         isDashboardDark
           ? 'bg-[#0B1121] border-slate-800/80 text-slate-100'
           : 'bg-white border-gray-100 text-gray-800'

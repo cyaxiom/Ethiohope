@@ -32,6 +32,11 @@ export interface IEnrollment extends Document {
   notes?: string;
   billingType: 'ONE_TIME' | 'MONTHLY';
   stripeSubscriptionId?: string;
+  subscriptionCancelAtPeriodEnd?: boolean;
+  subscriptionCanceledAt?: Date;
+  subscriptionCanceledBy?: 'PARENT' | 'ADMIN';
+  /** When cancel-at-period-end is set, access/billing continues until this date */
+  subscriptionCurrentPeriodEnd?: Date;
   status: 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
   paymentStatus: 'UNPAID' | 'PAID';
   paymentMethod?: 'STRIPE' | 'ZELLE';
@@ -86,6 +91,10 @@ const EnrollmentSchema = new Schema<IEnrollment>(
       default: 'ONE_TIME',
     },
     stripeSubscriptionId: { type: String },
+    subscriptionCancelAtPeriodEnd: { type: Boolean, default: false },
+    subscriptionCanceledAt: { type: Date },
+    subscriptionCanceledBy: { type: String, enum: ['PARENT', 'ADMIN'] },
+    subscriptionCurrentPeriodEnd: { type: Date },
     status: {
       type: String,
       enum: ['PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED'],

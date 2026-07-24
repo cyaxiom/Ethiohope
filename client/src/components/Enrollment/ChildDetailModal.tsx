@@ -5,6 +5,7 @@ import { useGetChildDetailsQuery } from '../../features/user/userApi';
 import Loading from '../../ui/Loading';
 import { getImageUrl } from '../../lib/utils';
 import EditScheduleModal from './EditScheduleModal';
+import ChildCredentialsCard from './ChildCredentialsCard';
 
 interface ChildDetailModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
   const child = response?.data;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -267,8 +268,6 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                     {[
                       { label: 'Full Name', value: `${child.firstname} ${child.lastname}` },
-                      { label: 'Username', value: `@${child.username}` },
-                      ...(child.plainPin ? [{ label: 'Access PIN', value: child.plainPin }] : []),
                       { label: 'Birthdate', value: new Date(child.birthdate).toLocaleDateString() },
                       { label: 'Gender', value: child.gender.toUpperCase() },
                       { label: 'Current Grade', value: `Grade ${child.grade}` },
@@ -281,6 +280,13 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                     ))}
                   </div>
                 </div>
+
+                <ChildCredentialsCard
+                  childId={child._id}
+                  username={child.username}
+                  plainPin={child.plainPin}
+                  className="mt-2"
+                />
               </div>
             </div>
           </div>

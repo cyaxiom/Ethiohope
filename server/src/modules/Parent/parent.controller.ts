@@ -14,10 +14,10 @@ import { PhaseModel } from "@modules/Phases/phase.model";
 import { BatchModel } from "@modules/Batches/batch.model";
 import { ScheduleModel } from "@modules/Schedule/schedule.model";
 import { Types } from "mongoose";
-import bcrypt from 'bcryptjs';
 import { emailService } from "@infra/mail/email.service";
 import { generateTokens } from "@common/Token/token.util";
 import { PermissionModel } from "@modules/AccessControl/permission.model";
+import { generateSixDigitPin, hashChildPin } from "@modules/Child/child-pin.util";
 
 export class ParentController {
   private userService = new UserService();
@@ -263,8 +263,8 @@ export class ParentController {
     }
 
     const generatedUsername = `${data.firstname.toLowerCase()}${Math.floor(100 + Math.random() * 900)}`;
-    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
-    const hashedPin = await bcrypt.hash(randomPin, 10);
+    const randomPin = generateSixDigitPin();
+    const hashedPin = await hashChildPin(randomPin);
 
     const child = await ChildModel.create({
       firstname: data.firstname,
@@ -283,7 +283,7 @@ export class ParentController {
     });
 
     try {
-      await emailService.sendChildCredentialsEmail(parent.email, data.firstname, generatedUsername, randomPin);
+      await emailService.sendChildRegistrationEmail(parent.email, data.firstname, generatedUsername, randomPin);
     } catch (emailError) {
       logger.error(`Failed to send credentials email for child ${child._id}: ${emailError}`);
       // Don't fail the request if email fails, child is still created
@@ -291,8 +291,52 @@ export class ParentController {
 
     res.status(HttpStatusCodes.CREATED).json({
       success: true,
-      message: `You registered your child (age: ${age}) and you will get child account through email. Now you can also visit courses and choose for your child.`,
+      message: `Congratulations! ${data.firstname} is registered. Login credentials were sent to your email. Please proceed to payment to unlock courses — they can already log in with locked courses until then.`,
       data: child
+    });
+  });
+
+  /**
+   * Regenerate a child's 6-digit PIN
+   * POST /parent/children/:id/regenerate-pin
+   */
+  public regenerateChildPin = asyncHandler(async (req: Request, res: Response) => {
+    const { tokenPayload } = req as RequestWithTokenPayload;
+    const parentId = tokenPayload?._id;
+    const childId = req.params.id;
+
+    if (!parentId) {
+      return res.status(HttpStatusCodes.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
+    }
+
+    const child = await ChildModel.findOne({ _id: childId, parent: parentId });
+    if (!child) {
+      return res.status(HttpStatusCodes.NOT_FOUND).json({ success: false, message: "Child not found" });
+    }
+
+    const newPin = generateSixDigitPin();
+    child.pin = await hashChildPin(newPin);
+    child.plainPin = newPin;
+    await child.save();
+
+    const { User } = await import("../User/user.schema");
+    const parent = await User.findById(parentId).select('email');
+    if (parent?.email) {
+      emailService
+        .sendChildPinResetEmail(parent.email, child.firstname || 'Student', child.username, newPin)
+        .catch((err) => {
+          logger.error(`Failed to send PIN reset email for child ${child._id}: ${err}`);
+        });
+    }
+
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: "New PIN generated successfully",
+      data: {
+        _id: child._id,
+        username: child.username,
+        plainPin: newPin,
+      },
     });
   });
 
