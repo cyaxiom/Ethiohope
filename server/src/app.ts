@@ -35,7 +35,7 @@ class App {
     'http://127.0.0.1:8000',
     'http://localhost:8000',
     // Production domains
-    
+
     // ORIGIN env var can be a single URL or comma-separated list of additional URLs
     // e.g. ORIGIN=http://123.45.67.89  (useful for VPS IP access during testing)
     ...(ORIGIN ? ORIGIN.split(',').map(o => o.trim()).filter(Boolean) : []),
@@ -43,6 +43,11 @@ class App {
 
   constructor(routes: Routes[]) {
     this.app = express();
+
+    // The app is behind one trusted Nginx reverse proxy.
+    // Required so express-rate-limit can safely read the real client IP.
+    this.app.set('trust proxy', 1);
+
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
 
