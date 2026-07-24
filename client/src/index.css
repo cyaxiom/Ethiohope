@@ -1,0 +1,802 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    /* Light theme colors */
+    --background: #ffffff;
+    --foreground: #0f0f13;
+    /* for hover effects, when foreground color is hovered */
+    --hover: hsl(0, 0%, 69%);
+    --card: #ffffff;
+    --card-foreground: #0f0f13;
+    --popover: #ffffff;
+    --popover-foreground: #0f0f13;
+
+    /* Primary colors - Updated to match Contact Page Send Button */
+    --primary: #2563eb; /* Blue 600 */
+    --primary-hover: #1d4ed8; /* Blue 700 */
+    --primary-end: #22c55e; /* Green 500 */
+    --primary-end-hover: #16a34a; /* Green 600 */
+    --primary-solid: #3C12D4; /* Purple for dark mode/fallback */
+    --primary-foreground: #ffffff;
+
+    /* Secondary colors */
+    --secondary: #f5f5f4;
+    --secondary-foreground: #1a1a1a;
+
+    /* Accent colors */
+    --accent: #16a34a; /* Lighter green */
+    --accent-foreground: #fffbeb;
+
+    /* Additional custom colors */
+    --success: #15803d; /* Green */
+    --warning: #f59e0b; /* Amber */
+    --error: #dc2626; /* Red */
+    --info: #2563eb; /* Blue */
+
+    /* UI colors */
+    --muted: #f5f5f4;
+    --muted-foreground: #71717a;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #15803d;
+
+    /* Radius */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --background: #0f0f13;
+    --foreground: #fafafa;
+    /* for hover effects, when foreground color is hovered */
+    --hover: hsla(0, 2%, 23%, 0.884);
+    --card: #0f0f13;
+    --card-foreground: #fafafa;
+    --popover: #0f0f13;
+    --popover-foreground: #fafafa;
+
+    /* Primary colors - Updated to match Contact Page Send Button */
+    --primary: #3C12D4;
+    --primary-hover: #2a0d9c;
+    --primary-foreground: #ffffff;
+
+    /* Secondary colors */
+    --secondary: #262626;
+    --secondary-foreground: #fafafa;
+
+    /* Accent colors */
+    --accent: #15803d;
+    --accent-foreground: #fffbeb;
+
+    /* Additional custom colors */
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --error: #dc2626;
+    --info: #3b82f6;
+
+    /* UI colors */
+    --muted: #262626;
+    --muted-foreground: #a1a1aa;
+    --border: #262626;
+    --input: #262626;
+    --ring: #16a34a;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    font-feature-settings: 'ss01', 'cv01', 'cv02', 'cv03';
+    letter-spacing: 0.01em;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  button {
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition:
+      background 0.2s,
+      color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
+    box-shadow: 0 2px 8px 0 rgb(123 92 255 / 8%);
+  }
+  .btn-primary {
+    background: linear-gradient(to right, var(--primary), var(--primary-end));
+    color: var(--primary-foreground);
+    font-weight: 700;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(to right, var(--primary-hover), var(--primary-end-hover));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  }
+  .dark .btn-primary {
+    background: var(--primary);
+  }
+  .dark .btn-primary:hover {
+    background: var(--primary-hover);
+  }
+  .card {
+    background: var(--card);
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px 0 rgb(123 92 255 / 8%);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    transition:
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+  .card:hover {
+    box-shadow: 0 8px 32px 0 rgb(123 92 255 / 16%);
+    transform: translateY(-2px) scale(1.01);
+  }
+}
+
+/* Custom utility classes for your brand colors */
+@layer utilities {
+  .bg-background {
+    background-color: var(--background);
+  }
+  .text-foreground {
+    color: var(--foreground);
+  }
+  .bg-hover {
+    background-color: var(--hover);
+  }
+  .bg-card {
+    background-color: var(--card);
+  }
+  .text-card-foreground {
+    color: var(--card-foreground);
+  }
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  .text-primary-foreground {
+    color: var(--primary-foreground);
+  }
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  .text-secondary-foreground {
+    color: var(--secondary-foreground);
+  }
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  .text-accent-foreground {
+    color: var(--accent-foreground);
+  }
+  .bg-success {
+    background-color: var(--success);
+  }
+  .text-success {
+    color: var(--success);
+  }
+  .bg-warning {
+    background-color: var(--warning);
+  }
+  .text-warning {
+    color: var(--warning);
+  }
+  .bg-error {
+    background-color: var(--error);
+  }
+  .text-error {
+    color: var(--error);
+  }
+  .bg-info {
+    background-color: var(--info);
+  }
+  .text-info {
+    color: var(--info);
+  }
+  .bg-muted {
+    background-color: var(--muted);
+  }
+  .text-muted-foreground {
+    color: var(--muted-foreground);
+  }
+  .border-border {
+    border-color: var(--border);
+  }
+  .bg-border {
+    background-color: var(--border);
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  /* Aspect ratio utilities */
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Animation utilities */
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-fadeInDown {
+    animation: fadeInDown 0.6s ease-out;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Custom scrollbar for modal permission lists */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.4);
+    border-radius: 999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(100, 116, 139, 0.55);
+  }
+
+  .modal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+  }
+  .modal-scroll::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  .modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .modal-scroll::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 999px;
+  }
+  .modal-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus visible for accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Ensure Tailwind's `cursor-pointer` applies to the element and its children
+     so card components show the hand pointer across the whole tile. */
+  .cursor-pointer,
+  .cursor-pointer * {
+    cursor: pointer !important;
+  }
+
+  /* Hide scrollbar utility */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+
+  @keyframes gradient-x {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-subtle-zoom {
+    animation: subtle-zoom 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes subtle-zoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
+  }
+}
+
+/* ===============================
+   DASHBOARD SIDEBAR SCROLLBAR
+   =============================== */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+/* Main dashboard content scrollbar — full remaining viewport height */
+.dashboard-main-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+}
+
+.dashboard-main-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-main-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dashboard-main-scroll::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 999px;
+}
+
+.dashboard-main-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+/* Soft dark remaps for dashboard content pages */
+.dashboard-shell.dark main .bg-white {
+  background-color: rgb(17 24 39 / 0.92) !important;
+}
+
+.dashboard-shell.dark main .bg-gray-50 {
+  background-color: rgb(30 41 59 / 0.55) !important;
+}
+
+.dashboard-shell.dark main .text-gray-800,
+.dashboard-shell.dark main .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+.dashboard-shell.dark main .text-gray-500,
+.dashboard-shell.dark main .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+.dashboard-shell.dark main .text-gray-400 {
+  color: #64748b !important;
+}
+
+.dashboard-shell.dark main .border-gray-50,
+.dashboard-shell.dark main .border-gray-100,
+.dashboard-shell.dark main .border-gray-200 {
+  border-color: rgb(51 65 85 / 0.85) !important;
+}
+
+.dashboard-shell.dark main .shadow-sm,
+.dashboard-shell.dark main .shadow-md {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35) !important;
+}
+
+/* ===============================
+   PUBLIC CLIENT SITE — NAVY THEME
+   Matches CourseDetail learning-path palette
+   =============================== */
+.public-shell {
+  --background: #070b16;
+  --foreground: #f1f5f9;
+  --card: #0b1224;
+  --card-foreground: #f1f5f9;
+  --muted: #111827;
+  --muted-foreground: #94a3b8;
+  --border: rgb(51 65 85 / 0.7);
+  --input: #1e293b;
+  --secondary: #111827;
+  --secondary-foreground: #f1f5f9;
+  --popover: #0b1224;
+  --popover-foreground: #f1f5f9;
+  background-color: #070b16;
+  color: #f1f5f9;
+}
+
+body:has(.public-shell) {
+  background-color: #070b16 !important;
+  background-image: none !important;
+  animation: none !important;
+  color: #f1f5f9;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+/* Thin page scrollbar on public client pages */
+html:has(.public-shell)::-webkit-scrollbar,
+body:has(.public-shell)::-webkit-scrollbar,
+.public-shell::-webkit-scrollbar,
+.public-shell *::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+html:has(.public-shell)::-webkit-scrollbar-track,
+body:has(.public-shell)::-webkit-scrollbar-track,
+.public-shell::-webkit-scrollbar-track,
+.public-shell *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html:has(.public-shell)::-webkit-scrollbar-thumb,
+body:has(.public-shell)::-webkit-scrollbar-thumb,
+.public-shell::-webkit-scrollbar-thumb,
+.public-shell *::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+html:has(.public-shell)::-webkit-scrollbar-thumb:hover,
+body:has(.public-shell)::-webkit-scrollbar-thumb:hover,
+.public-shell::-webkit-scrollbar-thumb:hover,
+.public-shell *::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.public-shell,
+.public-shell * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.public-shell .bg-background,
+.public-shell .bg-white,
+.public-shell .bg-card {
+  background-color: #0b1224 !important;
+}
+
+.public-shell .bg-muted,
+.public-shell .bg-muted\/30,
+.public-shell .bg-gray-50,
+.public-shell .bg-slate-50 {
+  background-color: rgb(17 24 39 / 0.85) !important;
+}
+
+.public-shell .text-foreground,
+.public-shell .text-gray-800,
+.public-shell .text-gray-900,
+.public-shell .text-slate-900,
+.public-shell .text-black {
+  color: #f1f5f9 !important;
+}
+
+.public-shell .text-muted-foreground,
+.public-shell .text-gray-500,
+.public-shell .text-gray-600,
+.public-shell .text-slate-500,
+.public-shell .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.public-shell .text-gray-400,
+.public-shell .text-slate-400 {
+  color: #64748b !important;
+}
+
+.public-shell .border-border,
+.public-shell .border-gray-100,
+.public-shell .border-gray-200,
+.public-shell .border-slate-200,
+.public-shell .border-blue-50\/50,
+.public-shell .border-blue-100 {
+  border-color: rgb(51 65 85 / 0.75) !important;
+}
+
+.public-shell .bg-blue-50,
+.public-shell .bg-blue-50\/50,
+.public-shell .bg-green-50,
+.public-shell .bg-green-50\/50 {
+  background-color: rgb(37 99 235 / 0.12) !important;
+}
+
+.public-shell .from-blue-50,
+.public-shell .via-green-50,
+.public-shell .to-white {
+  --tw-gradient-from: #0b1224 !important;
+  --tw-gradient-via: #0f172a !important;
+  --tw-gradient-to: #070b16 !important;
+}
+
+/* Soft dark remaps for child enroll modal form fields */
+.enroll-child-dark {
+  color-scheme: dark;
+}
+
+.enroll-child-dark input,
+.enroll-child-dark select,
+.enroll-child-dark option {
+  color: #f1f5f9 !important;
+  background-color: #070b16 !important;
+}
+
+.enroll-child-dark input::placeholder {
+  color: #64748b !important;
+}
+
+/* ===============================
+   GLOBAL KIDS BACKGROUND THEME
+   =============================== */
+
+body {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(128, 90, 255, 0.18),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 60%,
+      rgba(255, 153, 0, 0.18),
+      transparent 45%
+    ),
+    radial-gradient(circle at 50% 90%, rgba(0, 200, 150, 0.15), transparent 50%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Optional: animated background movement */
+body {
+  animation: bgFloat 12s ease-in-out infinite alternate;
+}
+
+@keyframes bgFloat {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}
+
+/* TipTap rich text editor */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.35rem;
+  line-height: 1.3;
+}
+
+.tiptap h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.6rem 0 0.3rem;
+}
+
+.tiptap a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.tiptap p {
+  margin: 0.35rem 0;
+}
+
+.rich-text-content ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.rich-text-content ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.rich-text-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.rich-text-content h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.6rem 0 0.3rem;
+}
+
+.rich-text-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.rich-text-content p {
+  margin: 0.4rem 0;
+}
+
+/* ===============================
+   THIN SCROLLBARS — ALL MODALS
+   Unlayered so it wins over utilities
+   =============================== */
+.fixed.inset-0 .overflow-y-auto,
+.fixed.inset-0 .modal-scroll,
+.fixed.inset-0 .custom-scrollbar,
+.fixed.inset-0 .sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.fixed.inset-0 .overflow-y-auto::-webkit-scrollbar,
+.fixed.inset-0 .modal-scroll::-webkit-scrollbar,
+.fixed.inset-0 .custom-scrollbar::-webkit-scrollbar,
+.fixed.inset-0 .sidebar-scroll::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.fixed.inset-0 .overflow-y-auto::-webkit-scrollbar-track,
+.fixed.inset-0 .modal-scroll::-webkit-scrollbar-track,
+.fixed.inset-0 .custom-scrollbar::-webkit-scrollbar-track,
+.fixed.inset-0 .sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fixed.inset-0 .overflow-y-auto::-webkit-scrollbar-thumb,
+.fixed.inset-0 .modal-scroll::-webkit-scrollbar-thumb,
+.fixed.inset-0 .custom-scrollbar::-webkit-scrollbar-thumb,
+.fixed.inset-0 .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
+}
+
+.fixed.inset-0 .overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.fixed.inset-0 .modal-scroll::-webkit-scrollbar-thumb:hover,
+.fixed.inset-0 .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.fixed.inset-0 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.55);
+}

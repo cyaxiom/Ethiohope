@@ -1,0 +1,397 @@
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+
+// Lazy load components
+const Home = React.lazy(() => import('@pages/Home/Home'));
+const NotFound = React.lazy(() => import('@pages/NotFound/NotFound'));
+const Forbidden = React.lazy(() => import('@pages/NotFound/Forbidden'));
+
+// About routes
+const About = React.lazy(() => import('@pages/About/About'));
+const Contact = React.lazy(() => import('@pages/About/Contact'));
+const HowItWorks = React.lazy(() => import('@pages/HowItWorks/HowItWorks'));
+
+// Auth routes
+const Login = React.lazy(() => import('@pages/Auth/Login'));
+const Register = React.lazy(() => import('@pages/Auth/Register'));
+const ForgotPassword = React.lazy(() => import('@pages/Auth/ForgotPassword'));
+const ResetPassword = React.lazy(() => import('@pages/Auth/ResetPassword'));
+const VerifyEmail = React.lazy(() => import('@pages/Auth/VerifyEmail'));
+
+// Status pages
+const PendingApproval = React.lazy(() => import('@pages/PendingApproval'));
+const Checkout = React.lazy(() => import('@pages/parent/Checkout'));
+const PaymentSuccess = React.lazy(() => import('@pages/parent/PaymentSuccess'));
+const PaymentCancel = React.lazy(() => import('@pages/parent/PaymentCancel'));
+
+
+// Community routes removed
+//Forum routes
+const ForumRegister = React.lazy(() => import('@components/Forum/Register'));
+const ForumLogin = React.lazy(() => import('@components/Forum/Login'));
+const Tags = React.lazy(() => import('@components/Forum/Tags'));
+const Ranking = React.lazy(() => import('@components/Forum/Ranking'));
+const Questions = React.lazy(() => import('@components/Forum/Questions'));
+const QuestionDetails = React.lazy(
+  () => import('@components/Forum/QuestionDetails'),
+);
+const MyQuestions = React.lazy(() => import('@components/Forum/MyQuestions'));
+const MyAnswers = React.lazy(() => import('@components/Forum/MyAnswers'));
+const Likes = React.lazy(() => import('@components/Forum/Likes'));
+const ForumProfile = React.lazy(() => import('@components/Forum/ForumProfile'));
+
+//dashboard routes
+const Chats = React.lazy(() => import('@pages/Dashboard/Chats.tsx'));
+const VideoCall = React.lazy(() => import('@pages/Dashboard/VideoCall'));
+const VoiceCall = React.lazy(() => import('@pages/Dashboard/VoiceCall'));
+const Achievements = React.lazy(() => import('@pages/Dashboard/Achievements'));
+const Profile = React.lazy(() => import('@pages/Dashboard/Profile'));
+const Settings = React.lazy(() => import('@pages/Dashboard/settings/Settings'));
+
+// CourseDetail
+const CourseDetail = React.lazy(() => import('@pages/Home/components/CourseDetail'));
+
+// Academy routes removed
+// Services routes removed
+// const ProjectServices = React.lazy(() =>
+//   import('@pages/Services/ProjectServices/ProjectServices')
+// );
+
+// Course routes removed
+
+// Admin routes
+const DashboardLayout = React.lazy(() => import('@components/Layout/DashboardLayout'));
+const PublicLayout = React.lazy(() => import('@components/Layout/PublicLayout'));
+const AdminDashboardPage = React.lazy(() => import('@pages/admin/AdminDashboard'));
+const AdminRoles = React.lazy(() => import('@pages/admin/RoleManagement'));
+const AdminUsers = React.lazy(() => import('@pages/admin/Users'));
+const AdminPrograms = React.lazy(() => import('@pages/admin/Programs'));
+const AdminBatches = React.lazy(() => import('@pages/admin/Batches'));
+const AdminSchedules = React.lazy(() => import('@pages/admin/Schedules'));
+const AdminPayments = React.lazy(() => import('@pages/admin/AdminPayments'));
+const AdminCourses = React.lazy(() => import('@pages/admin/Courses'));
+const AdminSessions = React.lazy(() => import('@pages/admin/Sessions'));
+const AdminTracks = React.lazy(() => import('@pages/admin/Tracks'));
+
+
+// Role-based dashboards
+const TeacherDashboard = React.lazy(() => import('@pages/teacher/TeacherDashboard'));
+const ParentDashboard = React.lazy(() => import('@pages/parent/ParentDashboard'));
+const ParentChildren = React.lazy(() => import('@pages/parent/ParentChildren'));
+const ParentCourses = React.lazy(() => import('@pages/parent/ParentCourses'));
+const ParentPayments = React.lazy(() => import('@pages/parent/ParentPayments'));
+
+const StudentCourses = React.lazy(() => import('@pages/student/Courses'));
+const StudentCourseDetail = React.lazy(() => import('@pages/student/CourseDetail'));
+const StudentSessions = React.lazy(() => import('@pages/student/StudentSessions'));
+const StudentPayments = React.lazy(() => import('@pages/student/StudentPayments'));
+
+import { ProtectedRoute, PermissionRoute, GuestRoute } from './Guard';
+
+// Helper for protecting sub-routes
+const wrapInAuth = (element) => <ProtectedRoute>{element}</ProtectedRoute>;
+const wrapAsGuest = (element) => <GuestRoute>{element}</GuestRoute>;
+
+const DashboardRedirect = () => {
+  const { roles, activeRole } = useSelector((state) => state.auth);
+  const currentRole = activeRole || (roles.length > 0 ? (roles.includes('admin') ? 'admin' : roles[0]) : null);
+  
+  if (currentRole === 'admin' || currentRole === 'super_admin') return <Navigate to="/admin/dashboard" replace />;
+  if (currentRole === 'instructor') return <Navigate to="/instructor/dashboard" replace />;
+  if (currentRole === 'parent') return <Navigate to="/parent/dashboard" replace />;
+  if (currentRole === 'student' || currentRole === 'child') return <Navigate to="/student/courses" replace />;
+  
+  return <Navigate to="/" replace />;
+};
+
+const wrapInPermission = (element, allowedRoles = [], requiredPermissions = []) => (
+  <PermissionRoute allowedRoles={allowedRoles} requiredPermissions={requiredPermissions}>
+    {element}
+  </PermissionRoute>
+);
+
+export const routes = [
+  // Public Routes (with Navbar and Footer)
+  {
+    path: '/',
+    element: <PublicLayout />,
+    routes: [
+      { path: '/', exact: true, name: 'Home', element: <Home /> },
+      // About routes
+      { path: '/about', name: 'About', element: <About /> },
+      { path: '/how-it-works', name: 'HowItWorks', element: <HowItWorks /> },
+      { path: '/about/contact', name: 'Contact', element: <Contact /> },
+      {
+        path: '/academy/kids-programming/course/:id',
+        name: 'CourseDetail',
+        element: <CourseDetail />,
+      },
+      { path: '/forbidden', name: 'Forbidden', element: <Forbidden /> },
+      // 404 route inside PublicLayout so it has header/footer
+      { path: '*', name: 'NotFound', element: <NotFound /> },
+    ],
+  },
+
+  // Auth routes (No Navbar/Footer) — guests only; logged-in users are redirected
+  { path: '/login', name: 'Login', element: wrapAsGuest(<Login />) },
+  { path: '/register', name: 'Register', element: wrapAsGuest(<Register />) },
+  { path: '/forgot-password', name: 'ForgotPassword', element: wrapAsGuest(<ForgotPassword />) },
+  { path: '/reset-password', name: 'ResetPassword', element: wrapAsGuest(<ResetPassword />) },
+  { path: '/auth/verify-email', name: 'VerifyEmail', element: wrapAsGuest(<VerifyEmail />) },
+  { path: '/pending-approval', name: 'PendingApproval', element: <PendingApproval /> },
+  { path: '/checkout', name: 'Checkout', element: wrapInAuth(<Checkout />) },
+  { path: '/payment/success', name: 'PaymentSuccess', element: wrapInAuth(<PaymentSuccess />) },
+  { path: '/payment/cancel', name: 'PaymentCancel', element: wrapInAuth(<PaymentCancel />) },
+
+  // dashboard routes (No Footer) - ALL PROTECTED
+  { path: '/dashboard/chats', name: 'Chats', element: wrapInAuth(<Chats />) },
+  {
+    path: '/dashboard/chats/video-call',
+    name: 'VideoCall',
+    element: wrapInAuth(<VideoCall />),
+  },
+  {
+    path: '/dashboard/achievements',
+    name: 'Achievements',
+    element: wrapInAuth(<Achievements />),
+  },
+  {
+    path: '/dashboard/profile',
+    name: 'Profile',
+    element: wrapInAuth(<Profile />),
+  },
+  {
+    path: '/dashboard/settings',
+    name: 'Settings',
+    element: wrapInAuth(<Settings />),
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    element: wrapInAuth(<DashboardRedirect />),
+  },
+  {
+    path: '/dashboard/chats/voice-call',
+    name: 'VoiceCall',
+    element: wrapInAuth(<VoiceCall />),
+  },
+  
+  // Admin Routes - PROTECTED BY AUTH & PERMISSION
+  {
+    path: '/admin',
+    name: 'AdminDashboardLayout',
+    element: wrapInPermission(<DashboardLayout />, ['admin', 'super_admin'], ['dashboard.admin']),
+    routes: [
+      {
+        path: '/admin/dashboard',
+        name: 'AdminDashboardPage',
+        element: <AdminDashboardPage />,
+      },
+      {
+        path: '/admin/roles',
+        name: 'AdminRoles',
+        element: <AdminRoles />,
+      },
+      {
+        path: '/admin/users',
+        name: 'AdminUsers',
+        element: <AdminUsers />,
+      },
+      {
+        path: '/admin/programs',
+        name: 'AdminPrograms',
+        element: <AdminPrograms />,
+      },
+      {
+        path: '/admin/batches',
+        name: 'AdminBatches',
+        element: <AdminBatches />,
+      },
+      {
+        path: '/admin/schedules',
+        name: 'AdminSchedules',
+        element: <AdminSchedules />,
+      },
+      {
+        path: '/admin/payments',
+        name: 'AdminPayments',
+        element: <AdminPayments />,
+      },
+      {
+        path: '/admin/courses',
+        name: 'AdminCourses',
+        element: <AdminCourses />,
+      },
+      {
+        path: '/admin/chat',
+        name: 'AdminChat',
+        element: <Chats />,
+      },
+      {
+        path: '/admin/sessions',
+        name: 'AdminSessions',
+        element: <AdminSessions />,
+      },
+      {
+        path: '/admin/tracks',
+        name: 'AdminTracks',
+        element: <AdminTracks />,
+      },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
+    ],
+  },
+
+  // Role-based Dashboard Routes - ALL PROTECTED
+  {
+    path: '/instructor',
+    name: 'InstructorPortal',
+    element: wrapInPermission(<DashboardLayout />, ['instructor', 'admin', 'super_admin'], ['dashboard.instructor']),
+    routes: [
+      {
+        path: '/instructor/dashboard',
+        name: 'Instructor Dashboard',
+        element: <TeacherDashboard />,
+      },
+      {
+        path: '/instructor/roles',
+        name: 'Instructor Roles',
+        element: <AdminRoles />,
+      },
+      {
+        path: '/instructor/users',
+        name: 'Instructor Users',
+        element: <AdminUsers />,
+      },
+      {
+        path: '/instructor/programs',
+        name: 'Instructor Programs',
+        element: <AdminPrograms />,
+      },
+      {
+        path: '/instructor/batches',
+        name: 'Instructor Batches',
+        element: <AdminBatches />,
+      },
+      {
+        path: '/instructor/schedules',
+        name: 'Instructor Schedules',
+        element: <AdminSchedules />,
+      },
+      {
+        path: '/instructor/courses',
+        name: 'Instructor Courses',
+        element: <AdminCourses />,
+      },
+      {
+        path: '/instructor/sessions',
+        name: 'Instructor Sessions',
+        element: <AdminSessions />,
+      },
+      {
+        path: '/instructor/payments',
+        name: 'Instructor Payments',
+        element: <AdminPayments />,
+      },
+      {
+        path: '/instructor/chat',
+        name: 'Instructor Chat',
+        element: <Chats />,
+      },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
+    ],
+  },
+  {
+    path: '/parent',
+    name: 'ParentPortal',
+    element: wrapInPermission(<DashboardLayout />, ['parent', 'admin', 'super_admin'], ['dashboard.parent']),
+    routes: [
+      {
+        path: '/parent/dashboard',
+        name: 'Parent Dashboard',
+        element: <ParentDashboard />,
+      },
+      {
+        path: '/parent/children',
+        name: 'Parent Children',
+        element: <ParentChildren />,
+      },
+      {
+        path: '/parent/childcourses',
+        name: 'Programs for Children',
+        element: <ParentCourses audience="children" />,
+      },
+      {
+        path: '/parent/mycourses',
+        name: 'Programs for You',
+        element: <ParentCourses audience="self" />,
+      },
+      {
+        path: '/parent/payments',
+        name: 'Parent Payments',
+        element: <ParentPayments />,
+      },
+      {
+        path: '/parent/chat',
+        name: 'ParentChat',
+        element: <Chats />,
+      },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
+    ],
+  },
+  {
+    path: '/student',
+    name: 'StudentPortal',
+    element: wrapInPermission(<DashboardLayout />, ['student', 'child', 'admin', 'super_admin'], ['dashboard.student']),
+    routes: [
+      {
+        path: '/student/dashboard',
+        name: 'Student Dashboard',
+        element: <Navigate to="/student/courses" replace />,
+      },
+      {
+        path: '/student/courses',
+        name: 'Student Courses',
+        element: <StudentCourses />,
+      },
+      {
+        path: '/student/courses/:id',
+        name: 'Student Course Detail',
+        element: <StudentCourseDetail />,
+      },
+      {
+        path: '/student/chat',
+        name: 'StudentChat',
+        element: <Chats />,
+      },
+      {
+        path: '/student/sessions',
+        name: 'StudentSessions',
+        element: <StudentSessions />,
+      },
+      {
+        path: '/student/payments',
+        name: 'StudentPayments',
+        element: <StudentPayments />,
+      },
+      {
+        path: '*',
+        name: 'NotFound',
+        element: <NotFound />,
+      },
+    ],
+  },
+  // Global 404 Route
+  { path: '*', name: 'NotFound', element: <NotFound /> },
+];
