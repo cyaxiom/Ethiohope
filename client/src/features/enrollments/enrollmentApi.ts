@@ -27,6 +27,8 @@ export interface EnrollmentPayload {
     endTime: string;
     subject: string;
   }>;
+  /** IANA timezone for tutoring time preferences */
+  scheduleTimeZone?: string;
 }
 
 export interface EnrollmentResponse {

@@ -291,7 +291,7 @@ export class ParentController {
 
     res.status(HttpStatusCodes.CREATED).json({
       success: true,
-      message: `Congratulations! ${data.firstname} is registered. Login credentials were sent to your email. Please proceed to payment to unlock courses — they can already log in with locked courses until then.`,
+      message: `Congratulations! ${data.firstname} is registered. Login credentials were sent to your email. Next, visit Enroll Programs to choose a course — they can log in right away (courses stay locked until payment).`,
       data: child
     });
   });

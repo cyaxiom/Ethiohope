@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -31,17 +32,36 @@ import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast as sonnerToast } from 'sonner';
 import BillingConfirmModal, { BillingAction } from '../../components/payments/BillingConfirmModal';
+import {
+  convertLocalSlotToEthiopia,
+  formatHHmm12,
+  timeZoneLabel,
+  ETHIOPIA_TZ,
+} from '../../lib/timezone';
+
+const formatDayShort = (day: string) =>
+  day ? day.charAt(0) + day.slice(1, 3).toLowerCase() : '';
 
 const AdminPayments: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   const [programFilter, setProgramFilter] = useState('');
-  const [enrolleeFilter, setEnrolleeFilter] = useState('');
+  const [enrolleeFilter, setEnrolleeFilter] = useState(searchParams.get('enrolleeType') || '');
   const [billingModal, setBillingModal] = useState<{
     enrollmentId: string;
     action: BillingAction;
     subtitle?: string;
   } | null>(null);
+
+  useEffect(() => {
+    const s = searchParams.get('search');
+    const st = searchParams.get('status');
+    const et = searchParams.get('enrolleeType');
+    if (s != null) setSearchTerm(s);
+    if (st != null) setStatusFilter(st);
+    if (et != null) setEnrolleeFilter(et);
+  }, [searchParams]);
 
   const permissions = useSelector((state: RootState) => state.auth.permissions);
   const canRead = hasPermission(permissions, 'payment.read');
@@ -350,6 +370,43 @@ const AdminPayments: React.FC = () => {
                         )}
                         {app.batch?.batchName && <span>Batch: {app.batch.batchName}</span>}
                       </div>
+                      {Array.isArray(app.timeBlocks) && app.timeBlocks.length > 0 && (
+                        <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/60 p-2.5 space-y-1.5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            Preferred times · Ethiopia (EAT) for mentors
+                          </p>
+                          <p className="text-[10px] text-emerald-700/80">
+                            Parent zone: {timeZoneLabel(app.scheduleTimeZone || ETHIOPIA_TZ)}
+                          </p>
+                          <ul className="space-y-1">
+                            {app.timeBlocks.map((block: any, i: number) => {
+                              const eth = convertLocalSlotToEthiopia(
+                                block.dayOfWeek,
+                                block.startTime,
+                                block.endTime,
+                                app.scheduleTimeZone || ETHIOPIA_TZ
+                              );
+                              return (
+                                <li key={i} className="text-[11px] text-emerald-900">
+                                  <span className="font-semibold">{block.subject}</span>
+                                  {' · '}
+                                  {eth ? (
+                                    <span>
+                                      {eth.startLabel} – {eth.endLabel}
+                                    </span>
+                                  ) : (
+                                    <span>
+                                      {formatDayShort(block.dayOfWeek)} {formatHHmm12(block.startTime)}–
+                                      {formatHHmm12(block.endTime)}
+                                    </span>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      )}
                       <p className="text-[11px] text-gray-400">
                         Applied {app.createdAt ? new Date(app.createdAt).toLocaleString() : '—'}
                       </p>

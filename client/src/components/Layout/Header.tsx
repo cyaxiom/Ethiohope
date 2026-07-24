@@ -29,6 +29,10 @@ export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
     if (path.includes('/admin/tracks')) return 'Analytics';
     if (path.includes('/teacher/dashboard')) return 'Teacher Dashboard';
     if (path.includes('/parent/dashboard')) return 'Parent Portal';
+    if (path.includes('/parent/childcourses')) return 'Programs for Children';
+    if (path.includes('/parent/mycourses')) return 'Programs for You';
+    if (path.includes('/parent/children')) return 'My Children';
+    if (path.includes('/parent/payments')) return 'Payments';
     if (path.includes('/student/dashboard')) return 'Student Dashboard';
     if (path.includes('/instructor/')) return 'Instructor Portal';
 

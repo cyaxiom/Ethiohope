@@ -29,6 +29,8 @@ import {
   type SubjectPriority,
 } from '../../common/academicSubjects';
 import type { TutoringPackage } from '../../features/programs/packageApi';
+import TimeZonePicker from '../ui/TimeZonePicker';
+import { detectBrowserTimeZone, ETHIOPIA_TZ } from '../../lib/timezone';
 
 interface Props {
   isOpen: boolean;
@@ -74,28 +76,50 @@ const toHHmm = (time: string): string => {
   return `${h}:${m}`;
 };
 
-const hasSameDayOverlap = (blocks: TimeBlock[]): boolean => {
+const timesOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string): boolean => {
+  if (!aStart || !aEnd || !bStart || !bEnd) return false;
+  if (aStart >= aEnd || bStart >= bEnd) return false;
+  return aStart < bEnd && bStart < aEnd;
+};
+
+/** Indices of blocks whose times overlap another block on the same day */
+const getOverlapIndices = (blocks: TimeBlock[]): Set<number> => {
+  const set = new Set<number>();
   for (let i = 0; i < blocks.length; i++) {
     for (let j = i + 1; j < blocks.length; j++) {
       const a = blocks[i];
       const b = blocks[j];
-      if (!a.dayOfWeek || !b.dayOfWeek || a.dayOfWeek !== b.dayOfWeek) continue;
-      if (!a.startTime || !a.endTime || !b.startTime || !b.endTime) continue;
-      const aStart = toHHmm(a.startTime);
-      const aEnd = toHHmm(a.endTime);
-      const bStart = toHHmm(b.startTime);
-      const bEnd = toHHmm(b.endTime);
-      if (aStart >= aEnd || bStart >= bEnd) continue;
+      if (!a.dayOfWeek || a.dayOfWeek !== b.dayOfWeek) continue;
       if (
-        (aStart >= bStart && aStart < bEnd) ||
-        (bStart >= aStart && bStart < aEnd)
+        timesOverlap(
+          toHHmm(a.startTime),
+          toHHmm(a.endTime),
+          toHHmm(b.startTime),
+          toHHmm(b.endTime)
+        )
       ) {
-        return true;
+        set.add(i);
+        set.add(j);
       }
     }
   }
-  return false;
+  return set;
 };
+
+/** Same day as another session (warn early, before times are filled) */
+const getSharedDayIndices = (blocks: TimeBlock[]): Set<number> => {
+  const set = new Set<number>();
+  for (let i = 0; i < blocks.length; i++) {
+    for (let j = i + 1; j < blocks.length; j++) {
+      if (!blocks[i].dayOfWeek || blocks[i].dayOfWeek !== blocks[j].dayOfWeek) continue;
+      set.add(i);
+      set.add(j);
+    }
+  }
+  return set;
+};
+
+const hasSameDayOverlap = (blocks: TimeBlock[]): boolean => getOverlapIndices(blocks).size > 0;
 
 const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program }) => {
   const [step, setStep] = useState(1);
@@ -104,6 +128,7 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [createdEnrollmentIds, setCreatedEnrollmentIds] = useState<string[]>([]);
   const [monthlyAmount, setMonthlyAmount] = useState<number>(0);
+  const [scheduleTimeZone, setScheduleTimeZone] = useState(detectBrowserTimeZone);
   const navigate = useNavigate();
 
   const {
@@ -165,6 +190,7 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
       setTimeBlocks([]);
       setCreatedEnrollmentIds([]);
       setMonthlyAmount(0);
+      setScheduleTimeZone(detectBrowserTimeZone());
       reset();
       document.body.style.overflow = 'hidden';
     } else {
@@ -268,6 +294,7 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
           endTime: toHHmm(b.endTime),
           subject: b.subject,
         })),
+        scheduleTimeZone: scheduleTimeZone || ETHIOPIA_TZ,
       };
 
       const result = await prepareEnrollment(payload).unwrap();
@@ -311,7 +338,7 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
   if (!isOpen) return null;
 
   const totalSteps = 5;
-  const formStep = Math.min(step, 4);
+  const formStep = step <= 4 ? step : 0;
 
   return (
     <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4">
@@ -700,48 +727,59 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
                   <h4 className="text-base font-semibold text-white mb-1">Schedule time blocks</h4>
                   <p className="text-slate-400 text-sm">
                     Set {selectedPackage?.daysPerWeek ?? 0} session
-                    {selectedPackage?.daysPerWeek === 1 ? '' : 's'} per week. Avoid overlapping times on the
-                    same day.
+                    {selectedPackage?.daysPerWeek === 1 ? '' : 's'} per week in your local time. Sessions on
+                    the same day must not overlap.
                   </p>
                 </div>
 
-                {hasSameDayOverlap(timeBlocks) && (
-                  <div className="flex items-center gap-2 p-3 rounded-xl border border-red-500/30 bg-red-950/30 text-red-300 text-sm">
+                <TimeZonePicker
+                  value={scheduleTimeZone}
+                  onChange={setScheduleTimeZone}
+                  variant="dark"
+                />
+
+                {hasSameDayOverlap(timeBlocks) ? (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border border-red-500/40 bg-red-950/40 text-red-300 text-sm">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                    Some sessions on the same day overlap. Adjust times to continue.
+                    These sessions overlap on the same day. Change the day or times to continue.
                   </div>
-                )}
+                ) : getSharedDayIndices(timeBlocks).size > 0 ? (
+                  <div className="flex items-center gap-2 p-3 rounded-xl border border-amber-500/30 bg-amber-950/30 text-amber-200 text-sm">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    More than one session is on the same day. Make sure their times do not overlap.
+                  </div>
+                ) : null}
 
                 <div className="space-y-4">
                   {timeBlocks.map((block, index) => {
-                    const blockHasOverlap =
-                      hasSameDayOverlap(timeBlocks) &&
-                      timeBlocks.some(
-                        (other, j) =>
-                          j !== index &&
-                          other.dayOfWeek === block.dayOfWeek &&
-                          block.startTime &&
-                          block.endTime &&
-                          other.startTime &&
-                          other.endTime &&
-                          toHHmm(block.startTime) < toHHmm(block.endTime) &&
-                          toHHmm(other.startTime) < toHHmm(other.endTime) &&
-                          ((toHHmm(block.startTime) >= toHHmm(other.startTime) &&
-                            toHHmm(block.startTime) < toHHmm(other.endTime)) ||
-                            (toHHmm(other.startTime) >= toHHmm(block.startTime) &&
-                              toHHmm(other.startTime) < toHHmm(block.endTime)))
-                      );
+                    const overlapIndices = getOverlapIndices(timeBlocks);
+                    const sharedDayIndices = getSharedDayIndices(timeBlocks);
+                    const blockHasOverlap = overlapIndices.has(index);
+                    const blockSharesDay = !blockHasOverlap && sharedDayIndices.has(index);
+                    const dayLabel = block.dayOfWeek
+                      ? formatDayLabel(block.dayOfWeek)
+                      : 'this day';
 
                     return (
                       <div
                         key={index}
                         className={`p-4 rounded-2xl border space-y-3 ${
                           blockHasOverlap
-                            ? 'border-red-500/40 bg-red-950/20'
-                            : 'border-white/10 bg-[#070b16]'
+                            ? 'border-red-500/50 bg-red-950/30'
+                            : blockSharesDay
+                              ? 'border-amber-500/35 bg-amber-950/20'
+                              : 'border-white/10 bg-[#070b16]'
                         }`}
                       >
-                        <p className="text-[10px] font-semibold text-blue-300 uppercase tracking-[0.14em] flex items-center gap-1.5">
+                        <p
+                          className={`text-[10px] font-semibold uppercase tracking-[0.14em] flex items-center gap-1.5 ${
+                            blockHasOverlap
+                              ? 'text-red-300'
+                              : blockSharesDay
+                                ? 'text-amber-300'
+                                : 'text-blue-300'
+                          }`}
+                        >
                           <Clock className="w-3.5 h-3.5" />
                           Session {index + 1}
                         </p>
@@ -752,7 +790,9 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
                             <select
                               value={block.dayOfWeek}
                               onChange={(e) => updateTimeBlock(index, 'dayOfWeek', e.target.value)}
-                              className="w-full px-3 py-2.5 bg-[#0b1224] border border-white/10 rounded-xl text-slate-100 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none"
+                              className={`w-full px-3 py-2.5 bg-[#0b1224] border rounded-xl text-slate-100 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none ${
+                                blockHasOverlap ? 'border-red-500/50' : 'border-white/10'
+                              }`}
                             >
                               <option value="">Select day</option>
                               {DAYS_OF_WEEK.map((d) => (
@@ -778,21 +818,25 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs text-slate-400 mb-1.5">Start time</label>
+                            <label className="block text-xs text-slate-400 mb-1.5">Start (your time)</label>
                             <input
                               type="time"
                               value={block.startTime}
                               onChange={(e) => updateTimeBlock(index, 'startTime', e.target.value)}
-                              className="w-full px-3 py-2.5 bg-[#0b1224] border border-white/10 rounded-xl text-slate-100 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none"
+                              className={`w-full px-3 py-2.5 bg-[#0b1224] border rounded-xl text-slate-100 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none ${
+                                blockHasOverlap ? 'border-red-500/50' : 'border-white/10'
+                              }`}
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-slate-400 mb-1.5">End time</label>
+                            <label className="block text-xs text-slate-400 mb-1.5">End (your time)</label>
                             <input
                               type="time"
                               value={block.endTime}
                               onChange={(e) => updateTimeBlock(index, 'endTime', e.target.value)}
-                              className="w-full px-3 py-2.5 bg-[#0b1224] border border-white/10 rounded-xl text-slate-100 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none"
+                              className={`w-full px-3 py-2.5 bg-[#0b1224] border rounded-xl text-slate-100 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none ${
+                                blockHasOverlap ? 'border-red-500/50' : 'border-white/10'
+                              }`}
                             />
                           </div>
                         </div>
@@ -802,6 +846,19 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
                           toHHmm(block.startTime) >= toHHmm(block.endTime) && (
                             <p className="text-xs text-red-400">End time must be after start time.</p>
                           )}
+
+                        {blockHasOverlap && (
+                          <p className="flex items-start gap-2 text-xs text-red-300 bg-red-950/50 border border-red-500/30 rounded-lg px-3 py-2">
+                            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                            Overlaps another session on {dayLabel}. Pick a different day or change the time.
+                          </p>
+                        )}
+                        {blockSharesDay && (
+                          <p className="flex items-start gap-2 text-xs text-amber-200/90 bg-amber-950/40 border border-amber-500/25 rounded-lg px-3 py-2">
+                            <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                            Another session is also on {dayLabel} — times must not overlap.
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -815,11 +872,13 @@ const EnrollAcademicTutorialModal: React.FC<Props> = ({ isOpen, onClose, program
                 <div className="w-16 h-16 bg-emerald-500/15 text-emerald-400 rounded-full flex items-center justify-center mb-5 border border-emerald-400/20">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl sm:text-2xl font-semibold text-white mb-2">Enrollment ready</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold text-white mb-2">
+                  Your child is successfully registered
+                </h3>
                 <p className="text-slate-400 text-sm max-w-sm mb-6 leading-relaxed">
-                  Your child&apos;s tutoring enrollment for{' '}
-                  <span className="text-blue-300 font-medium">{program.title}</span> is prepared. Complete
-                  payment to activate access.
+                  To activate tutoring for{' '}
+                  <span className="text-blue-300 font-medium">{program.title}</span>, please proceed to
+                  payment.
                 </p>
                 <div className="w-full max-w-sm p-4 rounded-2xl border border-white/10 bg-[#070b16] mb-6 space-y-2.5 text-left">
                   <div className="flex justify-between text-sm">

@@ -10,6 +10,8 @@ export interface ISchedule {
   dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   startTime: string;
   endTime: string;
+  /** IANA timezone wall-clock times are expressed in (default Ethiopia for HQ) */
+  timeZone?: string;
   capacity?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -59,6 +61,11 @@ const ScheduleSchema = new Schema<ISchedule>(
     endTime: {
       type: String, // String format like "11:00"
       required: true,
+    },
+    timeZone: {
+      type: String,
+      default: 'Africa/Addis_Ababa',
+      trim: true,
     },
     capacity: {
       type: Number,

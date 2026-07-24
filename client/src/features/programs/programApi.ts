@@ -7,6 +7,7 @@ export interface Program {
   image?: string;
   ageRange?: string;
   isForChildren?: boolean;
+  programType?: 'STANDARD' | 'ACADEMIC_TUTORIAL' | string;
   isActive: boolean;
   orderIndex: number;
   createdAt: string;
@@ -19,6 +20,7 @@ export interface CreateProgramPayload {
   image?: string;
   ageRange?: string;
   isForChildren?: boolean;
+  programType?: 'STANDARD' | 'ACADEMIC_TUTORIAL' | string;
   isActive?: boolean;
   orderIndex?: number;
 }

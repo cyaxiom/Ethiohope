@@ -127,4 +127,10 @@ export class CreateEnrollmentDTO {
   @ValidateNested({ each: true })
   @Type(() => EnrollmentTimeBlockDTO)
   timeBlocks?: EnrollmentTimeBlockDTO[];
+
+  /** IANA timezone for tutoring preference times (parent local) */
+  @ValidateIf((o) => !!o.packageId)
+  @IsString()
+  @IsNotEmpty({ message: 'scheduleTimeZone is required for tutoring enrollment' })
+  scheduleTimeZone?: string;
 }

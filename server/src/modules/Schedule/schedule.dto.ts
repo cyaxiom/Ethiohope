@@ -62,6 +62,10 @@ export class CreateScheduleDTO {
   endTime!: string;
 
   @IsOptional()
+  @IsString()
+  timeZone?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
@@ -117,6 +121,10 @@ export class UpdateScheduleDTO {
     message: 'endTime must be in HH:mm format',
   })
   endTime?: string;
+
+  @IsOptional()
+  @IsString()
+  timeZone?: string;
 
   @IsOptional()
   @Type(() => Number)

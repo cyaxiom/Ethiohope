@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Clock, AlertTriangle, CheckCircle2, Activity, Save } from 'lucide-react';
+import { X, Clock, AlertTriangle, CheckCircle2, Activity, Save, Globe2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useUpdateEnrollmentScheduleMutation } from '../../features/enrollments/enrollmentApi';
+import { ETHIOPIA_TZ, timeZoneLabel } from '../../lib/timezone';
 
 interface EditScheduleModalProps {
   isOpen: boolean;
@@ -41,6 +42,10 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({ isOpen, onClose, 
     }, {});
   }, [allSchedules]);
 
+  const scheduleTimeZone =
+    allSchedules.find((s: any) => s.timeZone)?.timeZone ||
+    allSchedules[0]?.timeZone ||
+    ETHIOPIA_TZ;
   const requiredSessionLabels = Object.keys(groupedSchedules);
 
   useEffect(() => {
@@ -137,6 +142,15 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({ isOpen, onClose, 
           </div>
 
           <div className="space-y-6">
+            {requiredSessionLabels.length > 0 && (
+              <div className="flex items-start gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5">
+                <Globe2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                <p className="text-[11px] text-emerald-800 leading-snug">
+                  Times are in <span className="font-bold">{timeZoneLabel(scheduleTimeZone)}</span>
+                  . This is the timezone set when the schedule was created.
+                </p>
+              </div>
+            )}
             {requiredSessionLabels.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                 <p className="text-gray-400 font-bold italic">No session slots available for this batch.</p>
@@ -173,6 +187,9 @@ const EditScheduleModal: React.FC<EditScheduleModalProps> = ({ isOpen, onClose, 
                           <div className={`flex items-center gap-1.5 font-bold text-[10px] ${isSelected ? 'text-blue-500' : 'text-gray-500'}`}>
                             <Clock className="w-3 h-3" /> {formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}
                           </div>
+                          <p className="text-[10px] text-emerald-700 font-semibold">
+                            {timeZoneLabel(slot.timeZone || scheduleTimeZone)}
+                          </p>
                           
                           {/* Capacity info if available */}
                           {slot.capacity && (

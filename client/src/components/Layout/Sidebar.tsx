@@ -139,7 +139,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title: 'Menu',
           items: filterByPermission([
             { path: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-            { path: '/parent/childcourses', icon: GraduationCap, label: 'Enroll Programs' },
+            { path: '/parent/childcourses', icon: GraduationCap, label: 'For Children' },
+            { path: '/parent/mycourses', icon: BookOpen, label: 'For You' },
             { path: '/parent/children', icon: Users, label: 'Children' },
             { path: '/parent/chat', icon: MessageCircle, label: 'Chat', permission: ['chat.read', 'chat.write', 'chat.direct.start'] },
             { path: '/parent/payments', icon: CreditCard, label: 'Payments' },

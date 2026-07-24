@@ -66,16 +66,16 @@ const CourseDetail = () => {
 
   const myEnrollments = myEnrollmentsData?.data || [];
 
-  /** Prefer self-enrollment for phase CTA; otherwise any enrollment for that phase. */
-  const getEnrollmentForPhase = (phaseId) => {
-    const forPhase = myEnrollments.filter((e) => {
-      const ePhaseId = e.phase?._id || e.phase;
-      return String(ePhaseId) === String(phaseId);
-    });
-    if (!forPhase.length) return null;
+  /** Adult self-enroll only — kids programs allow enrolling multiple children. */
+  const getSelfEnrollmentForPhase = (phaseId) => {
     return (
-      forPhase.find((e) => e.enrolleeType === 'SELF' || e.user) ||
-      forPhase[0]
+      myEnrollments.find((e) => {
+        const ePhaseId = e.phase?._id || e.phase;
+        return (
+          String(ePhaseId) === String(phaseId) &&
+          (e.enrolleeType === 'SELF' || (!!e.user && !e.child))
+        );
+      }) || null
     );
   };
 
@@ -668,7 +668,23 @@ const CourseDetail = () => {
 
                       {isActive ? (
                         (() => {
-                          const enrollment = isAuthenticated ? getEnrollmentForPhase(phase._id) : null;
+                          // Kids programs: always allow enrolling another child — never block with
+                          // Payment pending / Enrolled from a sibling's application.
+                          if (program.isForChildren) {
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => handleEnrollClick(phase)}
+                                className="mt-auto w-full py-3.5 bg-gradient-to-r from-blue-600 to-emerald-500 hover:opacity-95 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-900/20"
+                              >
+                                Enroll a child
+                              </button>
+                            );
+                          }
+
+                          const enrollment = isAuthenticated
+                            ? getSelfEnrollmentForPhase(phase._id)
+                            : null;
                           if (isPhasePaid(enrollment)) {
                             return (
                               <div className="mt-auto w-full py-3.5 bg-emerald-500/15 text-emerald-300 text-center rounded-2xl border border-emerald-400/20 font-bold flex items-center justify-center gap-2">

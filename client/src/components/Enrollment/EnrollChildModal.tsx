@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, GraduationCap, MapPin, Globe, Users, Clock, CheckCircle2, ChevronDown, Search, AlertTriangle, Activity } from 'lucide-react';
+import { X, Calendar, GraduationCap, MapPin, Globe, Users, Clock, CheckCircle2, ChevronDown, Search, AlertTriangle, Activity, Globe2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useGetPublicBatchesByProgramQuery } from '../../features/programs/batchApi';
 import { usePrepareEnrollmentMutation } from '../../features/enrollments/enrollmentApi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { ETHIOPIA_TZ, timeZoneLabel } from '../../lib/timezone';
 
 interface EnrollChildModalProps {
   isOpen: boolean;
@@ -114,6 +115,11 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
       return acc;
     }, {});
   }, [selectedBatch]);
+
+  const scheduleTimeZone =
+    selectedBatch?.schedules?.find((s: any) => s.timeZone)?.timeZone ||
+    selectedBatch?.schedules?.[0]?.timeZone ||
+    ETHIOPIA_TZ;
 
   const requiredSessionLabels = Object.keys(groupedSchedules);
   const isAllSchedulesSelected = requiredSessionLabels.every(label => selectedSchedules[label]);
@@ -406,9 +412,21 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                                 className="overflow-hidden"
                               >
                                 <div className="p-3.5 sm:p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-5">
-                                  <p className="text-[10px] font-semibold text-blue-300 uppercase tracking-[0.14em]">
-                                    Choose session times
-                                  </p>
+                                  <div className="space-y-2">
+                                    <p className="text-[10px] font-semibold text-blue-300 uppercase tracking-[0.14em]">
+                                      Choose session times
+                                    </p>
+                                    <div className="flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-950/30 px-3 py-2.5">
+                                      <Globe2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                                      <p className="text-[11px] text-emerald-200/90 leading-snug">
+                                        Times are in{' '}
+                                        <span className="font-semibold text-emerald-100">
+                                          {timeZoneLabel(scheduleTimeZone)}
+                                        </span>
+                                        . This is the timezone set when the schedule was created.
+                                      </p>
+                                    </div>
+                                  </div>
                                   
                                   {Object.keys(groupedSchedules).map((label) => (
                                     <div key={label} className="space-y-2.5">
@@ -417,6 +435,7 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                                         {groupedSchedules[label].map((slot: any) => {
                                           const isSelected = selectedSchedules[label] === slot._id;
                                           const hasConflict = !isSelected && checkConflicts(label, slot);
+                                          const slotTz = slot.timeZone || scheduleTimeZone;
                                           
                                           return (
                                             <button
@@ -441,6 +460,9 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                                                   <span>
                                                     {formatTime12h(slot.startTime)} – {formatTime12h(slot.endTime)}
                                                   </span>
+                                                </p>
+                                                <p className="text-[10px] text-emerald-400/80 mt-1">
+                                                  {timeZoneLabel(slotTz)}
                                                 </p>
                                               </div>
                                               {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0" />}

@@ -12,6 +12,7 @@ import { EnrollmentModel } from "../Enrollments/enrollment.model";
 import { emailService } from "@infra/mail/email.service";
 import { User } from "@modules/User/user.schema";
 import { ChildModel } from "../Child/child.model";
+import { scheduleSlotToUtcRange, ETHIOPIA_TZ } from "@common/utils/timezone";
 
 export class SessionService {
   private sessionDAO = new SessionDAO();
@@ -155,16 +156,17 @@ export class SessionService {
     }
 
 
-    const start = new Date(`${targetDate}T${schedule.startTime}:00`);
-    const end = new Date(`${targetDate}T${schedule.endTime}:00`);
+    const tz = (schedule as any).timeZone || ETHIOPIA_TZ;
+    const { start, end } = scheduleSlotToUtcRange(
+      targetDate,
+      schedule.startTime,
+      schedule.endTime,
+      tz
+    );
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Invalid date or time format");
     }
-
-    // Compensate for Ethiopia (+3) timezone so 11 PM set becomes 11 PM local
-    start.setHours(start.getHours() - 3);
-    end.setHours(end.getHours() - 3);
 
     if (start >= end) {
       throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Start time must be before end time");
@@ -343,16 +345,17 @@ export class SessionService {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, "Schedule template not found");
       }
 
-      const start = new Date(`${data.targetDate}T${schedule.startTime}:00`);
-      const end = new Date(`${data.targetDate}T${schedule.endTime}:00`);
+      const tz = (schedule as any).timeZone || ETHIOPIA_TZ;
+      const { start, end } = scheduleSlotToUtcRange(
+        data.targetDate,
+        schedule.startTime,
+        schedule.endTime,
+        tz
+      );
 
       if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         throw new HttpException(HttpStatusCodes.BAD_REQUEST, "Invalid date format");
       }
-
-      // Compensate for Ethiopia (+3) timezone
-      start.setHours(start.getHours() - 3);
-      end.setHours(end.getHours() - 3);
 
       updateData.startTime = start;
       updateData.endTime = end;

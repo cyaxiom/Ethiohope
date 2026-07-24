@@ -29,6 +29,8 @@ export interface IEnrollment extends Document {
   package?: Types.ObjectId;
   subjects: IEnrollmentSubject[];
   timeBlocks: IEnrollmentTimeBlock[];
+  /** IANA timezone for tutoring timeBlocks (parent local), e.g. America/New_York */
+  scheduleTimeZone?: string;
   notes?: string;
   billingType: 'ONE_TIME' | 'MONTHLY';
   stripeSubscriptionId?: string;
@@ -84,6 +86,7 @@ const EnrollmentSchema = new Schema<IEnrollment>(
     package: { type: Schema.Types.ObjectId, ref: 'TutoringPackage', required: false, index: true },
     subjects: { type: [EnrollmentSubjectSchema], default: [] },
     timeBlocks: { type: [EnrollmentTimeBlockSchema], default: [] },
+    scheduleTimeZone: { type: String, trim: true },
     notes: { type: String, trim: true },
     billingType: {
       type: String,

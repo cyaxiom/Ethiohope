@@ -6,6 +6,7 @@ import Loading from '../../ui/Loading';
 import { getImageUrl } from '../../lib/utils';
 import EditScheduleModal from './EditScheduleModal';
 import ChildCredentialsCard from './ChildCredentialsCard';
+import { timeZoneLabel, ETHIOPIA_TZ } from '../../lib/timezone';
 
 interface ChildDetailModalProps {
   isOpen: boolean;
@@ -221,6 +222,16 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                                       Edit Schedule
                                     </button>
                                   </div>
+                                  {enrollment.selectedSchedules?.[0] && (
+                                    <p className="text-[10px] text-emerald-700 font-semibold">
+                                      Times in{' '}
+                                      {timeZoneLabel(
+                                        enrollment.selectedSchedules.find((s: any) => s?.timeZone)?.timeZone ||
+                                          enrollment.selectedSchedules[0]?.timeZone ||
+                                          ETHIOPIA_TZ
+                                      )}
+                                    </p>
+                                  )}
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {enrollment.selectedSchedules.map((s: any) => s && (
                                       <div key={s._id || s} className="flex items-center gap-2 text-xs font-bold text-gray-700">

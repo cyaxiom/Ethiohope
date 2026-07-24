@@ -325,8 +325,13 @@ export const routes = [
       },
       {
         path: '/parent/childcourses',
-        name: 'Enroll Programs',
-        element: <ParentCourses />,
+        name: 'Programs for Children',
+        element: <ParentCourses audience="children" />,
+      },
+      {
+        path: '/parent/mycourses',
+        name: 'Programs for You',
+        element: <ParentCourses audience="self" />,
       },
       {
         path: '/parent/payments',

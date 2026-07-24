@@ -109,7 +109,8 @@ export class DashboardController {
   public getParentsWithChildren = async (req: Request, res: Response, next: NextFunction) => {
     try {
       logger.info("API: Processing request for parents and children details");
-      const data = await this.dashboardService.getParentsWithChildren();
+      const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const data = await this.dashboardService.getParentsWithChildren(search);
       
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -124,12 +125,57 @@ export class DashboardController {
   public getTeachers = async (req: Request, res: Response, next: NextFunction) => {
     try {
       logger.info("API: Processing request for teacher details");
-      const data = await this.dashboardService.getInstructors();
+      const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const data = await this.dashboardService.getInstructors(search);
       
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "Teachers fetched successfully",
         data
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getChildrenDirectory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const data = await this.dashboardService.getChildrenDirectory(search);
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Children directory fetched successfully",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getAdultStudents = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+      const data = await this.dashboardService.getAdultStudents(search);
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Adult students fetched successfully",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getPersonEnrollments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const parentId = typeof req.query.parentId === 'string' ? req.query.parentId : undefined;
+      const childId = typeof req.query.childId === 'string' ? req.query.childId : undefined;
+      const userId = typeof req.query.userId === 'string' ? req.query.userId : undefined;
+      const data = await this.dashboardService.getPersonEnrollments({ parentId, childId, userId });
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Enrollments fetched successfully",
+        data,
       });
     } catch (error) {
       next(error);

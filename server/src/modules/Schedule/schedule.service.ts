@@ -55,6 +55,7 @@ export class ScheduleService {
         dayOfWeek: scheduleData.dayOfWeek,
         startTime: scheduleData.startTime,
         endTime: scheduleData.endTime,
+        timeZone: scheduleData.timeZone || 'Africa/Addis_Ababa',
         capacity: scheduleData.capacity,
         program: new Types.ObjectId(programId),
         batch: new Types.ObjectId(scheduleData.batch),
@@ -123,8 +124,11 @@ export class ScheduleService {
     }
 
     // Cascade update to future sessions
-    const timeChanged = (scheduleData.startTime && scheduleData.startTime !== existingSchedule.startTime) || 
-                        (scheduleData.endTime && scheduleData.endTime !== existingSchedule.endTime);
+    const timeChanged =
+      (scheduleData.startTime && scheduleData.startTime !== existingSchedule.startTime) ||
+      (scheduleData.endTime && scheduleData.endTime !== existingSchedule.endTime) ||
+      (scheduleData.timeZone &&
+        scheduleData.timeZone !== ((existingSchedule as any).timeZone || 'Africa/Addis_Ababa'));
 
     if (timeChanged) {
        this.syncLinkedSessions(updatedSchedule);

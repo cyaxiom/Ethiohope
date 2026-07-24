@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   UsersRound, Search, Filter, Plus, Edit2, 
   ShieldAlert, Activity, Ban, CheckCircle2,
@@ -24,12 +25,13 @@ import { toast as sonnerToast } from 'sonner';
 // I will write this file and then check roleApi.
 
 const Users: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '');
+  const [roleFilter, setRoleFilter] = useState(searchParams.get('role') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -54,6 +56,15 @@ const Users: React.FC = () => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
     return () => clearTimeout(timer);
   }, [search]);
+
+  React.useEffect(() => {
+    const s = searchParams.get('search');
+    const r = searchParams.get('role');
+    const st = searchParams.get('status');
+    if (s != null) setSearch(s);
+    if (r != null) setRoleFilter(r);
+    if (st != null) setStatusFilter(st);
+  }, [searchParams]);
 
   // Queries
   const { data: usersData, isLoading, isFetching } = useGetUsersQuery(

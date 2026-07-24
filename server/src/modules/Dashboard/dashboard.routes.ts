@@ -75,6 +75,27 @@ export class DashboardRoute implements Routes {
       requirePermission('user.detail.view') as any,
       this.dashboardController.getTeachers
     );
+
+    this.router.get(
+      '/children',
+      authMiddleware,
+      requirePermission('user.detail.view') as any,
+      this.dashboardController.getChildrenDirectory
+    );
+
+    this.router.get(
+      '/adult-students',
+      authMiddleware,
+      requirePermission('user.detail.view') as any,
+      this.dashboardController.getAdultStudents
+    );
+
+    this.router.get(
+      '/person-enrollments',
+      authMiddleware,
+      requirePermission('user.detail.view') as any,
+      this.dashboardController.getPersonEnrollments
+    );
   }
 }
 

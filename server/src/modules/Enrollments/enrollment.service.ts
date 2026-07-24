@@ -168,6 +168,7 @@ export class EnrollmentService {
             package: new Types.ObjectId(data.packageId!) as any,
             subjects: data.subjects || [],
             timeBlocks: data.timeBlocks || [],
+            scheduleTimeZone: data.scheduleTimeZone || 'Africa/Addis_Ababa',
             notes: data.notes,
             billingType: 'MONTHLY',
             status: 'PENDING',

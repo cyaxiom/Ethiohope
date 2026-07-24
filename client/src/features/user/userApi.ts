@@ -76,7 +76,7 @@ export const userApi = api.injectEndpoints({
         method: 'PATCH',
         body: { status },
       }),
-      invalidatesTags: ['Users'],
+      invalidatesTags: ['Users', 'DashboardParents', 'DashboardTeachers', 'DashboardStats'],
     }),
     completeProfile: builder.mutation<any, CompleteProfilePayload>({
       query: (data) => ({

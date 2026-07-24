@@ -35,13 +35,34 @@ export class ChildController {
     res.status(HttpStatusCodes.OK).json({ success: true, data: child });
   });
 
-  // Delete a child profile
+  // Delete a child profile (parent-scoped)
   public deleteChild = asyncHandler(async (req: Request, res: Response) => {
     const r = req as RequestWithTokenPayload;
     const parentId = r.tokenPayload._id.toString();
     const { id } = req.params;
     await this.childService.deleteChild(parentId, id);
     res.status(HttpStatusCodes.OK).json({ success: true, message: "Child profile deleted successfully" });
+  });
+
+  /** Admin: update any child account */
+  public updateChildAdmin = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const child = await this.childService.updateChildAdmin(id, req.body);
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: 'Child account updated successfully',
+      data: child,
+    });
+  });
+
+  /** Admin: delete any child account (+ enrollments) */
+  public deleteChildAdmin = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    await this.childService.deleteChildAdmin(id);
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: 'Child account deleted successfully',
+    });
   });
 
   // Get current child profile & enrollments (Student Dashboard)

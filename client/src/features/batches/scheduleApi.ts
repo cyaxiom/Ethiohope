@@ -13,6 +13,8 @@ export interface Schedule {
   dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
   startTime: string;
   endTime: string;
+  /** IANA zone for wall-clock times (HQ default Ethiopia) */
+  timeZone?: string;
   capacity: number;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +28,7 @@ export interface CreateSchedulePayload {
   dayOfWeek: string;
   startTime: string;
   endTime: string;
+  timeZone?: string;
   capacity: number;
 }
 

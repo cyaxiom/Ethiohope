@@ -247,8 +247,8 @@ const Checkout = () => {
                       <CreditCard className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-white text-[15px]">Credit / debit card</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Secure payment via Stripe</p>
+                      <p className="font-semibold text-white text-[15px]">Visa, Mastercard & more</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Secure card payment via Stripe</p>
                     </div>
                     {paymentMethod === 'stripe' && <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />}
                   </button>

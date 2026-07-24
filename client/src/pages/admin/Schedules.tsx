@@ -18,6 +18,8 @@ import {
 } from '../../features/batches/scheduleApi';
 import { useGetBatchesQuery } from '../../features/batches/batchApi';
 import { useGetProgramsQuery } from '../../features/programs/programApi';
+import TimeZonePicker from '../../components/ui/TimeZonePicker';
+import { ETHIOPIA_TZ, timeZoneLabel } from '../../lib/timezone';
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
@@ -107,6 +109,7 @@ const Schedules: React.FC = () => {
         sessionLabel: schedule.sessionLabel,
         type: schedule.type,
         capacity: schedule.capacity,
+        timeZone: schedule.timeZone || ETHIOPIA_TZ,
         slots: [],
         originalSchedules: []
       };
@@ -251,15 +254,20 @@ const Schedules: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between pt-2">
-                         <div className="flex items-center gap-2">
-                            <Users className="w-3.5 h-3.5 text-gray-400" />
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Cap: {group.capacity || 20}</span>
+                         <div className="flex items-center gap-2 min-w-0">
+                            <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">
+                              Cap: {group.capacity || 20}
+                            </span>
                          </div>
                          <div className="flex items-center gap-2 px-2 py-1 bg-blue-50 rounded-lg border border-blue-100">
                             <Activity className="w-3 h-3 text-blue-500" />
                             <span className="text-[10px] font-black text-blue-700 uppercase tracking-widest">{group.slots.length} Slots</span>
                          </div>
                       </div>
+                      <p className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 border border-emerald-100 rounded-lg px-2 py-1.5">
+                        Times in {timeZoneLabel(group.timeZone || ETHIOPIA_TZ)}
+                      </p>
 
                       <div className="pt-3 border-t border-gray-50 flex items-center gap-3">
                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-500 px-1 text-center">
@@ -340,6 +348,7 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
       sessionLabel: group?.sessionLabel || 'Lecture 1',
       type: group?.type || 'LECTURE',
       capacity: group?.capacity || 20,
+      timeZone: group?.timeZone || group?.originalSchedules?.[0]?.timeZone || ETHIOPIA_TZ,
       slots: isEdit 
         ? group.slots.map((s: any) => ({ _id: s._id, dayOfWeek: s.dayOfWeek, startTime: s.startTime, endTime: s.endTime }))
         : [{ dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '11:00' }]
@@ -347,6 +356,7 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
   });
 
   const selectedProgram = watch('program');
+  const timeZoneValue = watch('timeZone');
   const { fields, append, remove } = useFieldArray({
     control,
     name: "slots"
@@ -389,6 +399,7 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
             sessionLabel: data.sessionLabel,
             type: data.type,
             capacity: data.capacity,
+            timeZone: data.timeZone || ETHIOPIA_TZ,
             dayOfWeek: slot.dayOfWeek,
             startTime: slot.startTime,
             endTime: slot.endTime
@@ -410,6 +421,7 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
             sessionLabel: data.sessionLabel,
             type: data.type,
             capacity: data.capacity,
+            timeZone: data.timeZone || ETHIOPIA_TZ,
             dayOfWeek: slot.dayOfWeek,
             startTime: slot.startTime,
             endTime: slot.endTime,
@@ -501,6 +513,14 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
                <option value="DISCUSSION">Discussion</option>
              </select>
           </div>
+
+          <TimeZonePicker
+            value={timeZoneValue || ETHIOPIA_TZ}
+            onChange={(tz) => setValue('timeZone', tz)}
+            variant="light"
+            title="Schedule timezone"
+            helperText="Enter session times in this timezone. Default is Ethiopia (EAT) for HQ. Zoom/sessions use this zone."
+          />
 
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between">

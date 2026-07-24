@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, User, CheckCircle2, ChevronDown, Activity, Users, Clock, AlertTriangle, BookOpen, CreditCard, ArrowRight } from 'lucide-react';
+import { X, User, CheckCircle2, ChevronDown, Activity, Users, Clock, AlertTriangle, BookOpen, CreditCard, ArrowRight, Globe2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useGetPublicPhasesByProgramQuery } from '../../features/programs/phaseApi';
@@ -8,6 +8,7 @@ import { usePrepareEnrollmentMutation } from '../../features/enrollments/enrollm
 import { useGetParentChildrenQuery } from '../../features/user/userApi';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { ETHIOPIA_TZ, timeZoneLabel } from '../../lib/timezone';
 
 interface ParentEnrollModalProps {
   isOpen: boolean;
@@ -84,6 +85,11 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
       return acc;
     }, {});
   }, [selectedBatch]);
+
+  const scheduleTimeZone =
+    selectedBatch?.schedules?.find((s: any) => s.timeZone)?.timeZone ||
+    selectedBatch?.schedules?.[0]?.timeZone ||
+    ETHIOPIA_TZ;
 
   const requiredSessionLabels = Object.keys(groupedSchedules);
   const isAllSchedulesSelected = requiredSessionLabels.every(label => selectedSchedules[label]);
@@ -330,6 +336,14 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                             {selectedBatchId === batch._id && Object.keys(groupedSchedules).length > 0 && (
                               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                                 <div className="p-6 bg-gray-50 rounded-3xl border-2 border-gray-100 space-y-6 mt-2 ml-4">
+                                  <div className="flex items-start gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2.5">
+                                    <Globe2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                    <p className="text-[11px] text-emerald-800 leading-snug">
+                                      Times are in{' '}
+                                      <span className="font-bold">{timeZoneLabel(scheduleTimeZone)}</span>
+                                      . This is the timezone set when the schedule was created.
+                                    </p>
+                                  </div>
                                   {Object.keys(groupedSchedules).map((label) => (
                                     <div key={label} className="space-y-3">
                                       <h6 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</h6>
@@ -337,6 +351,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                                         {groupedSchedules[label].map((slot: any) => {
                                           const isSelected = selectedSchedules[label] === slot._id;
                                           const hasConflict = !isSelected && checkConflicts(label, slot);
+                                          const slotTz = slot.timeZone || scheduleTimeZone;
                                           return (
                                             <button
                                               key={slot._id}
@@ -351,6 +366,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                                               <div className="flex items-center gap-1.5 text-gray-500 font-bold text-[10px]">
                                                 <Clock className="w-3 h-3" /> {formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}
                                               </div>
+                                              <p className="text-[10px] text-emerald-700 font-semibold">{timeZoneLabel(slotTz)}</p>
                                               {hasConflict && <div className="absolute inset-0 bg-red-50/70 flex items-center justify-center p-2"><AlertTriangle className="w-4 h-4 text-red-600" /></div>}
                                             </button>
                                           );
