@@ -17,7 +17,7 @@ export const DashboardLayout: React.FC = () => {
   return (
     <div
       className={clsx(
-        'dashboard-shell flex min-h-screen font-sans transition-colors duration-300',
+        'dashboard-shell flex h-screen max-h-screen overflow-hidden font-sans transition-colors duration-300',
         isDashboardDark ? 'dark bg-[#0B1121] text-slate-100' : 'bg-gray-50 text-gray-800'
       )}
     >
@@ -28,12 +28,12 @@ export const DashboardLayout: React.FC = () => {
         closeMobile={closeMobile}
       />
 
-      <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out w-full max-w-full min-w-0">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 w-full max-w-full transition-all duration-300 ease-in-out">
         <Header toggleMobileSidebar={toggleMobileSidebar} />
 
         <main
           className={clsx(
-            'flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto w-full max-w-full transition-colors duration-300',
+            'dashboard-main-scroll flex-1 min-h-0 p-3 sm:p-4 lg:p-6 overflow-y-auto overscroll-contain w-full max-w-full transition-colors duration-300',
             isDashboardDark ? 'bg-[#0B1121]' : 'bg-gray-50'
           )}
         >

@@ -310,7 +310,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isMobileOpen ? 'translate-x-0 shadow-2xl shadow-black/40' : '-translate-x-full lg:translate-x-0'
       )}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800/80">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800/80 flex-shrink-0">
         <Link to="/" className="flex items-center gap-3 overflow-hidden min-w-0 group/logo">
           <div className="flex-shrink-0 w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-900/50 group-hover/logo:scale-105 transition-transform">
             <Bot className="w-[18px] h-[18px] text-white" />
@@ -334,7 +334,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      <nav className="sidebar-scroll flex-1 py-5 px-3 overflow-y-auto">
+      <nav className="sidebar-scroll flex-1 min-h-0 py-5 px-3 overflow-y-auto overscroll-contain">
         {navSections.map((section, index) => (
           <div key={section.title} className={clsx(index > 0 && 'mt-6')}>
             <p
@@ -348,24 +348,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-0.5">{section.items.map(renderNavItem)}</div>
           </div>
         ))}
-      </nav>
 
-      <div className="p-3 border-t border-slate-800/80">
-        <button
-          onClick={handleLogout}
-          className={clsx(linkBase, 'w-full text-slate-400 hover:text-red-400 hover:bg-red-500/10')}
-        >
-          <LogOut className="flex-shrink-0 w-[18px] h-[18px]" />
-          <span
-            className={clsx(
-              'whitespace-nowrap transition-all duration-300',
-              isExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
-            )}
+        <div className="mt-6 pt-4 border-t border-slate-800/80">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={clsx(linkBase, 'w-full text-slate-400 hover:text-red-400 hover:bg-red-500/10')}
           >
-            Logout
-          </span>
-        </button>
-      </div>
+            <LogOut className="flex-shrink-0 w-[18px] h-[18px]" />
+            <span
+              className={clsx(
+                'whitespace-nowrap transition-all duration-300',
+                isExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
+              )}
+            >
+              Logout
+            </span>
+          </button>
+        </div>
+      </nav>
     </aside>
   );
 };

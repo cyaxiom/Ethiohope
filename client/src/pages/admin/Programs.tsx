@@ -564,7 +564,7 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
         </div>
         
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+          <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 min-h-0 modal-scroll">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Program Title</label>
               <input 
@@ -855,7 +855,7 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
           </button>
         </div>
         
-        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-6 modal-scroll">
           {/* Phases List */}
           <div className="space-y-3">
             {/* Phases List - Hide when editing */}
@@ -1129,7 +1129,7 @@ const PackageManagementModal: React.FC<{ program: any; onClose: () => void }> = 
           </button>
         </div>
 
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-4 modal-scroll">
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
             <p className="text-sm text-gray-500">
               Each package is billed monthly. Parents pick frequency, subjects, and availability blocks.
