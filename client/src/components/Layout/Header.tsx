@@ -46,27 +46,28 @@ export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
   return (
     <header
       className={clsx(
-        'h-16 border-b flex items-center justify-between px-6 sticky top-0 z-[100] w-full transition-colors duration-300',
+        'h-14 sm:h-16 border-b flex items-center justify-between gap-2 px-3 sm:px-6 sticky top-0 z-[100] w-full transition-colors duration-300',
         isDashboardDark
           ? 'bg-[#0B1121] border-slate-800/80 text-slate-100'
           : 'bg-white border-gray-100 text-gray-800'
       )}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         <button
           onClick={toggleMobileSidebar}
           className={clsx(
-            'lg:hidden p-2 rounded-md focus:outline-none transition-colors',
+            'lg:hidden p-2 rounded-md focus:outline-none transition-colors flex-shrink-0',
             isDashboardDark
               ? 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.05]'
               : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
           )}
+          aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
         <h1
           className={clsx(
-            'text-xl font-semibold tracking-tight',
+            'text-base sm:text-xl font-semibold tracking-tight truncate',
             isDashboardDark ? 'text-white' : 'text-gray-800'
           )}
         >
@@ -74,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
         </h1>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <button
           type="button"
           onClick={toggleDashboardTheme}
@@ -99,9 +100,9 @@ export const Header: React.FC<HeaderProps> = ({ toggleMobileSidebar }) => {
             onClick={handleProfileClick}
             aria-label="Open profile menu"
             aria-expanded={isProfileDropdownOpen}
-            className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-900/30 cursor-pointer hover:shadow-md transition-all"
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-900/30 cursor-pointer hover:shadow-md transition-all"
           >
-            <User className="w-5 h-5" />
+            <User className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <UserProfileDropdown

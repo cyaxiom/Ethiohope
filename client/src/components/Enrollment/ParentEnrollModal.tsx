@@ -146,37 +146,37 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300 border border-gray-100">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-t-2xl sm:rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] animate-in zoom-in-95 duration-300 border border-gray-100">
         
         {/* Header */}
-        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <div>
-            <h3 className="text-2xl font-black text-gray-900 leading-tight">Enroll Your Child</h3>
-            <p className="text-blue-600 font-bold text-sm uppercase tracking-wider">{program.title} 🚀</p>
+        <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-start gap-3 bg-gray-50/50 flex-shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">Enroll Your Child</h3>
+            <p className="text-blue-600 font-bold text-xs sm:text-sm uppercase tracking-wider truncate mt-1">{program.title}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-            <X className="w-6 h-6 text-gray-500" />
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0" aria-label="Close">
+            <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
           </button>
         </div>
 
         {/* Steps Indicator */}
-        <div className="flex px-12 pt-8 pb-4">
+        <div className="flex px-4 sm:px-12 pt-5 sm:pt-8 pb-3 sm:pb-4 flex-shrink-0">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex-1 flex items-center">
-              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-                step === s ? 'bg-blue-600 text-white scale-110 shadow-lg shadow-blue-200' : 
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                step === s ? 'bg-blue-600 text-white scale-105 sm:scale-110 shadow-lg shadow-blue-200' : 
                 step > s ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'
               }`}>
                 {step > s ? '✓' : s}
               </div>
-              {s < 3 && <div className={`flex-1 h-1.5 mx-2 rounded-full transition-all duration-500 ${step > s ? 'bg-green-500' : 'bg-gray-100'}`} />}
+              {s < 3 && <div className={`flex-1 h-1 sm:h-1.5 mx-1.5 sm:mx-2 rounded-full transition-all duration-500 ${step > s ? 'bg-green-500' : 'bg-gray-100'}`} />}
             </div>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-10 overflow-y-auto flex-1 custom-scrollbar">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="px-4 sm:px-10 py-5 sm:py-8 overflow-y-auto flex-1 custom-scrollbar">
             
             {/* Step 1: Select Child & Phase */}
             {step === 1 && (
@@ -437,13 +437,13 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
 
           {/* Footer Actions */}
           {step < 4 && (
-            <div className="px-10 py-8 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="px-4 sm:px-10 py-4 sm:py-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 bg-gray-50/50 pb-[max(1rem,env(safe-area-inset-bottom))] flex-shrink-0">
               {step > 1 ? (
-                <button type="button" onClick={() => setStep(step - 1)} className="px-8 py-3.5 text-gray-600 font-black hover:bg-gray-200 rounded-[1.2rem] transition-all">
+                <button type="button" onClick={() => setStep(step - 1)} className="w-full sm:w-auto px-6 sm:px-8 py-3.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl sm:rounded-[1.2rem] transition-all text-center">
                   Back
                 </button>
               ) : (
-                <div />
+                <div className="hidden sm:block" />
               )}
               
               <button 
@@ -454,7 +454,7 @@ const ParentEnrollModal: React.FC<ParentEnrollModalProps> = ({ isOpen, onClose, 
                   (step === 2 && (!selectedBatchId || !isAllSchedulesSelected)) ||
                   isSubmitting
                 }
-                className={`px-10 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[1.2rem] shadow-xl shadow-blue-100 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center gap-2`}
+                className="w-full sm:w-auto px-8 sm:px-10 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl sm:rounded-[1.2rem] shadow-lg shadow-blue-100 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSubmitting ? <Activity className="w-5 h-5 animate-spin" /> : null}
                 {step === 3 ? 'Confirm & Pay' : 'Next Step'}

@@ -47,8 +47,8 @@ const ParentCourses: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
           >
             <header className="mb-10">
-              <h1 className="text-4xl font-black text-blue-900 tracking-tight mb-3">Explore Programs 🚀</h1>
-              <p className="text-gray-500 font-medium text-lg max-w-2xl leading-relaxed">
+              <h1 className="text-2xl sm:text-4xl font-black text-blue-900 tracking-tight mb-3">Explore Programs 🚀</h1>
+              <p className="text-gray-500 font-medium text-base sm:text-lg max-w-2xl leading-relaxed">
                 Our Popular Programs: Discover amazing coding adventures designed for your children.
               </p>
             </header>
@@ -183,9 +183,9 @@ const ProgramDetailView: React.FC<{ programId: string; onBack: () => void; onEnr
       </button>
 
       {/* Hero-like Section */}
-      <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-blue-900/5 border border-blue-50/50 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="bg-white rounded-[3rem] p-4 sm:p-8 md:p-12 shadow-2xl shadow-blue-900/5 border border-blue-50/50 grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
         <div>
-          <h1 className="text-5xl font-black text-blue-900 mb-6 leading-tight tracking-tighter">
+          <h1 className="text-3xl sm:text-5xl font-black text-blue-900 mb-6 leading-tight tracking-tighter">
             {program.title}
           </h1>
           <p className="text-gray-500 text-lg font-medium leading-relaxed mb-8">

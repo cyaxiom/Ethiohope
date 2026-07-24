@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useGetPublicProgramsQuery } from "../../../features/programs/programApi";
 import { getImageUrl } from "../../../lib/utils";
+import { stripHtml } from "../../../lib/html";
 
 const CoursesSection = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -123,7 +124,7 @@ const CoursesSection = () => {
                       {program.title}
                     </h3>
                     <p className="text-slate-400 text-sm mb-4 line-clamp-3">
-                      {program.description || 'Join our expert-led program to master new skills through hands-on projects and interactive learning.'}
+                      {stripHtml(program.description) || 'Join our expert-led program to master new skills through hands-on projects and interactive learning.'}
                     </p>
                     
                     <div className="mt-auto mb-5">

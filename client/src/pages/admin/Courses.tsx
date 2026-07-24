@@ -8,11 +8,13 @@ import {
   ArrowRight, ArrowLeft,
   AlertTriangle
 } from 'lucide-react';
-import { useForm, useFieldArray, Control, UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import { useForm, useFieldArray, Control, UseFormRegister, UseFormWatch, UseFormSetValue, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast as sonnerToast } from 'sonner';
+import RichTextEditor from '../../components/ui/RichTextEditor';
+import { hasRichTextContent, stripHtml } from '../../lib/html';
 import { 
   useGetCoursesQuery, 
   useCreateCourseMutation, 
@@ -116,16 +118,16 @@ const Courses: React.FC = () => {
   const meta = coursesData?.meta;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Course Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Course Management</h1>
           <p className="text-gray-500 text-sm mt-1">Create and manage curriculum, lessons, and exercises.</p>
         </div>
         {canCreate && (
           <button 
             onClick={() => { setSelectedCourse(null); setIsModalOpen(true); }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors w-full sm:w-auto flex-shrink-0"
           >
             <Plus className="w-5 h-5" />
             Add Course
@@ -200,7 +202,7 @@ const Courses: React.FC = () => {
               </div>
               <div className="p-5 flex-1 flex flex-col">
                 <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">{course.title}</h3>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{course.description}</p>
+                <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{stripHtml(course.description)}</p>
                 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                   <div className="flex items-center gap-3">
@@ -271,8 +273,8 @@ const Courses: React.FC = () => {
       )}
 
       {courseToDelete && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-in zoom-in duration-200 my-10">
+        <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-in zoom-in duration-200 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8" />
             </div>
@@ -345,36 +347,36 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl my-10 animate-in zoom-in duration-300 flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-3xl shadow-2xl w-full max-w-4xl animate-in zoom-in duration-300 flex flex-col max-h-[94vh] sm:max-h-[85vh]">
         {/* Modal Header */}
-        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <div>
-            <h3 className="text-2xl font-black text-gray-900 leading-tight">{isEdit ? 'Edit Course' : 'Create New Course'}</h3>
-            <p className="text-blue-600 font-bold text-sm uppercase tracking-wider">Step {step} of 3 • {step === 1 ? 'Course Info' : step === 2 ? 'Curriculum' : 'Content Details'}</p>
+        <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-start gap-3 bg-gray-50/50 flex-shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-2xl font-black text-gray-900 leading-tight">{isEdit ? 'Edit Course' : 'Create New Course'}</h3>
+            <p className="text-blue-600 font-bold text-xs sm:text-sm uppercase tracking-wider mt-1">Step {step} of 3 • {step === 1 ? 'Course Info' : step === 2 ? 'Curriculum' : 'Content Details'}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-            <X className="w-6 h-6 text-gray-500" />
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0">
+            <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
           </button>
         </div>
 
         {/* Step Indicator */}
-        <div className="flex px-12 pt-8 pb-4">
+        <div className="flex px-4 sm:px-12 pt-5 sm:pt-8 pb-3 sm:pb-4 flex-shrink-0">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex-1 flex items-center">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm transition-all duration-500 ${
-                step === s ? 'bg-blue-600 text-white scale-110 shadow-lg shadow-blue-100' : 
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-black text-sm transition-all duration-500 ${
+                step === s ? 'bg-blue-600 text-white scale-105 sm:scale-110 shadow-lg shadow-blue-100' : 
                 step > s ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'
               }`}>
                 {step > s ? '✓' : s}
               </div>
-              {s < 3 && <div className={`flex-1 h-1 mx-4 rounded-full transition-all duration-700 ${step > s ? 'bg-green-500' : 'bg-gray-100'}`} />}
+              {s < 3 && <div className={`flex-1 h-1 mx-2 sm:mx-4 rounded-full transition-all duration-700 ${step > s ? 'bg-green-500' : 'bg-gray-100'}`} />}
             </div>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col">
-          <div className="p-8 overflow-y-auto flex-1 custom-scrollbar">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="px-4 sm:px-8 py-5 sm:py-8 overflow-y-auto flex-1 custom-scrollbar">
             {step === 1 && (
               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -389,15 +391,24 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
                     </div>
                     <div>
                       <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
-                      <textarea 
-                        {...register('description', { required: true })} 
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all min-h-[120px]" 
-                        placeholder="What will students learn?" 
+                      <Controller
+                        name="description"
+                        control={control}
+                        rules={{
+                          validate: (v) => hasRichTextContent(v) || 'Description is required',
+                        }}
+                        render={({ field }) => (
+                          <RichTextEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="What will students learn? Add structure with headings, bold, and lists…"
+                          />
+                        )}
                       />
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Program</label>
                         <select 
@@ -492,19 +503,19 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
             )}
           </div>
 
-          <div className="px-8 py-6 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div className="px-4 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 bg-gray-50/50 pb-[max(1rem,env(safe-area-inset-bottom))] flex-shrink-0">
             {step > 1 ? (
-              <button type="button" onClick={prevStep} className="flex items-center gap-2 px-6 py-3 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-all">
+              <button type="button" onClick={prevStep} className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-all">
                 <ArrowLeft className="w-5 h-5" /> Back
               </button>
-            ) : <div />}
+            ) : <div className="hidden sm:block" />}
             
             {step < 3 ? (
               <button 
                 type="button" 
                 onClick={nextStep}
-                disabled={!watch('title') || !watch('description') || !watch('program') || !watch('phase') || !watch('thumbnail')}
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.95] disabled:opacity-50"
+                disabled={!watch('title') || !hasRichTextContent(watch('description')) || !watch('program') || !watch('phase') || !watch('thumbnail')}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.95] disabled:opacity-50"
               >
                 Next Step <ArrowRight className="w-5 h-5" />
               </button>
@@ -512,7 +523,7 @@ const CourseModal: React.FC<{ onClose: () => void, course?: any }> = ({ onClose,
               <button 
                 type="submit" 
                 disabled={isCreating || isUpdating}
-                className="flex items-center gap-2 px-10 py-3 bg-green-600 hover:bg-green-700 text-white font-black rounded-xl shadow-lg shadow-green-100 transition-all active:scale-[0.95] disabled:opacity-50"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-10 py-3 bg-green-600 hover:bg-green-700 text-white font-black rounded-xl shadow-lg shadow-green-100 transition-all active:scale-[0.95] disabled:opacity-50"
               >
                 {isCreating || isUpdating ? <Activity className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                 {isEdit ? 'Update Course' : 'Publish Course'}
@@ -669,11 +680,22 @@ const VideoUrlsManager: React.FC<{ weekIndex: number, lessonIndex: number, contr
               className="w-full px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs"
               placeholder={`Lecture ${videoIndex + 1} subtitle (optional)`}
             />
-            <textarea
-              {...register(`weeks.${weekIndex}.lessons.${lessonIndex}.videoUrls.${videoIndex}.description`)}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs min-h-[70px]"
-              placeholder="Video description (optional)"
-            />
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-1">Video description (optional)</label>
+              <Controller
+                name={`weeks.${weekIndex}.lessons.${lessonIndex}.videoUrls.${videoIndex}.description`}
+                control={control}
+                render={({ field: descField }) => (
+                  <RichTextEditor
+                    compact
+                    value={descField.value || ''}
+                    onChange={descField.onChange}
+                    placeholder="Video description (optional)"
+                    minHeightClass="min-h-[80px]"
+                  />
+                )}
+              />
+            </div>
           </div>
         ))}
       </div>

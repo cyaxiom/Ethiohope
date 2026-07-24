@@ -71,27 +71,27 @@ export const ParentChildren: React.FC = () => {
     <div className="animate-fadeIn pb-8 max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-blue-900 tracking-tight mb-3">My Children 👨‍👩‍👧‍👦</h1>
-          <p className="text-gray-500 font-medium text-lg max-w-xl leading-relaxed">
+          <h1 className="text-2xl sm:text-4xl font-black text-blue-900 tracking-tight mb-3">My Children 👨‍👩‍👧‍👦</h1>
+          <p className="text-gray-500 font-medium text-base sm:text-lg max-w-xl leading-relaxed">
             Monitor your children's educational journey, track their progress, and view their latest enrollments all in one place.
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl font-bold text-sm border border-blue-100 flex items-center gap-2">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl font-bold text-sm border border-blue-100 flex items-center gap-2 flex-1 sm:flex-none justify-center">
             <User className="w-4 h-4" />
             {childrenData.length} Students
           </div>
           <button 
             onClick={() => navigate('/parent/childcourses')}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 rounded-2xl font-bold transition-all"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600 rounded-2xl font-bold transition-all w-full sm:w-auto flex-1 sm:flex-none"
           >
             <BookOpen className="w-4 h-4" />
             Visit Courses
           </button>
           <button 
             onClick={() => setIsRegisterOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95 w-full sm:w-auto flex-1 sm:flex-none"
           >
             <Plus className="w-5 h-5" />
             Add Child
@@ -237,7 +237,7 @@ export const ParentChildren: React.FC = () => {
                 </div>
 
                 {/* Overall Stats Section */}
-                <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 relative z-10">
                   <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex flex-col items-center justify-center text-center">
                     <span className="text-2xl font-black text-blue-600">{child.stats?.avgProgress || 0}%</span>
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Avg Progress</span>
@@ -479,19 +479,19 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
-        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <div>
-            <h3 className="text-2xl font-black text-gray-900 leading-tight">Add Your Child</h3>
-            <p className="text-gray-500 font-medium text-sm">Register your child to start exploring programs.</p>
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-t-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] animate-in zoom-in-95 duration-300">
+        <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-start gap-3 bg-gray-50/50 flex-shrink-0">
+          <div className="min-w-0">
+            <h3 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">Add Your Child</h3>
+            <p className="text-gray-500 font-medium text-sm mt-1">Register your child to start exploring programs.</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-            <X className="w-6 h-6 text-gray-500" />
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors flex-shrink-0" aria-label="Close">
+            <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
           </button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-8 overflow-y-auto space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="px-4 sm:px-8 py-5 sm:py-8 overflow-y-auto space-y-5 sm:space-y-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">First Name</label>
               <input {...register('firstname', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
@@ -504,7 +504,7 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Date of Birth</label>
               <input 
@@ -536,7 +536,7 @@ const RegisterChildModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
              <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
               <select {...register('gender', { required: true })} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all">

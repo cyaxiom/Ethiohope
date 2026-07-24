@@ -139,29 +139,29 @@ const Tracks = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto min-h-screen space-y-8 pb-20">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto min-h-screen space-y-8 pb-20">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight">
-            <BarChart3 className="text-blue-600" size={32} />
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3 tracking-tight">
+            <BarChart3 className="text-blue-600 flex-shrink-0" size={32} />
             Analytics Dashboard
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+          <p className="text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2 flex-wrap">
             Google Analytics 4 • <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">Connected</span>
           </p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-r border-gray-100 dark:border-gray-700 mr-1">
+        <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 border-r border-gray-100 dark:border-gray-700 mr-1 flex-shrink-0">
             <Clock size={16} className="text-gray-400" />
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Time Period</span>
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Time Period</span>
           </div>
           {['yesterday', 'week', 'month', 'year'].map((f) => (
             <button
               key={f}
               onClick={() => setTimeFilter(f)}
-              className={`px-5 py-1.5 rounded-xl text-sm font-bold transition-all ${
+              className={`px-3 sm:px-5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex-shrink-0 ${
                 timeFilter === f 
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none' 
                   : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -222,19 +222,19 @@ const Tracks = () => {
         </motion.div>
 
         {/* Platform Filter */}
-        <div className="lg:col-span-3 bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-center overflow-hidden relative">
+        <div className="lg:col-span-3 bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-center overflow-hidden relative">
           <div className="absolute -right-10 -bottom-10 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
             <Globe size={240} />
           </div>
-          <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+          <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4 sm:mb-6 flex items-center gap-2">
             <Globe size={16} className="text-blue-500" /> Traffic Acquisition Source
           </h3>
-          <div className="flex flex-wrap gap-3 relative z-10">
+          <div className="flex gap-2 sm:gap-3 relative z-10 overflow-x-auto pb-1 -mx-1 px-1">
             {['all', 'TikTok', 'Telegram', 'Facebook', 'Instagram', 'LinkedIn'].map((p) => (
               <button
                 key={p}
                 onClick={() => setPlatform(p)}
-                className={`px-6 py-3 rounded-2xl text-sm font-bold border-2 transition-all duration-300 ${
+                className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
                   platform === p 
                     ? 'border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' 
                     : 'border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-gray-900/50 dark:border-gray-800 dark:text-gray-400'
@@ -299,14 +299,14 @@ const Tracks = () => {
       {/* Main Chart */}
       <motion.div 
         variants={itemVariants}
-        className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden relative"
+        className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden relative"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 sm:mb-10 gap-4">
           <div>
-            <h3 className="text-xl font-bold tracking-tight">Growth & Engagement</h3>
+            <h3 className="text-lg sm:text-xl font-bold tracking-tight">Growth & Engagement</h3>
             <p className="text-sm text-gray-500 mt-1">Daily trend for Sessions vs. Active Users</p>
           </div>
-          <div className="flex flex-wrap gap-6 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-2xl">
+          <div className="flex flex-wrap gap-3 sm:gap-6 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-2xl">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div> 
               <span className="text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">Visits</span>
@@ -321,7 +321,7 @@ const Tracks = () => {
             </div>
           </div>
         </div>
-        <div className="h-[400px] w-full">
+        <div className="h-[260px] sm:h-[400px] w-full">
           {loadingTimeline ? (
              <div className="w-full h-full bg-gray-50 dark:bg-gray-900/50 animate-pulse rounded-3xl flex items-center justify-center">
                <div className="flex flex-col items-center gap-4">
@@ -384,11 +384,11 @@ const Tracks = () => {
         {/* Top Pages */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
+          className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
         >
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-xl font-bold tracking-tight">Top Content</h3>
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight">Top Content</h3>
               <p className="text-sm text-gray-500">Most visited paths</p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-600">
@@ -425,13 +425,13 @@ const Tracks = () => {
         {/* Traffic Sources Breakdown */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
+          className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
         >
           <div className="mb-8">
-            <h3 className="text-xl font-bold tracking-tight">Source Distribution</h3>
+            <h3 className="text-lg sm:text-xl font-bold tracking-tight">Source Distribution</h3>
             <p className="text-sm text-gray-500">How users find you</p>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-[220px] sm:h-[300px] w-full">
             {loadingSources ? (
                <div className="w-full h-full bg-gray-50 dark:bg-gray-900/50 animate-pulse rounded-3xl"></div>
             ) : (
@@ -474,11 +474,11 @@ const Tracks = () => {
       {/* Top Countries Breakdown */}
       <motion.div 
         variants={itemVariants}
-        className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
+        className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
       >
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h3 className="text-xl font-bold tracking-tight">Top Countries</h3>
+            <h3 className="text-lg sm:text-xl font-bold tracking-tight">Top Countries</h3>
             <p className="text-sm text-gray-500">Visitor locations ranked by visit count</p>
           </div>
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
@@ -529,11 +529,11 @@ const Tracks = () => {
       {/* Link Generator Tool */}
       <motion.div 
         variants={itemVariants}
-        className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
+        className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700"
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h3 className="text-xl font-bold tracking-tight">Tracking Link Generator</h3>
+            <h3 className="text-lg sm:text-xl font-bold tracking-tight">Tracking Link Generator</h3>
             <p className="text-sm text-gray-500">Create special links for your social media posts to track them accurately</p>
           </div>
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
@@ -594,7 +594,7 @@ const SummaryCard = ({ title, value, icon, isLoading, info, metricKey, hovered, 
     whileHover={{ y: -8, transition: { duration: 0.2 } }}
     onMouseEnter={() => setHovered(metricKey)}
     onMouseLeave={() => setHovered(null)}
-    className="bg-white dark:bg-gray-800 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 group transition-all relative overflow-hidden"
+    className="bg-white dark:bg-gray-800 p-4 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 group transition-all relative overflow-hidden"
   >
     <div className="absolute top-0 right-0 p-4">
       <div className="relative">

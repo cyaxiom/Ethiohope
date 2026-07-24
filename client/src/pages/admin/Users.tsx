@@ -105,16 +105,16 @@ const Users: React.FC = () => {
   const stats = meta?.stats;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">User Management</h1>
           <p className="text-gray-500 text-sm mt-1">Manage system users, roles, and access.</p>
         </div>
         {canCreate && (
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors w-full sm:w-auto"
           >
             <Plus className="w-5 h-5" />
             Add User
@@ -238,9 +238,102 @@ const Users: React.FC = () => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Users list — cards on mobile, table on md+ */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {isLoading || isFetching ? (
+            <div className="px-4 py-10 text-center text-gray-400">
+              <Activity className="w-6 h-6 animate-spin mx-auto mb-2" />
+              Loading users...
+            </div>
+          ) : users.length === 0 ? (
+            <div className="px-4 py-10 text-center text-gray-400">No users found.</div>
+          ) : (
+            users.map((user: any) => (
+              <div key={user.id} className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                    {user.firstname?.[0]}{user.lastname?.[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-800 truncate">{user.name}</p>
+                        <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium flex-shrink-0 ${
+                        user.status === 'active' ? 'bg-emerald-50 text-emerald-700' :
+                        user.status === 'suspended' ? 'bg-amber-50 text-amber-700' :
+                        'bg-red-50 text-red-700'
+                      }`}>
+                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {user.roles.map((r: any) => (
+                        <span key={r.id} className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-medium rounded-md">
+                          {r.name}
+                        </span>
+                      ))}
+                      {user.roles.length === 0 && <span className="text-gray-400 text-xs">None</span>}
+                    </div>
+                  </div>
+                </div>
+                {canUpdate && (
+                  <div className="flex items-center justify-end gap-1 pt-1 border-t border-gray-50">
+                    {user.status !== 'active' && (
+                      <button
+                        onClick={() => handleStatusChangeClick(user.id, 'active')}
+                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                        title="Activate User"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    {user.status !== 'suspended' && (
+                      <button
+                        onClick={() => handleStatusChangeClick(user.id, 'suspended')}
+                        className="p-2 text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                        title="Suspend User"
+                      >
+                        <Activity className="w-4 h-4" />
+                      </button>
+                    )}
+                    {user.status !== 'blocked' && (
+                      <button
+                        onClick={() => handleStatusChangeClick(user.id, 'blocked')}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Block User"
+                      >
+                        <Ban className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setSelectedUser(user); setIsEditRolesModalOpen(true); }}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Edit Roles"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    {canDelete && (
+                      <button
+                        onClick={() => setUserToDelete(user)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="Delete User"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm">
               <tr>
@@ -289,7 +382,7 @@ const Users: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flexItems-center px-2.5 py-1 rounded-md text-xs font-medium ${
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${
                         user.status === 'active' ? 'bg-emerald-50 text-emerald-700' :
                         user.status === 'suspended' ? 'bg-amber-50 text-amber-700' :
                         'bg-red-50 text-red-700'
@@ -353,13 +446,13 @@ const Users: React.FC = () => {
           </table>
         </div>
         
-        {/* Pagination placeholder */}
+        {/* Pagination */}
         {meta && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-gray-500 text-center sm:text-left">
               Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to <span className="font-medium">{Math.min(page * limit, meta.total)}</span> of <span className="font-medium">{meta.total}</span> users
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center sm:justify-end">
               <button 
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -397,8 +490,8 @@ const Users: React.FC = () => {
 
       {/* Confirm Status Change Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-6 my-10">
+        <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
               <ShieldAlert className="w-6 h-6" />
             </div>
@@ -427,13 +520,13 @@ const Users: React.FC = () => {
 
       {/* Cascade Delete Confirmation Modal */}
       {userToDelete && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-8 text-center">
-            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Trash2 className="w-10 h-10" />
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200 p-6 sm:p-8 text-center max-h-[92vh] overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <Trash2 className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Cascade Delete User?</h3>
-            <div className="text-gray-500 mb-8 space-y-4">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Cascade Delete User?</h3>
+            <div className="text-gray-500 mb-6 sm:mb-8 space-y-4">
               <p>Are you sure you want to delete <span className="font-bold text-gray-800">"{userToDelete.name}"</span>?</p>
               <div className="bg-red-50 p-4 rounded-xl text-left border border-red-100">
                 <p className="text-red-600 text-xs font-black uppercase tracking-widest mb-2">Warning: Data Cleanup</p>
@@ -498,17 +591,17 @@ const CreateUserModal: React.FC<{ onClose: () => void, roles: any[] }> = ({ onCl
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[92vh] sm:max-h-[85vh] sm:my-10">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <h3 className="text-lg font-bold text-gray-800">Create New User</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             ✕
           </button>
         </div>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-4 sm:p-6 space-y-4 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
               <input {...register('firstname', { required: true })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
@@ -576,16 +669,16 @@ const EditRolesModal: React.FC<{ user: any, onClose: () => void, rolesList: any[
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h3 className="text-lg font-bold text-gray-800">Edit Roles: {user.name}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[92vh] sm:max-h-[85vh] sm:my-10">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <h3 className="text-lg font-bold text-gray-800 truncate pr-2">Edit Roles: {user.name}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
             ✕
           </button>
         </div>
         
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
             {rolesList.map(role => (
               <label key={role._id} className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">

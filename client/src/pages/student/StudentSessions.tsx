@@ -130,7 +130,7 @@ export default function StudentSessions() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: i * 0.1 }}
         key={session._id} 
-        className={`bg-white rounded-[40px] p-8 border ${isNow ? 'border-blue-400 ring-4 ring-blue-50' : isEnded ? 'border-gray-200 grayscale-[0.5]' : 'border-gray-100'} shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full relative overflow-hidden group transition-all`}
+        className={`bg-white rounded-[40px] p-4 sm:p-8 border ${isNow ? 'border-blue-400 ring-4 ring-blue-50' : isEnded ? 'border-gray-200 grayscale-[0.5]' : 'border-gray-100'} shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full relative overflow-hidden group transition-all`}
       >
         {isNow && (
           <div className="absolute top-0 right-0 px-6 py-2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-3xl">
@@ -229,15 +229,15 @@ export default function StudentSessions() {
   }
 
   return (
-    <div className="p-6 md:p-8 w-full max-w-7xl mx-auto space-y-12 bg-gray-50/30 min-h-screen">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-12 bg-gray-50/30 min-h-screen">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 sm:gap-8">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-4 py-1 bg-blue-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-200">
              Student Portal
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight flex items-center gap-4">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 tracking-tight flex items-center gap-4">
             Live Learning
           </h1>
           <p className="text-gray-500 font-bold max-w-xl">

@@ -127,15 +127,15 @@ export default function Sessions() {
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-fadeIn">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-        <div>
-          <h1 className="text-3xl font-black text-gray-800 flex items-center gap-3">
-            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
-              <Video className="w-8 h-8" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-800 flex items-center gap-3">
+            <div className="p-2 sm:p-3 bg-blue-50 rounded-2xl text-blue-600 flex-shrink-0">
+              <Video className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
             Live Sessions
           </h1>
-          <p className="text-gray-500 font-medium mt-2">Create and manage upcoming live classes from your schedules.</p>
+          <p className="text-gray-500 font-medium mt-2 text-sm sm:text-base">Create and manage upcoming live classes from your schedules.</p>
         </div>
         {canCreate && (
           <button 
@@ -144,7 +144,7 @@ export default function Sessions() {
               setFormData({ scheduleId: '', targetDate: '' });
               setIsModalOpen(true);
             }}
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-100 transition-all active:scale-95 shrink-0"
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-black shadow-lg shadow-blue-100 transition-all active:scale-95 shrink-0 w-full md:w-auto"
           >
             <Plus className="w-5 h-5" />
             Generate Session
@@ -320,7 +320,7 @@ export default function Sessions() {
       {/* Modal Section */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -332,16 +332,16 @@ export default function Sessions() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden my-10"
+              className="relative w-full max-w-xl bg-white rounded-t-2xl sm:rounded-[2.5rem] shadow-2xl overflow-hidden my-0 sm:my-10 max-h-[92vh] flex flex-col"
             >
-              <div className="p-8 md:p-12">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-black text-gray-800">
+              <div className="p-4 sm:p-8 md:p-12 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-800">
                     {editingSessionId ? 'Edit Session' : 'Generate New Session'}
                   </h2>
                   <button 
                     onClick={() => setIsModalOpen(false)}
-                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors flex-shrink-0"
                   >
                     <AlertCircle className="w-6 h-6 text-gray-400 rotate-45" />
                   </button>
@@ -354,7 +354,7 @@ export default function Sessions() {
                       name="scheduleId" 
                       value={formData.scheduleId} 
                       onChange={handleChange}
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700 appearance-none"
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700 appearance-none"
                     >
                       <option value="">Choose a schedule template...</option>
                       {schedules.map((s: any) => (
@@ -372,22 +372,22 @@ export default function Sessions() {
                       name="targetDate" 
                       value={formData.targetDate} 
                       onChange={handleChange}
-                      className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700"
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-gray-700"
                     />
                   </div>
 
-                  <div className="pt-4 flex gap-4">
+                  <div className="pt-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button 
                       type="button" 
                       onClick={() => setIsModalOpen(false)}
-                      className="flex-1 py-4 bg-gray-50 text-gray-500 font-black rounded-2xl hover:bg-gray-100 transition-all"
+                      className="flex-1 py-3 sm:py-4 bg-gray-50 text-gray-500 font-black rounded-2xl hover:bg-gray-100 transition-all"
                     >
                       Cancel
                     </button>
                     <button 
                       type="submit" 
                       disabled={isCreating || isUpdating}
-                      className="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 py-3 sm:py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {(isCreating || isUpdating) ? <Activity className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
                       {editingSessionId ? 'Save Changes' : 'Generate Session'}

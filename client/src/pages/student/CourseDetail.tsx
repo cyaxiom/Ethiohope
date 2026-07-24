@@ -14,6 +14,8 @@ import { RootState } from '../../app/store';
 import { hasPermission } from '../../lib/rbac';
 import { toast } from 'sonner';
 import { Button } from '../../components/ui/Button';
+import RichTextContent from '../../components/ui/RichTextContent';
+import { stripHtml } from '../../lib/html';
 
 type CourseVideoItem = string | {
   url?: string;
@@ -394,22 +396,22 @@ const CourseDetail: React.FC = () => {
 
   // 8. Main Render
   return (
-    <div className="max-w-7xl mx-auto pb-20 animate-fadeIn px-4">
+    <div className="max-w-7xl mx-auto pb-20 animate-fadeIn px-4 sm:px-8">
       {/* Back Button */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <Link to="/student/courses" className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 font-bold transition-colors group">
           <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
           Back to Courses
         </Link>
-        <div className="flex items-center gap-3">
-           <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Course Progress</span>
-           <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+           <span className="text-xs font-black text-gray-400 uppercase tracking-widest flex-shrink-0">Course Progress</span>
+           <div className="flex-1 sm:flex-none sm:w-32 h-2 bg-gray-100 rounded-full overflow-hidden min-w-0">
              <div 
                className="h-full bg-blue-500 transition-all duration-1000" 
                style={{ width: `${coursePercentage}%` }}
              />
            </div>
-           <span className="text-xs font-black text-blue-600">{coursePercentage}%</span>
+           <span className="text-xs font-black text-blue-600 flex-shrink-0">{coursePercentage}%</span>
         </div>
       </div>
 
@@ -495,9 +497,11 @@ const CourseDetail: React.FC = () => {
                       <h2 className="text-2xl font-black text-gray-800 mb-2">
                         {selectedVideoMeta.subtitle}
                       </h2>
-                      <p className="text-gray-500 font-medium leading-relaxed">
-                        {selectedVideoMeta.description}
-                      </p>
+                      <RichTextContent
+                        html={selectedVideoMeta.description}
+                        className="text-gray-500 font-medium leading-relaxed"
+                        fallback="Watch this lecture video"
+                      />
                     </>
                   );
                 })()}
@@ -596,9 +600,10 @@ const CourseDetail: React.FC = () => {
               </div>
               
               <h1 className="text-3xl font-black text-gray-800 mb-4">{course.title}</h1>
-              <p className="text-gray-500 font-medium leading-relaxed mb-8">
-                {course.description}
-              </p>
+              <RichTextContent
+                html={course.description}
+                className="text-gray-500 font-medium leading-relaxed mb-8"
+              />
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-50">
                 <div className="flex flex-col">
@@ -760,7 +765,7 @@ const CourseDetail: React.FC = () => {
                                                           }`}>Lecture {videoIndex + 1}</span>
                                                           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{videoMeta.subtitle}</span>
                                                         </div>
-                                                        <h6 className="text-sm font-black text-gray-800 truncate">{videoMeta.description}</h6>
+                                                        <h6 className="text-sm font-black text-gray-800 truncate">{stripHtml(videoMeta.description) || videoMeta.subtitle}</h6>
                                                         <p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">Click to play this lecture</p>
                                                       </div>
                                                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all transform ${

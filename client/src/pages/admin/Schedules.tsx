@@ -124,18 +124,18 @@ const Schedules: React.FC = () => {
   const groupedList = Object.values(groupedSchedules);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Schedule Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Schedule Management</h1>
           <p className="text-gray-500 text-sm mt-1">
-            Schedules belong to a program. Pick the program, then a batch, then add session slots — learners enroll into those program schedules.
+            Schedules belong to a program. Pick the program, then a batch, then add session slots.
           </p>
         </div>
         {canCreate && (
           <button 
             onClick={() => { setSelectedScheduleGroup(null); setIsModalOpen(true); }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors w-full sm:w-auto flex-shrink-0"
           >
             <Plus className="w-5 h-5" />
             Add Schedule
@@ -218,7 +218,7 @@ const Schedules: React.FC = () => {
                         </span>
                         <h3 className="text-lg font-bold text-gray-800 mt-1">{group.sessionLabel}</h3>
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 opacity-100">
                          <button 
                            onClick={() => { setSelectedScheduleGroup(group); setIsModalOpen(true); }}
                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -237,14 +237,14 @@ const Schedules: React.FC = () => {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         {group.slots.map((slot: any, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between bg-gray-50/50 p-2 rounded-lg border border-gray-50">
-                             <div className="flex items-center gap-2 text-gray-700">
-                                <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                                <span className="text-xs font-bold">{slot.dayOfWeek}</span>
+                          <div key={idx} className="flex flex-col xs:flex-row sm:flex-row sm:items-center sm:justify-between gap-1.5 bg-gray-50/50 p-2.5 rounded-lg border border-gray-50">
+                             <div className="flex items-center gap-2 text-gray-700 min-w-0">
+                                <Calendar className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                                <span className="text-xs font-bold truncate">{slot.dayOfWeek}</span>
                              </div>
-                             <div className="flex items-center gap-2 text-gray-600">
-                                <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                                <span className="text-[11px] font-bold">{formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}</span>
+                             <div className="flex items-center gap-2 text-gray-600 pl-5 sm:pl-0">
+                                <Clock className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                                <span className="text-[11px] font-bold whitespace-nowrap">{formatTime12h(slot.startTime)} - {formatTime12h(slot.endTime)}</span>
                              </div>
                           </div>
                         ))}
@@ -279,8 +279,8 @@ const Schedules: React.FC = () => {
       </div>
 
       {scheduleGroupToDelete && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-in zoom-in duration-200 my-10">
+        <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-in zoom-in duration-200 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8" />
             </div>
@@ -426,16 +426,16 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[92vh] sm:max-h-[85vh]">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
           <h3 className="text-lg font-bold text-gray-800">{isEdit ? 'Edit Schedule Group' : 'Create New Schedule'}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-4 sm:p-6 space-y-4 overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Program</label>
             <select 
@@ -470,7 +470,7 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
              <div>
                 <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Session Group</label>
                 <input 
@@ -520,7 +520,7 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
                   <button 
                     type="button"
                     onClick={() => remove(index)}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
@@ -561,11 +561,11 @@ const ScheduleModal: React.FC<{ onClose: () => void; group?: any; defaultProgram
             ))}
           </div>
 
-          <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-bold text-sm transition-colors">
+          <div className="pt-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-bold text-sm transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={isLoading} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-lg shadow-blue-100 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={isLoading} className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-lg shadow-blue-100 transition-colors disabled:opacity-50">
               {isLoading ? 'Saving...' : (isEdit ? 'Update Group' : 'Create Group')}
             </button>
           </div>

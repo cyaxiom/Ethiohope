@@ -214,18 +214,25 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
         </div>
 
         {/* Steps Indicator */}
-        <div className="flex px-4 sm:px-6 pt-4 pb-2">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex-1 flex items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 ${
-                step === s ? 'bg-blue-600 text-white' : 
-                step > s ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-500'
-              }`}>
-                {step > s ? '✓' : s}
+        <div className="px-4 sm:px-6 pt-4 pb-2 flex-shrink-0">
+          <div className="flex">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex-1 flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 ${
+                  step === s ? 'bg-blue-600 text-white' : 
+                  step > s ? 'bg-emerald-500 text-white' : 'bg-white/10 text-slate-500'
+                }`}>
+                  {step > s ? '✓' : s}
+                </div>
+                {s < 3 && <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all duration-500 ${step > s ? 'bg-emerald-500' : 'bg-white/10'}`} />}
               </div>
-              {s < 3 && <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all duration-500 ${step > s ? 'bg-emerald-500' : 'bg-white/10'}`} />}
-            </div>
-          ))}
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] sm:text-xs text-slate-500 font-medium tracking-wide">
+            {['Child info', 'Group & schedule', 'Checkout'][step - 1]}
+            <span className="text-slate-600"> · </span>
+            Step {step} of 3
+          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
@@ -502,13 +509,13 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
 
           {/* Footer Actions */}
           {step < 3 && (
-            <div className="px-4 sm:px-6 py-4 border-t border-white/10 flex justify-between items-center gap-3 bg-[#070b16] pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="px-4 sm:px-6 py-4 border-t border-white/10 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 bg-[#070b16] pb-[max(1rem,env(safe-area-inset-bottom))]">
               {step > 1 ? (
-                <button type="button" onClick={() => setStep(step - 1)} className="px-4 py-2.5 text-slate-300 font-medium hover:bg-white/5 rounded-xl transition-colors">
+                <button type="button" onClick={() => setStep(step - 1)} className="w-full sm:w-auto px-4 py-3 sm:py-2.5 text-slate-300 font-medium hover:bg-white/5 rounded-xl transition-colors text-center">
                   Back
                 </button>
               ) : (
-                <div />
+                <div className="hidden sm:block" />
               )}
               
               {step === 1 ? (
@@ -521,15 +528,15 @@ const EnrollChildModal: React.FC<EnrollChildModalProps> = ({ isOpen, onClose, pr
                     ageError !== null ||
                     (isUSA ? !watch('state') : (!watch('country') || (statesOfSelectedCountry.length > 0 && !watch('region'))))
                   }
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="w-full sm:w-auto sm:min-w-[160px] px-6 py-3.5 sm:py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
                 >
-                  Continue to Groups
+                  Continue
                 </button>
               ) : (
                 <button 
                   type="submit" 
                   disabled={isSubmitting || !selectedBatchId || !isAllSchedulesSelected}
-                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="w-full sm:w-auto sm:min-w-[180px] px-6 py-3.5 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {isSubmitting ? 'Processing...' : 'Complete Registration'}
                 </button>

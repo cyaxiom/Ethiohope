@@ -94,16 +94,16 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome back, Admin 👋</h1>
-          <p className="text-gray-500 mt-1">Manage your platform and view real-time insights.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 truncate">Welcome back, Admin</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">Manage your platform and view real-time insights.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {canResetSystem && (
             <button 
               onClick={() => setIsResetModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold transition-all border border-red-100"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg font-bold transition-all border border-red-100"
               title="Factory Reset System"
             >
               <RotateCcw className="w-4 h-4" />
@@ -113,10 +113,10 @@ export const AdminDashboard: React.FC = () => {
           <button 
             onClick={handleRefresh}
             disabled={isStatsFetching}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm disabled:opacity-70"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm disabled:opacity-70"
           >
             <RefreshCw className={`w-4 h-4 ${isStatsFetching ? 'animate-spin' : ''}`} />
-            <span>Refresh All</span>
+            <span className="text-sm sm:text-base">Refresh</span>
           </button>
         </div>
       </div>
@@ -295,30 +295,30 @@ export const AdminDashboard: React.FC = () => {
 // Teacher Row Component
 const TeacherRow: React.FC<{ teacher: any }> = ({ teacher }) => {
   return (
-    <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+    <div className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between hover:bg-gray-50 transition-colors">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold flex-shrink-0">
           {teacher.firstname[0]}{teacher.lastname[0]}
         </div>
-        <div>
-          <h4 className="font-semibold text-gray-800">{teacher.firstname} {teacher.lastname}</h4>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="flex items-center gap-1 text-xs text-gray-500">
-              <Mail className="w-3 h-3" /> {teacher.email}
+        <div className="min-w-0">
+          <h4 className="font-semibold text-gray-800 truncate">{teacher.firstname} {teacher.lastname}</h4>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1">
+            <span className="flex items-center gap-1 text-xs text-gray-500 min-w-0">
+              <Mail className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{teacher.email}</span>
             </span>
             <span className="flex items-center gap-1 text-xs text-gray-500">
-              <Phone className="w-3 h-3" /> {teacher.phone || 'No phone'}
+              <Phone className="w-3 h-3 flex-shrink-0" /> {teacher.phone || 'No phone'}
             </span>
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="text-right">
+      <div className="flex items-center gap-4 sm:justify-end">
+        <div className="text-left sm:text-right">
           <span className={`text-[10px] px-2 py-1 rounded-full uppercase font-bold ${teacher.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
             {teacher.status}
           </span>
           {teacher.lastLogin && (
-            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1 sm:justify-end">
               <Clock className="w-2 h-2" /> {new Date(teacher.lastLogin).toLocaleDateString()}
             </p>
           )}
@@ -335,29 +335,29 @@ const ParentRow: React.FC<{ parent: ParentWithChildren }> = ({ parent }) => {
   return (
     <div className="transition-colors hover:bg-gray-50/50">
       <div 
-        className="p-4 flex items-center justify-between cursor-pointer"
+        className="p-4 flex items-start sm:items-center justify-between gap-3 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">
             {parent.firstname[0]}{parent.lastname[0]}
           </div>
-          <div>
-            <h4 className="font-semibold text-gray-800">{parent.firstname} {parent.lastname}</h4>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="flex items-center gap-1 text-xs text-gray-500">
-                <Mail className="w-3 h-3" /> {parent.email}
+          <div className="min-w-0">
+            <h4 className="font-semibold text-gray-800 truncate">{parent.firstname} {parent.lastname}</h4>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1">
+              <span className="flex items-center gap-1 text-xs text-gray-500 min-w-0">
+                <Mail className="w-3 h-3 flex-shrink-0" /> <span className="truncate">{parent.email}</span>
               </span>
               <span className="flex items-center gap-1 text-xs text-gray-500">
-                <Phone className="w-3 h-3" /> {parent.phone || 'N/A'}
+                <Phone className="w-3 h-3 flex-shrink-0" /> {parent.phone || 'N/A'}
               </span>
-              <span className="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full uppercase font-medium">
+              <span className="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full uppercase font-medium w-fit">
                 {parent.parentType}
               </span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
           <div className="text-right hidden sm:block">
             <p className="text-xs text-gray-400">Children</p>
             <p className="text-sm font-bold text-blue-600">{parent.children.length}</p>
@@ -371,20 +371,20 @@ const ParentRow: React.FC<{ parent: ParentWithChildren }> = ({ parent }) => {
       {/* Children List */}
       {isOpen && (
         <div className="px-4 pb-4 pt-2 bg-gray-50/30">
-          <div className="ml-14 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="ml-0 sm:ml-14 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {parent.children.length > 0 ? (
               parent.children.map((child) => (
-                <div key={child._id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <div key={child._id} className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
                       <GraduationCap className="w-4 h-4" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{child.firstname} {child.lastname}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{child.firstname} {child.lastname}</p>
                       <p className="text-[11px] text-gray-500">Grade {child.grade} • {child.gender}</p>
                     </div>
                   </div>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${child.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 ${child.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
                     {child.status}
                   </span>
                 </div>

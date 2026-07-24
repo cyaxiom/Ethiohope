@@ -19,7 +19,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn"
@@ -27,7 +27,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl animate-slideUp">
+      <div className="relative w-full max-w-sm bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl animate-slideUp max-h-[92vh]">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -37,7 +37,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        <div className="p-6 text-center">
+        <div className="p-6 text-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           {/* Warning Icon */}
           <div className="mx-auto w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
             <AlertTriangle className="w-7 h-7 text-red-500" />

@@ -37,7 +37,7 @@ const ToastContainer: React.FC<{ toasts: Toast[]; onDismiss: (id: number) => voi
   toasts,
   onDismiss,
 }) => (
-  <div className="fixed top-6 right-6 z-[60] space-y-2">
+  <div className="fixed top-6 left-4 right-4 sm:left-auto sm:right-6 z-[60] space-y-2">
     {toasts.map((toast) => (
       <div
         key={toast.id}
@@ -282,22 +282,22 @@ export const RoleManagement: React.FC = () => {
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Shield className="w-7 h-7 text-blue-600" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 flex-shrink-0" />
             Role Management
           </h1>
-          <p className="text-gray-500 mt-1">Manage roles and permissions for your organization</p>
+          <p className="text-gray-500 text-sm mt-1">Manage roles and permissions for your organization</p>
         </div>
 
         {canCreate && (
           <button
             id="create-role-btn"
             onClick={handleOpenCreate}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700
                        text-white text-sm font-medium rounded-xl transition-all shadow-sm shadow-blue-200
-                       hover:shadow-md hover:shadow-blue-200 active:scale-[0.98]"
+                       hover:shadow-md hover:shadow-blue-200 active:scale-[0.98] w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Create Role
@@ -466,7 +466,7 @@ export const RoleManagement: React.FC = () => {
                               id={`edit-role-${role._id}`}
                               onClick={() => handleOpenEdit(role)}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50
-                                         rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                         rounded-lg transition-all opacity-100"
                               title="Edit role"
                             >
                               <Pencil className="w-4 h-4" />
@@ -477,7 +477,7 @@ export const RoleManagement: React.FC = () => {
                               id={`delete-role-${role._id}`}
                               onClick={() => setDeletingRole(role)}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50
-                                         rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                         rounded-lg transition-all opacity-100"
                               title="Delete role"
                             >
                               <Trash2 className="w-4 h-4" />

@@ -154,8 +154,8 @@ const StudentPayments: React.FC = () => {
     <div className="animate-fadeIn pb-8 max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-blue-900 tracking-tight mb-3">Payment History</h1>
-          <p className="text-gray-500 font-medium text-lg max-w-xl leading-relaxed">
+          <h1 className="text-2xl sm:text-4xl font-black text-blue-900 tracking-tight mb-3">Payment History</h1>
+          <p className="text-gray-500 font-medium text-base sm:text-lg max-w-xl leading-relaxed">
             View your enrollments, complete pending payments, and download invoices.
           </p>
         </div>
@@ -273,20 +273,20 @@ const StudentPayments: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border ${status.className}`}
+                    className={`inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border ${status.className}`}
                   >
                     <StatusIcon className="w-3.5 h-3.5" />
                     {status.label}
                   </span>
-                  <span className="text-2xl font-black text-gray-900">${amount}</span>
+                  <span className="text-2xl font-black text-gray-900 text-center sm:text-left">${amount}</span>
                   {isPending ? (
                     <button
                       type="button"
                       onClick={() => handlePayNow(payment._id)}
                       disabled={loadingId === payment._id}
-                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 disabled:opacity-60 flex items-center gap-2"
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 disabled:opacity-60 flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
                       <CreditCard className="w-4 h-4" />
                       {loadingId === payment._id ? 'Redirecting…' : 'Pay Now'}
@@ -295,7 +295,7 @@ const StudentPayments: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleDownloadInvoice(payment)}
-                      className="px-6 py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-2xl font-bold border border-gray-100 flex items-center gap-2"
+                      className="px-6 py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-2xl font-bold border border-gray-100 flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
                       <Download className="w-4 h-4" />
                       Invoice

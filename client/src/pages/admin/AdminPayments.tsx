@@ -127,15 +127,15 @@ const AdminPayments: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Applications & Payments</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Applications & Payments</h1>
         <p className="text-gray-500 text-sm mt-1">
           See who applied to which program, payment status, and activate or cancel applications.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${stat.tone}`}>

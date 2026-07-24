@@ -43,8 +43,8 @@ export const ParentDashboard: React.FC = () => {
 
   return (
     <div className="animate-fadeIn pb-8 max-w-[1400px] mx-auto">
-      <header className="mb-8">
-        <h1 className="text-2xl font-black text-blue-900 tracking-tight">Parent Portal 👋</h1>
+      <header className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-black text-blue-900 tracking-tight">Parent Portal</h1>
       </header>
 
       {/* Hero Section */}

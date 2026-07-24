@@ -41,19 +41,20 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
   const child = response?.data;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-300">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] relative"
+        className="bg-white rounded-t-2xl sm:rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh] relative"
       >
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-all z-20 text-gray-500 hover:text-gray-800"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-all z-20 text-gray-500 hover:text-gray-800"
+          aria-label="Close"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
         {isLoading ? (
@@ -73,13 +74,13 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
         ) : (
           <div className="flex flex-col h-full overflow-hidden">
             {/* Header / Hero Section */}
-            <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-8 md:p-12 text-white overflow-hidden header-gradient">
+            <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 p-6 sm:p-8 md:p-12 text-white overflow-hidden header-gradient">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl no-print"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/20 rounded-full -ml-24 -mb-24 blur-2xl no-print"></div>
               
-              <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-                <div className="w-32 h-32 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl relative group">
-                  <User className="w-16 h-16 text-white" />
+              <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 relative z-10">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl relative group">
+                  <User className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
                   <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-400 rounded-2xl border-4 border-white flex items-center justify-center shadow-lg no-print">
                     <CheckCircle2 className="w-5 h-5 text-white" />
                   </div>
@@ -87,7 +88,7 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
                 
                 <div className="text-center md:text-left">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-                    <h2 className="text-4xl font-black tracking-tight">{child.firstname} {child.lastname}</h2>
+                    <h2 className="text-2xl sm:text-4xl font-black tracking-tight">{child.firstname} {child.lastname}</h2>
                     <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-[11px] font-black uppercase tracking-[0.2em] rounded-full border border-white/20">
                       @{child.username}
                     </span>
@@ -108,8 +109,8 @@ const ChildDetailModal: React.FC<ChildDetailModalProps> = ({ isOpen, onClose, ch
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar bg-gray-50/50">
-              <div className="max-w-3xl mx-auto space-y-10 pb-8">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-10 custom-scrollbar bg-gray-50/50 pb-[max(2rem,env(safe-area-inset-bottom))]">
+              <div className="max-w-3xl mx-auto space-y-8 sm:space-y-10 pb-8">
                 
                 {/* Academic Status Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

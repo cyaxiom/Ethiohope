@@ -309,14 +309,14 @@ export const ParentPayments: React.FC = () => {
     <div className="animate-fadeIn pb-8 max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-blue-900 tracking-tight mb-3 font-sans">Payment History 💳</h1>
-          <p className="text-gray-500 font-medium text-lg max-w-xl leading-relaxed">
+          <h1 className="text-2xl sm:text-4xl font-black text-blue-900 tracking-tight mb-3 font-sans">Payment History 💳</h1>
+          <p className="text-gray-500 font-medium text-base sm:text-lg max-w-xl leading-relaxed">
             Manage your subscriptions, view transaction history, and download invoices for your children's courses.
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="px-6 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col items-center">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          <div className="px-6 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col items-center w-full sm:w-auto">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Spent</span>
             <span className="text-xl font-black text-blue-600">
               ${totalSpent.toLocaleString()}
@@ -408,13 +408,13 @@ export const ParentPayments: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="group"
               >
-                <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500 flex flex-col lg:flex-row items-center gap-8 relative overflow-hidden">
+                <div className="bg-white p-4 sm:p-6 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500 flex flex-col lg:flex-row items-stretch lg:items-center gap-6 sm:gap-8 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-2 h-full bg-blue-600 opacity-0 group-hover:opacity-100 transition-all" />
                   
                   {/* Student & Course Info */}
-                  <div className="flex items-center gap-6 flex-1 w-full">
+                  <div className="flex items-center gap-4 sm:gap-6 flex-1 w-full min-w-0">
                     {isGroup ? (
-                      <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
                         {payment.items[0]?.program?.image ? (
                           <img src={getImageUrl(payment.items[0].program.image)} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -422,7 +422,7 @@ export const ParentPayments: React.FC = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-gray-100 group-hover:scale-105 transition-transform duration-500">
                         {payment.program?.image ? (
                           <img src={getImageUrl(payment.program.image)} alt="" className="w-full h-full object-cover" />
                         ) : (
@@ -431,7 +431,7 @@ export const ParentPayments: React.FC = () => {
                       </div>
                     )}
                     
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg">
                           {isGroup ? (payment.items[0]?.program?.title || 'Course') : (payment.program?.title || 'Course')}
@@ -442,7 +442,7 @@ export const ParentPayments: React.FC = () => {
                       </div>
                       
                       {isGroup ? (
-                        <h3 className="text-xl font-black text-gray-800 tracking-tight">
+                        <h3 className="text-lg sm:text-xl font-black text-gray-800 tracking-tight">
                           {payment.items.map((item: any, idx: number) => (
                             <React.Fragment key={item._id}>
                             {item.child?.firstname || item.child?.firstName}
@@ -452,18 +452,18 @@ export const ParentPayments: React.FC = () => {
                           <span className="text-sm font-bold text-gray-400 ml-2">({payment.items.length} Students)</span>
                         </h3>
                       ) : (
-                        <h3 className="text-xl font-black text-gray-800 tracking-tight flex items-center gap-2">
+                        <h3 className="text-lg sm:text-xl font-black text-gray-800 tracking-tight flex flex-wrap items-center gap-2">
                           {payment.child?.firstname || payment.child?.firstName || 'Student'} {payment.child?.lastname || payment.child?.lastName || ''}
                           <span className="text-sm font-bold text-gray-400">@{payment.child?.username}</span>
                         </h3>
                       )}
                       
-                      <div className="flex items-center gap-4 mt-2 text-gray-400">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-gray-400">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-4 h-4" />
                           <span className="text-xs font-bold">{new Date(payment.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                         </div>
-                        <div className="w-1 h-1 rounded-full bg-gray-200" />
+                        <div className="w-1 h-1 rounded-full bg-gray-200 hidden sm:block" />
                         <div className="flex items-center gap-1.5">
                           <CreditCard className="w-4 h-4" />
                           <span className="text-xs font-bold uppercase tracking-wider">
@@ -475,8 +475,8 @@ export const ParentPayments: React.FC = () => {
                   </div>
 
                   {/* Status & Amount */}
-                  <div className="flex items-center gap-8 w-full lg:w-auto justify-between lg:justify-end border-t lg:border-t-0 pt-6 lg:pt-0 border-gray-50">
-                    <div className="flex flex-col items-end">
+                  <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto items-stretch sm:items-center justify-between lg:justify-end border-t lg:border-t-0 pt-4 sm:pt-6 lg:pt-0 border-gray-50">
+                    <div className="flex flex-col items-start sm:items-end">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Status</span>
                       <div className={`px-4 py-2 rounded-2xl border ${status.bg} ${status.text} ${status.border} flex items-center gap-2 shadow-sm`}>
                         <status.icon className="w-4 h-4" />
@@ -484,16 +484,16 @@ export const ParentPayments: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end min-w-[120px]">
+                    <div className="flex flex-col items-start sm:items-end min-w-0 sm:min-w-[120px]">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Total Amount</span>
                       <span className="text-2xl font-black text-gray-800 font-sans">${payment.amount.toLocaleString()}</span>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full sm:w-auto">
                       {payment.paymentStatus === 'PAID' ? (
                         <button 
                           onClick={() => handleDownloadInvoice(payment)}
-                          className="p-4 bg-gray-50 hover:bg-blue-600 text-gray-400 hover:text-white rounded-3xl transition-all duration-300 group/btn shadow-sm hover:shadow-lg hover:shadow-blue-200"
+                          className="p-4 bg-gray-50 hover:bg-blue-600 text-gray-400 hover:text-white rounded-3xl transition-all duration-300 group/btn shadow-sm hover:shadow-lg hover:shadow-blue-200 w-full sm:w-auto flex items-center justify-center"
                         >
                           <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                         </button>
@@ -501,7 +501,7 @@ export const ParentPayments: React.FC = () => {
                         <button 
                           onClick={() => handlePayNow(payment._id)}
                           disabled={loadingId === payment._id}
-                          className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-[1.5rem] font-black text-sm shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                          className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-[1.5rem] font-black text-sm shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 w-full sm:w-auto"
                         >
                           {loadingId === payment._id ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

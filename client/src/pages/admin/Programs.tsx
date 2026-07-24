@@ -5,7 +5,9 @@ import {
   ChevronLeft, ChevronRight, X, Layers, Trash2, AlertTriangle,
   Upload, Link as LinkIcon, Package
 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import RichTextEditor from '../../components/ui/RichTextEditor';
+import { stripHtml } from '../../lib/html';
 import { 
   useGetProgramsQuery, 
   useCreateProgramMutation, 
@@ -106,16 +108,16 @@ const Programs: React.FC = () => {
   const meta = programsData?.meta;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Program Management</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Program Management</h1>
           <p className="text-gray-500 text-sm mt-1">Create and manage educational programs.</p>
         </div>
         {canCreate && (
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors w-full sm:w-auto"
           >
             <Plus className="w-5 h-5" />
             Add Program
@@ -137,9 +139,119 @@ const Programs: React.FC = () => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Programs list — cards on mobile, table on md+ */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {isLoading || isFetching ? (
+            <div className="px-4 py-10 text-center text-gray-400">
+              <Activity className="w-6 h-6 animate-spin mx-auto mb-2" />
+              Loading programs...
+            </div>
+          ) : programs.length === 0 ? (
+            <div className="px-4 py-10 text-center text-gray-400">No programs found.</div>
+          ) : (
+            programs.map((program: any) => (
+              <div key={program._id} className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-blue-100 text-blue-600 flex items-center justify-center border border-gray-100 flex-shrink-0">
+                    {program.image ? (
+                      <img src={getImageUrl(program.image)} alt={program.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <Library className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{program.title}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">#{program.orderIndex} · {new Date(program.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold flex-shrink-0 ${
+                        program.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                      }`}>
+                        {program.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                        {program.ageRange?.trim() || '—'}
+                      </span>
+                      {program.isForChildren && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-amber-50 text-amber-700 border border-amber-100">
+                          Kids
+                        </span>
+                      )}
+                      {program.programType === 'ACADEMIC_TUTORIAL' && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide bg-violet-50 text-violet-700 border border-violet-100">
+                          Tutorial
+                        </span>
+                      )}
+                    </div>
+                    {program.description && (
+                      <p className="text-sm text-gray-500 mt-2 line-clamp-2">{stripHtml(program.description)}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-1 pt-1 border-t border-gray-50">
+                  {program.programType === 'ACADEMIC_TUTORIAL' ? (
+                    canUpdate && (
+                      <button
+                        onClick={() => { setSelectedProgram(program); setIsPackagesModalOpen(true); }}
+                        className="p-2 text-violet-600 hover:bg-violet-50 rounded-md transition-colors"
+                        title="Manage Packages"
+                      >
+                        <Package className="w-4 h-4" />
+                      </button>
+                    )
+                  ) : (
+                    canReadPhase && (
+                      <button
+                        onClick={() => { setSelectedProgram(program); setIsPhasesModalOpen(true); }}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                        title="Manage Phases"
+                      >
+                        <Layers className="w-4 h-4" />
+                      </button>
+                    )
+                  )}
+                  {canUpdate && (
+                    <>
+                      <button
+                        onClick={() => handleToggleStatus(program)}
+                        className={`p-2 rounded-md transition-colors ${
+                          program.isActive ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'
+                        }`}
+                        title={program.isActive ? 'Deactivate' : 'Activate'}
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => { setSelectedProgram(program); setIsEditModalOpen(true); }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Edit Program"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => setProgramToDelete(program)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      title="Delete Program"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm">
               <tr>
@@ -155,14 +267,14 @@ const Programs: React.FC = () => {
             <tbody className="divide-y divide-gray-50">
               {isLoading || isFetching ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                     <Activity className="w-6 h-6 animate-spin mx-auto mb-2" />
                     Loading programs...
                   </td>
                 </tr>
               ) : programs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                     No programs found.
                   </td>
                 </tr>
@@ -202,8 +314,8 @@ const Programs: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-500 max-w-xs truncate" title={program.description}>
-                        {program.description || 'No description'}
+                      <p className="text-sm text-gray-500 max-w-xs truncate" title={stripHtml(program.description)}>
+                        {stripHtml(program.description) || 'No description'}
                       </p>
                     </td>
                     <td className="px-6 py-4">
@@ -279,11 +391,11 @@ const Programs: React.FC = () => {
         
         {/* Pagination */}
         {meta && (
-          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-gray-500 text-center sm:text-left">
               Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to <span className="font-medium">{Math.min(page * limit, meta.total)}</span> of <span className="font-medium">{meta.total}</span> programs
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center sm:justify-end">
               <button 
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -372,7 +484,7 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>(program?.image ? getImageUrl(program.image) : '');
   
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch, control, formState: { errors } } = useForm({
     defaultValues: {
       title: program?.title || '',
       description: program?.description || '',
@@ -442,9 +554,9 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[92vh] sm:max-h-[85vh] sm:my-10">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
           <h3 className="text-lg font-bold text-gray-800">{isEdit ? 'Edit Program' : 'Create New Program'}</h3>
           <button onClick={onClose} type="button" className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
@@ -467,11 +579,16 @@ const ProgramModal: React.FC<{ onClose: () => void, program?: any }> = ({ onClos
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-              <textarea 
-                {...register('description')} 
-                rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                placeholder="Brief description of the program..."
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <RichTextEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Write a detailed program description. Use bold, lists, and headings…"
+                  />
+                )}
               />
             </div>
 
@@ -695,8 +812,8 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
   const phases = phasesData?.data || [];
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[85vh] my-10 relative">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[92vh] sm:max-h-[85vh] sm:my-10 relative">
         
         {/* Delete Confirmation Overlay */}
         {phaseToDelete && (
@@ -829,16 +946,18 @@ const PhaseManagementModal: React.FC<{ program: any, onClose: () => void }> = ({
                                  {phase.isActive !== false ? 'Open' : 'Closed'}
                                </span>
                              </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 flex-shrink-0">
                                <button 
                                  onClick={() => setEditingPhase(phase)}
-                                 className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                 className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                 title="Edit phase"
                                >
                                   <Edit2 className="w-3.5 h-3.5" />
                                </button>
                                <button 
                                  onClick={() => setPhaseToDelete(phase)}
-                                 className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                 className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                 title="Delete phase"
                                >
                                   <Trash2 className="w-3.5 h-3.5" />
                                </button>
@@ -998,20 +1117,20 @@ const PackageManagementModal: React.FC<{ program: any; onClose: () => void }> = 
   const packages = packagesData?.data || [];
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+    <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 md:p-8">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Tutoring Packages</h3>
-            <p className="text-sm text-gray-500">{program.title} · monthly prices</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900">Tutoring Packages</h3>
+            <p className="text-sm text-gray-500 truncate">{program.title} · monthly prices</p>
           </div>
           <button type="button" onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
-          <div className="flex justify-between items-center">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
             <p className="text-sm text-gray-500">
               Each package is billed monthly. Parents pick frequency, subjects, and availability blocks.
             </p>
@@ -1031,7 +1150,7 @@ const PackageManagementModal: React.FC<{ program: any; onClose: () => void }> = 
                   });
                   setIsAddFormOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700 w-full sm:w-auto flex-shrink-0"
               >
                 <Plus className="w-4 h-4" /> Add package
               </button>
