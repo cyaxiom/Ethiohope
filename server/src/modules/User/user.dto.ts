@@ -63,6 +63,7 @@ export class UserDTO implements IUser {
 
   @IsOptional()
   @IsString()
+  @Matches(/^\+?[\d\s\-\(\)]{10,20}$/, { message: 'Please enter a valid phone number' })
   phone?: string;
 
   @IsBoolean()

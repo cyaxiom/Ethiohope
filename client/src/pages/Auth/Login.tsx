@@ -279,6 +279,7 @@ const Login: React.FC = () => {
               placeholder={isEmail ? 'Enter your password' : 'Enter your PIN'}
               autoComplete="current-password"
               icon={<Lock size={17} />}
+              showPasswordToggle
               error={errors.passwordOrPin?.message}
               {...register('passwordOrPin', {
                 required: isEmail ? 'Password is required' : 'PIN is required',

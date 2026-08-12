@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, Loader2, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowLeft, ShieldCheck, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -15,9 +15,32 @@ interface RegisterFormInputs {
   firstname: string;
   lastname: string;
   email: string;
+  phoneLocal: string;
   password: string;
-  confirmPassword: string;
 }
+
+/** Curated dial codes — US default for EthioHope parents abroad */
+const DIAL_OPTIONS = [
+  { id: 'us', code: '+1', label: 'US +1' },
+  { id: 'ca', code: '+1', label: 'CA +1' },
+  { id: 'et', code: '+251', label: 'ET +251' },
+  { id: 'gb', code: '+44', label: 'UK +44' },
+  { id: 'ae', code: '+971', label: 'AE +971' },
+  { id: 'de', code: '+49', label: 'DE +49' },
+  { id: 'fr', code: '+33', label: 'FR +33' },
+  { id: 'nl', code: '+31', label: 'NL +31' },
+  { id: 'au', code: '+61', label: 'AU +61' },
+  { id: 'in', code: '+91', label: 'IN +91' },
+] as const;
+
+const digitsOnly = (value: string) => value.replace(/\D/g, '');
+
+/** Build E.164-style phone: +1 + 10 digits → +12025551234 */
+const buildE164 = (dialCode: string, local: string): string => {
+  const localDigits = digitsOnly(local);
+  const dialDigits = digitsOnly(dialCode);
+  return `+${dialDigits}${localDigits}`;
+};
 
 const Register: React.FC = () => {
   const location = useLocation();
@@ -25,28 +48,50 @@ const Register: React.FC = () => {
   const dispatch = useDispatch();
   const [signup, { isLoading: isSigningUp }] = useSignupMutation();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [dialOptionId, setDialOptionId] = useState<string>('us');
+  const dialCode = DIAL_OPTIONS.find((d) => d.id === dialOptionId)?.code || '+1';
+  const isNorthAmerica = dialCode === '+1';
 
   const from = location.state?.from || '/dashboard';
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
-  } = useForm<RegisterFormInputs>();
+  } = useForm<RegisterFormInputs>({
+    defaultValues: {
+      firstname: '',
+      lastname: '',
+      email: '',
+      phoneLocal: '',
+      password: '',
+    },
+  });
 
-  const password = watch('password');
+  const phoneLocalField = register('phoneLocal', {
+    required: 'Phone number is required',
+    validate: (value) => {
+      const digits = digitsOnly(value);
+      if (isNorthAmerica) {
+        return digits.length === 10 || 'Enter a 10-digit US/Canada number';
+      }
+      return (digits.length >= 7 && digits.length <= 15) || 'Enter a valid phone number';
+    },
+  });
 
   const onSubmit = async (data: RegisterFormInputs) => {
     setServerError(null);
     try {
       const cleanEmail = data.email.trim().toLowerCase();
+      const phone = buildE164(dialCode, data.phoneLocal);
+
       const result = await signup({
         firstname: data.firstname.trim(),
         lastname: data.lastname.trim(),
         email: cleanEmail,
         password: data.password,
+        phone,
       }).unwrap();
 
       dispatch(
@@ -91,7 +136,6 @@ const Register: React.FC = () => {
 
   return (
     <div className="public-shell min-h-screen bg-[#070b16] text-slate-100 flex">
-      {/* Brand panel — desktop */}
       <aside className="hidden lg:flex lg:w-[42%] xl:w-[44%] relative flex-col justify-between p-10 xl:p-14 border-r border-white/10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0b1224] via-[#070b16] to-[#0a1628]" />
         <div className="absolute -top-24 -left-16 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl" />
@@ -126,7 +170,6 @@ const Register: React.FC = () => {
         </p>
       </aside>
 
-      {/* Form panel */}
       <main className="flex-1 flex flex-col justify-center px-5 sm:px-8 py-10 relative">
         <Link
           to="/"
@@ -223,6 +266,56 @@ const Register: React.FC = () => {
               })}
             />
 
+            <div className="w-full mb-4">
+              <label htmlFor="phoneLocal" className="block text-sm font-medium text-slate-300 mb-2">
+                Phone number
+              </label>
+              <div
+                className={`flex rounded-xl border overflow-hidden transition-all ${errors.phoneLocal
+                    ? 'border-red-500/60 focus-within:ring-2 focus-within:ring-red-500/20'
+                    : 'border-white/10 hover:border-white/20 focus-within:border-blue-500/60 focus-within:ring-2 focus-within:ring-blue-500/15'
+                  }`}
+              >
+                <div className="relative flex-shrink-0 bg-[#0a1220] border-r border-white/10">
+                  <Phone
+                    size={15}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                  />
+                  <select
+                    value={dialOptionId}
+                    onChange={(e) => setDialOptionId(e.target.value)}
+                    aria-label="Country code"
+                    className="h-full appearance-none bg-transparent text-slate-200 text-sm pl-9 pr-7 py-3 outline-none cursor-pointer min-w-[7.5rem]"
+                  >
+                    {DIAL_OPTIONS.map((d) => (
+                      <option key={d.id} value={d.id} className="bg-[#0b1224] text-slate-100">
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <input
+                  id="phoneLocal"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder={isNorthAmerica ? '5551234567' : 'Phone number'}
+                  className="flex-1 min-w-0 px-3.5 py-3 bg-[#070b16] text-slate-100 placeholder:text-slate-600 outline-none"
+                  {...phoneLocalField}
+                  onChange={(e) => {
+                    e.target.value = digitsOnly(e.target.value);
+                    phoneLocalField.onChange(e);
+                  }}
+                />
+              </div>
+              {errors.phoneLocal && (
+                <p className="mt-1.5 text-xs font-medium text-red-400">{errors.phoneLocal.message}</p>
+              )}
+              {/* <p className="mt-1.5 text-[11px] text-slate-500">
+                Default is US (+1). Change the country code if needed.
+              </p> */}
+            </div>
+
             <FormInput
               id="password"
               label="Password"
@@ -230,24 +323,11 @@ const Register: React.FC = () => {
               placeholder="At least 6 characters"
               autoComplete="new-password"
               icon={<Lock size={17} />}
+              showPasswordToggle
               error={errors.password?.message}
               {...register('password', {
                 required: 'Password is required',
                 minLength: { value: 6, message: 'Must be at least 6 characters' },
-              })}
-            />
-
-            <FormInput
-              id="confirmPassword"
-              label="Confirm password"
-              type="password"
-              placeholder="Re-enter your password"
-              autoComplete="new-password"
-              icon={<Lock size={17} />}
-              error={errors.confirmPassword?.message}
-              {...register('confirmPassword', {
-                required: 'Please confirm your password',
-                validate: (value) => value === password || 'Passwords do not match',
               })}
             />
 

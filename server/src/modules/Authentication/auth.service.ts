@@ -64,6 +64,7 @@ export class AuthService {
       password: payload.password,
       roles: roleIds,
       isEmailVerified: true, // Auto verify user email directly
+      ...(payload.phone ? { phone: payload.phone.trim() } : {}),
     };
 
     const createdUser = await this.authDao.createUser(userToCreate);
